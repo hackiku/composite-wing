@@ -2,6 +2,8 @@ import streamlit as st
 import math
 import inspect
 
+st.image('./akeret.png')
+
 # Use Streamlit's input widgets to capture parameters
 d_l = st.number_input('Relativna debljina `d_l`:', value=0.10, format="%.2f")  # Relative thickness
 alpha_deg = st.number_input('Napadni ugao [°] `alpha_deg`:', value=1.5, format="%.1f")  # Initial angle of attack in degrees
