@@ -20,16 +20,28 @@ def materials_dataframe(fiber, matrix):
 # Define the calculation theories as a dictionary
 theories = {
     "Chamis": {
-        "shear_modulus": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f']))
+        "youngs_modulus": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
+        "shear_modulus": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f'])),
+        "poisson_ratio": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
+        "tensile_strength": lambda f, m, Vf, Vm: f['F1ft'] * Vf + m['FmT'] * Vm,
     },
-    "Theory 2": {
-        "shear_modulus": lambda f, m, Vf, Vm: 0  # Placeholder for Theory 2
+    "Rule of Mixtures": {
+        "youngs_modulus": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
+        "shear_modulus": lambda f, m, Vf, Vm: f['G12f'] * Vf + m['Gm'] * Vm,
+        "poisson_ratio": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
+        "tensile_strength": lambda f, m, Vf, Vm: f['F1ft'] * Vf + m['FmT'] * Vm,
     },
-    "Theory 3": {
-        "shear_modulus": lambda f, m, Vf, Vm: 0  # Placeholder for Theory 3
+    "Halpin-Tsai": {
+        "youngs_modulus": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
+        "shear_modulus": lambda f, m, Vf, Vm: f['G12f'] * (1 + 0.6 * Vf) / (1 - 0.6 * Vf),
+        "poisson_ratio": lambda f, m, Vf, Vm: ((f['v12f'] * m['vm']) / (Vf * m['vm'] + Vm * f['v12f'])),
+        "tensile_strength": lambda f, m, Vf, Vm: (f['F1ft'] * m['FmT']) / (Vf * m['FmT'] + Vm * f['F1ft']),
     },
     "Theory 4": {
-        "shear_modulus": lambda f, m, Vf, Vm: 0  # Placeholder for Theory 4
+        "youngs_modulus": lambda f, m, Vf, Vm: 0,  # Placeholder for Theory 4
+        "shear_modulus": lambda f, m, Vf, Vm: 0,  # Placeholder for Theory 4
+        "poisson_ratio": lambda f, m, Vf, Vm: 0,  # Placeholder for Theory 4
+        "tensile_strength": lambda f, m, Vf, Vm: 0,  # Placeholder for Theory 4
     }
 }
 
@@ -61,9 +73,10 @@ def main():
 
     st.markdown('***')
     
-    # Calculate Young's Modulus (E1)
     f = fibers[fiber_material]
     m = matrices[matrix_material]
+    
+    # Calculate Young's Modulus (E1)
     E1 = f['E1f'] * Vf + m['Em'] * Vm
     st.subheader('Young’s Modulus `E1`', help="Calculated as the weighted average of the modulus of the fiber and matrix.")
     st.latex(r"E_1 = E_{f}V_{f} + E_{m}V_{m}")
