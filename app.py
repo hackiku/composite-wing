@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from latex_utils import render_latex
 from calculations import calculate_youngs_modulus, calculate_shear_modulus
@@ -134,6 +135,8 @@ theories = {
     }
 }
 
+mplstyle.use('dark_background')
+
 def plot_properties(results_df):
     # Transpose the DataFrame for easier plotting
     results_df = results_df.set_index("Property").transpose()
@@ -144,13 +147,17 @@ def plot_properties(results_df):
     for property_name in results_df.columns:
         ax.plot(results_df.index, results_df[property_name], marker='o', label=property_name)
 
-    ax.set_title('Comparison of Composite Properties by Theory')
-    ax.set_xlabel('Theory')
-    ax.set_ylabel('Value')
+    ax.set_title('Comparison of Composite Properties by Theory', color='white')
+    ax.set_xlabel('Theory', color='white')
+    ax.set_ylabel('Value', color='white')
     ax.legend()
-    ax.grid(True)
+    ax.grid(True, color='gray')
+
+    # Set the color of the tick labels
+    ax.tick_params(colors='white')
 
     st.pyplot(fig)
+
 
 
 def main():
