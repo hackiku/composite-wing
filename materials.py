@@ -39,7 +39,7 @@ fibers = {
 matrices = {
     "Epoxy_3501_6": {
         "density": 1.27, "Em": 4.3, "Gm": 1.60, "vm": 0.35,
-        "FmT": 69, "FmC": 200, "FmS": 100, "alpha_m": 45,
+        "FmT": 69, "FmC": 200, "Fms": 100, "alpha_m": 45,
         "Tg": 200, "Tmax": 150, "epsilon_mT": 2.5
     },
     "Epoxy_977_3": {
