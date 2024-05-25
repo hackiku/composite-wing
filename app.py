@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from materials import fibers, matrices
 from latex_utils import render_latex
 from calculations import calculate_youngs_modulus, calculate_shear_modulus
@@ -23,8 +24,8 @@ theories = {
             "latex": r"E_1 = \frac{{E_{1f} \cdot E_m}}{{E_{1f} - \sqrt{V_f} \cdot (E_{1f} - E_m)}}"
         },
         "shear_modulus": {
-            "formula": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f'])),
-            "latex": r"G_{12} = \frac{{G_m}}{{1 - \sqrt{{V_f}}(1 - \frac{{G_m}}{{G_{12f}}})}}"
+            "formula": lambda f, m, Vf, Vm: (f['G12f'] * m['Gm']) / (f['G12f'] - np.sqrt(Vf) * (f['G12f'] - m['Gm'])),
+            "latex": r"G_{12} = \frac{{G_{12f} \cdot G_m}}{{G_{12f} - \sqrt{V_f} \cdot (G_{12f} - G_m)}}"
         },
         "poisson_ratio": {
             "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
@@ -70,7 +71,7 @@ theories = {
         },
         "compressive_strength": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm),
-            "latex": r"F_{1C} = \frac{{(E_{f}V_{f} + E_{m}V_{m})(1 - V_{f}^{1/3}) \epsilon_{m}}}{{\nu_{f}V_{f} + \nu_{m}V_{m}}}"
+            "latex": r"F_{1C} = \frac{{(E_{f}V_{f} + E_{m}V_{m})(1 - V_{f}^{1/3}) \epsilon_{m}}}{{\nu_{f}V_{f} + \ну_{m}V_{m}}}"
         },
         "transverse_tensile_strength": {
             "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3))),
@@ -87,41 +88,41 @@ theories = {
     },
     "Halpin-Tsai": {
         "youngs_modulus": {
-            "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
+            "formula": lambda f, m, Vf, Vm: ((f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f'])),
             "latex": r"E_1 = \frac{{E1f \cdot Em}}{{V_f \cdot Em + V_m \cdot E1f}}"
         },
         "shear_modulus": {
-            "formula": lambda f, m, Vf, Vm: f['G12f'] * (1 + 0.6 * Vf) / (1 - 0.6 * Vf),
-            "latex": r"G_{12} = \frac{{G12f(1 + 0.6V_f)}}{{1 - 0.6V_f}}"
+            "formula": lambda f, m, Vf, Vm: ((f['G12f'] * m['Gm']) / (Vf * m['Gm'] + Vm * f['G12f'])),
+            "latex": r"G_{12} = \frac{{G12f \cdot Gm}}{{V_f \cdot Gm + V_m \cdot G12f}}"
         },
         "poisson_ratio": {
             "formula": lambda f, m, Vf, Vm: ((f['v12f'] * m['vm']) / (Vf * m['vm'] + Vm * f['v12f'])),
             "latex": r"\nu_{12} = \frac{{v12f \cdot vm}}{{V_f \cdot vm + V_m \cdot v12f}}"
         },
         "tensile_strength": {
-            "formula": lambda f, m, Vf, Vm: (f['F1ft'] * m['FmT']) / (Vf * m['FmT'] + Vm * f['F1ft']),
+            "formula": lambda f, m, Vf, Vm: ((f['F1ft'] * m['FmT']) / (Vf * m['FmT'] + Vm * f['F1ft'])),
             "latex": r"F_{1T} = \frac{{F1ft \cdot FmT}}{{V_f \cdot FmT + V_m \cdot F1ft}}"
         },
         "compressive_strength": {
-            "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm),
-            "latex": r"F_{1C} = \frac{{(E_{f}V_{f} + E_{m}V_{m})(1 - V_{f}^{1/3}) \epsilon_{m}}}{{\nu_{f}V_{f} + \nu_{m}V_{m}}}"
+            "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm)),
+            "latex": r"F_{1C} = \frac{{(E_{f}V_{f} + E_{m}V_{m})(1 - V_{f}^{1/3}) \epsilon_{m}}}{{\nu_{f}V_{f} + \ну_{m}V_{m}}}"
         },
         "transverse_tensile_strength": {
-            "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3))),
+            "formula": lambda f, m, Vf, Vm: ((f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3)))),
             "latex": r"F_{2T} = \frac{{E_{2f} \cdot F_{mT}}}{{E_{m} \cdot (1 - V_{f}^{1/3})}}"
         },
         "transverse_compressive_strength": {
-            "formula": lambda f, m, Vf, Vm: m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f'])),
+            "formula": lambda f, m, Vf, Vm: (m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f']))),
             "latex": r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_{f} - V_{f}^{1/2}\right) \cdot \left(1 - \frac{E_{m}}{E_{2f}}\right)\right]"
         },
         "in_plane_shear_strength": {
-            "formula": lambda f, m, Vf, Vm: m['FmS'] * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
+            "formula": lambda f, m, Vf, Vm: ((m['FmS'] * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])))),
             "latex": r"F_{6} = F_{ms} \cdot \left[1 + \left(V_{f} - V_{f}^{1/2}\right) \cdot \left(1 - \frac{G_{m}}{G_{12f}}\right)\right]"
         }
     },
     "Tsai-Wu": {
         "failure_criterion": {
-            "formula": lambda sigma, F: F['F1'] * sigma['sigma1'] + F['F2'] * sigma['sigma2'] + F['F11'] * sigma['sigma1']**2 + F['F22'] * sigma['sigma2']**2 + 2 * F['F12'] * sigma['sigma1'] * sigma['sigma2'] + F['F66'] * sigma['tau12']**2,
+            "formula": lambda sigma, F: (F['F1'] * sigma['sigma1'] + F['F2'] * sigma['sigma2'] + F['F11'] * sigma['sigma1']**2 + F['F22'] * sigma['sigma2']**2 + 2 * F['F12'] * sigma['sigma1'] * sigma['sigma2'] + F['F66'] * sigma['tau12']**2),
             "latex": r"F_1 \sigma_1 + F_2 \sigma_2 + F_{11} \sigma_1^2 + F_{22} \sigma_2^2 + 2 F_{12} \sigma_1 \sigma_2 + F_{66} \tau_{12}^2 = 1"
         }
     },
@@ -132,6 +133,25 @@ theories = {
         }
     }
 }
+
+def plot_properties(results_df):
+    # Transpose the DataFrame for easier plotting
+    results_df = results_df.set_index("Property").transpose()
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+
+    # Plot each property
+    for property_name in results_df.columns:
+        ax.plot(results_df.index, results_df[property_name], marker='o', label=property_name)
+
+    ax.set_title('Comparison of Composite Properties by Theory')
+    ax.set_xlabel('Theory')
+    ax.set_ylabel('Value')
+    ax.legend()
+    ax.grid(True)
+
+    st.pyplot(fig)
+
 
 def main():
     st.title('Composite Materials Calculator')
@@ -190,6 +210,9 @@ def main():
     # Display the DataFrame
     st.subheader("Calculated Properties by Theory")
     st.dataframe(results_df)
+    
+    plot_properties(results_df)
+
 
     # --------------------- LATEX ---------------------
 
