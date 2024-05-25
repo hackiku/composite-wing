@@ -47,10 +47,13 @@ def main():
         st.dataframe(matrix_df)
 
     col1, col2 = st.columns(2)
+    default_fiber_index = 3
+    default_matrix_index = 7
+    
     with col1:
-        fiber_material = st.selectbox('Fiber Material', list(fibers.keys()), help="Choose the type of fiber material")
+        fiber_material = st.selectbox('Fiber Material', list(fibers.keys()), index=default_fiber_index, help="Choose the type of fiber material")
     with col2:
-        matrix_material = st.selectbox('Matrix Material', list(matrices.keys()), help="Choose the type of matrix material")
+        matrix_material = st.selectbox('Matrix Material', list(matrices.keys()), index=default_matrix_index, help="Choose the type of matrix material")
 
     Vf = st.slider('Fiber Volume Fraction (Vf)', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
     Vm = 1 - Vf
@@ -62,7 +65,7 @@ def main():
     f = fibers[fiber_material]
     m = matrices[matrix_material]
     
-    # Calculate Young's Modulus (E1)
+    # Calculate Young's Modulus (E1) --------------------------------
     E1 = f['E1f'] * Vf + m['Em'] * Vm
     st.subheader('Young’s Modulus `E1`', help="Calculated as the weighted average of the modulus of the fiber and matrix.")
     st.latex(r"E_1 = E_{f}V_{f} + E_{m}V_{m}")
@@ -71,7 +74,7 @@ def main():
 
     st.markdown('***')
 
-    # Shear Modulus (G12)
+    # Shear Modulus (G12) --------------------------------
     st.subheader(f'Shear Modulus `G12`', help="Calculated using the selected theory model for shear modulus.")
     theory = st.radio('Theory model for shear modulus', list(theories.keys()), horizontal=True, help="Select the theory model for shear modulus calculations")
 
@@ -82,7 +85,7 @@ def main():
 
     st.markdown('***')
 
-    # Poisson's Ratio (ν12)
+    # Poisson's Ratio (ν12) --------------------------------
     st.subheader('Poisson’s Ratio `ν12`', help="Calculated using the selected theory model for Poisson's ratio.")
     theory_poisson = st.radio('Theory model for Poisson’s Ratio', list(theories.keys()), horizontal=True, help="Select the theory model for Poisson’s Ratio calculations")
 
@@ -93,7 +96,7 @@ def main():
 
     st.markdown('***')
 
-    # Tensile Strength (F1T)
+    # Tensile Strength (F1T) --------------------------------
     st.subheader('Tensile Strength `F1T`', help="Calculated using the selected theory model for tensile strength.")
     theory_tensile = st.radio('Theory model for Tensile Strength', list(theories.keys()), horizontal=True, help="Select the theory model for tensile strength calculations")
 
@@ -104,7 +107,7 @@ def main():
 
     st.markdown('***')
 
-    # Compressive Strength (F1C)
+    # Compressive Strength (F1C) --------------------------------
     st.subheader('Compressive Strength `F1C`', help="Calculated using empirical formula for compressive strength.")
     F1C = (f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm)
     st.latex(r"F_{1C} = \frac{(E_{f}V_{f} + E_{m}V_{m})(1 - V_{f}^{1/3})\varepsilon_{m}}{\nu_{f}V_{f} + \nu_{m}V_{m}}")
@@ -113,7 +116,7 @@ def main():
 
     st.markdown('***')
 
-    # Transverse Tensile Strength (F2T)
+    # Transverse Tensile Strength (F2T) --------------------------------
     st.subheader('Transverse Tensile Strength `F2T`', help="Calculated using Nielsen empirical formula for transverse tensile strength.")
     F2T = (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3)))
     st.latex(r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_{m} \cdot (1 - V_{f}^{1/3})}")
@@ -122,7 +125,7 @@ def main():
 
     st.markdown('***')
 
-    # Transverse Compressive Strength (F2C)
+    # Transverse Compressive Strength (F2C) --------------------------------
     st.subheader('Transverse Compressive Strength `F2C`', help="Calculated using empirical formula for transverse compressive strength.")
     F2C = m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f']))
     st.latex(r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_{f} - V_{f}^{1/2}\right) \cdot \left(1 - \frac{E_{m}}{E_{2f}}\right)\right]")
@@ -131,7 +134,7 @@ def main():
 
     st.markdown('***')
 
-    # Transverse Tensile Strength (F2T)
+    # Transverse Tensile Strength (F2T) --------------------------------
     st.subheader('Transverse Tensile Strength `F2T`', help="Calculated using Nielsen empirical formula for transverse tensile strength.")
     F2T = (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3)))
     st.latex(r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_{m} \cdot (1 - V_{f}^{1/3})}")
@@ -140,7 +143,7 @@ def main():
 
     st.markdown('***')
 
-    # Transverse Compressive Strength (F2C)
+    # Transverse Compressive Strength (F2C) --------------------------------
     st.subheader('Transverse Compressive Strength `F2C`', help="Calculated using empirical formula for transverse compressive strength.")
     F2C = m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f']))
     st.latex(r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_{f} - V_{f}^{1/2}\right) \cdot \left(1 - \frac{E_{m}}{E_{2f}}\right)\right]")
@@ -149,7 +152,7 @@ def main():
 
     st.markdown('***')
 
-    # In-plane Shear Strength (F6)
+    # In-plane Shear Strength (F6) --------------------------------
     st.subheader('In-plane Shear Strength `F6`', help="Calculated using empirical formula for in-plane shear strength.")
     
     # Ensure that 'Fms' key exists in the matrix properties

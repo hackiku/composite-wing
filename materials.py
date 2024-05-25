@@ -71,5 +71,11 @@ matrices = {
         "density": 1.32, "Em": 3.7, "Gm": 4.65, "vm": 0.35,
         "FmT": 108, "FmC": 143, "FmS": 58, "alpha_m": 90,
         "Tg": 143, "Tmax": 250, "epsilon_mT": 2.5
-    }
+    },
+    "BSL914C": {
+        "density": 0.00, "Em": 4.0, "Gm": 1.481, "vm": 0.35,
+        "FmT": 75, "FmC": 150, "FmS": 70, "alpha_m": None,
+        "Tg": None, "Tmax": None, "epsilon_mT": None
+    },
+    
 }
