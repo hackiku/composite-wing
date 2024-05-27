@@ -1,3 +1,8 @@
+# document_id = st.text_input('Document ID', '308d36ae2431fbf4b9b96a48')
+# workspace_id = st.text_input('Workspace ID', '4dfbfac17da94e7168ec10cd')
+# element_id = st.text_input('Element ID', '1c23a328748cc03fde2f37f5')
+
+
 # onshape_model.py
 
 import os
@@ -48,3 +53,4 @@ def get_document(document_id):
         return response.json()
     else:
         response.raise_for_status()
+

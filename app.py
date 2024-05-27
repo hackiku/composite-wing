@@ -6,12 +6,8 @@ import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from calculations import calculate_properties, theories
 import model_playground 
-
-# from model_playground import get_document, display_document_info
-
-
 import inspect
-# from onshape_model import get_document
+
 
 mplstyle.use('dark_background')
 
@@ -77,16 +73,9 @@ def main():
     
     model_playground.main()
 
-
-    if st.button('Load Document'):
-        try:
-            document = get_document(document_id)
-            st.write('Document Loaded Successfully')
-            st.json(document)
-        except Exception as e:
-            st.error(f"Error loading document: {e}")
-
-
+    st.markdown('***')
+    st.markdown('***')
+    
     st.title('Composite Materials Calculator')
 
     if st.button('Show All Material Data'):
