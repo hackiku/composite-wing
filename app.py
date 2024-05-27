@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,7 +6,7 @@ import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from calculations import calculate_properties, theories
 import inspect
-from onshape_model import load_step_model, change_parameter
+from onshape_model import get_document
 
 mplstyle.use('dark_background')
 
@@ -36,18 +37,18 @@ def plot_properties(results_df):
 def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm):
     theory_names = list(theories[property_name].keys())
 
-    col1, col2, col3 = st.columns([3,1,1])
+    col1, col2, col3 = st.columns([4,1,1])
     with col1:
-        st.subheader(property_name.replace('_', ' ').title())
+        st.header(property_name.replace('_', ' ').title())
     with col2:
-        # st.write(f'{fiber_key}')
+        st.write(f'{fiber_key}')
         st.json(fiber_material, expanded=False)
     with col3:
-        # st.write(f'{matrix_key}')
+        st.write(f'{matrix_key}')
         st.json(matrix_material, expanded=False)
 
     if len(theory_names) > 1:
-        selected_theory = st.radio(f'', theory_names, horizontal=True, key=f"{property_name}_theory_selector", label_visibility='collapsed')
+        selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
     else:
         selected_theory = theory_names[0]
 
@@ -55,43 +56,41 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
     formula = theory_details['formula']
     latex = theory_details['latex']
 
+    # st.subheader(f"{property_name.replace('_', ' ').title()} using {selected_theory}")
     result = formula(fiber_material, matrix_material, Vf, Vm)
-    
-    st.latex(latex + f" = {result:.3f}")
 
-    st.write(f"Result: {result:.2f}")
+    st.latex(latex + f" = {result:.3f}")
     
     # Display the raw code of the formula
     formula_code = inspect.getsource(formula)
     st.code(formula_code, language='python')
 
+
+# ===========================================================================
+
 def main():
     
     # Onshape Integration
     st.header('Onshape Model Integration')
-    document_id = st.text_input('Document ID', '')
-    workspace_id = st.text_input('Workspace ID', '')
-    element_id = st.text_input('Element ID', '')
-    parameter_id = st.text_input('Parameter ID', '')
-    new_value = st.text_input('New Value', '')
+    col1, col2 = st.columns(2)
+    with col1:
+        document_id = st.text_input('Document ID', '308d36ae2431fbf4b9b96a48')
+        workspace_id = st.text_input('Workspace ID', '4dfbfac17da94e7168ec10cd')
+        element_id = st.text_input('Element ID', '1c23a328748cc03fde2f37f5')
+    with col2:
+        parameter_id = st.text_input('Parameter ID', '')
+        new_value = st.text_input('New Value', '')
 
-    if st.button('Load Model'):
+
+    if st.button('Load Document'):
         try:
-            model = load_step_model(document_id, workspace_id, element_id)
-            st.write('Model Loaded Successfully')
-            # Display or handle the model content as needed
+            document = get_document(document_id)
+            st.write('Document Loaded Successfully')
+            st.json(document)
         except Exception as e:
-            st.error(f"Error loading model: {e}")
+            st.error(f"Error loading document: {e}")
 
-    if st.button('Change Parameter'):
-        try:
-            response = change_parameter(document_id, workspace_id, element_id, parameter_id, new_value)
-            st.write('Parameter Changed Successfully')
-            st.json(response)
-        except Exception as e:
-            st.error(f"Error changing parameter: {e}")
 
-    
     st.title('Composite Materials Calculator')
 
     if st.button('Show All Material Data'):
@@ -127,9 +126,9 @@ def main():
     st.dataframe(results_df)
 
     plot_properties(results_df)
-
-    st.header('📐 Math')
     st.markdown('***')
+
+    st.header('Math')
 
     properties = ["youngs_modulus", "shear_modulus", "poisson_ratio", 
                   "tensile_strength", "compressive_strength", 
@@ -139,6 +138,9 @@ def main():
     for property_name in properties:
         display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm)
         st.markdown('***')
+
+
+
 
 if __name__ == "__main__":
     main()
