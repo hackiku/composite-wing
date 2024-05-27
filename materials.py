@@ -1,6 +1,4 @@
-
-
-
+# materials.py
 fibers = {
     "E-Glass": {
         "E1f": 73, "E2f": 73, "G12f": 30, "G23f": 30, "v12f": 0.23, "F1ft": 3450,
@@ -39,7 +37,7 @@ fibers = {
 matrices = {
     "Epoxy_3501_6": {
         "density": 1.27, "Em": 4.3, "Gm": 1.60, "vm": 0.35,
-        "FmT": 69, "FmC": 200, "Fms": 100, "alpha_m": 45,
+        "FmT": 69, "FmC": 200, "FmS": 100, "alpha_m": 45,
         "Tg": 200, "Tmax": 150, "epsilon_mT": 2.5
     },
     "Epoxy_977_3": {
@@ -76,6 +74,5 @@ matrices = {
         "density": 0.00, "Em": 4.0, "Gm": 1.481, "vm": 0.35,
         "FmT": 75, "FmC": 150, "FmS": 70, "alpha_m": None,
         "Tg": None, "Tmax": None, "epsilon_mT": None
-    },
-    
+    },   
 }
