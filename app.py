@@ -5,6 +5,7 @@ import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from calculations import calculate_properties, theories
 import inspect
+from onshape_model import load_step_model, change_parameter
 
 mplstyle.use('dark_background')
 
@@ -65,6 +66,32 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
     st.code(formula_code, language='python')
 
 def main():
+    
+    # Onshape Integration
+    st.header('Onshape Model Integration')
+    document_id = st.text_input('Document ID', '')
+    workspace_id = st.text_input('Workspace ID', '')
+    element_id = st.text_input('Element ID', '')
+    parameter_id = st.text_input('Parameter ID', '')
+    new_value = st.text_input('New Value', '')
+
+    if st.button('Load Model'):
+        try:
+            model = load_step_model(document_id, workspace_id, element_id)
+            st.write('Model Loaded Successfully')
+            # Display or handle the model content as needed
+        except Exception as e:
+            st.error(f"Error loading model: {e}")
+
+    if st.button('Change Parameter'):
+        try:
+            response = change_parameter(document_id, workspace_id, element_id, parameter_id, new_value)
+            st.write('Parameter Changed Successfully')
+            st.json(response)
+        except Exception as e:
+            st.error(f"Error changing parameter: {e}")
+
+    
     st.title('Composite Materials Calculator')
 
     if st.button('Show All Material Data'):
@@ -107,7 +134,7 @@ def main():
     properties = ["youngs_modulus", "shear_modulus", "poisson_ratio", 
                   "tensile_strength", "compressive_strength", 
                   "transverse_tensile_strength", "transverse_compressive_strength",
-                  "in_plane_shear_strength", "failure_criterion"]
+                  "in_plane_shear_strength"]
 
     for property_name in properties:
         display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm)
