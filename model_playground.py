@@ -6,6 +6,7 @@ import base64
 from dotenv import load_dotenv
 from PIL import Image
 from io import BytesIO
+from utils import spacer
 
 # Load environment variables
 load_dotenv()
@@ -61,13 +62,15 @@ def main():
             "did": "308d36ae2431fbf4b9b96a48",
             "wv": "w",
             "wvid": "4dfbfac17da94e7168ec10cd",
-            "eid": "1c23a328748cc03fde2f37f5"
+            "eid": "1c23a328748cc03fde2f37f5",
+            "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244"
         },
         "Parametric Wing": {
             "did": "308d36ae2431fbf4b9b96a48",
             "wv": "w",
             "wvid": "4dfbfac17da94e7168ec10cd",
-            "eid": "1c23a328748cc03fde2f37f5"
+            "eid": "1c23a328748cc03fde2f37f5",
+            "url": "https://cad.onshape.com/documents/308d36ae2431fbf4b9b96a48/w/4dfbfac17da94e7168ec10cd/e/1c23a328748cc03fde2f37f5"
         }
     }
 
@@ -78,7 +81,12 @@ def main():
     col1, col2 = st.columns(2)
     with col1:
         did = st.text_input('Document ID', presets[preset]['did'])
-        wv = st.selectbox('WVM', ['w', 'v', 'm'], index=0)
+        col3, col4 = st.columns([2,1])
+        with col3:
+            wv = st.selectbox('WVM', ['w', 'v', 'm'], index=0)
+        with col4:
+            spacer()
+            st.write("[onshape](%s)" % presets[preset]['url'])
     with col2:
         wvid = st.text_input('WVMID', presets[preset]['wvid'])
         eid = st.text_input('Element ID', presets[preset]['eid'])
