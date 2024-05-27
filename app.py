@@ -5,8 +5,13 @@ import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from calculations import calculate_properties, theories
+import model_playground 
+
+# from model_playground import get_document, display_document_info
+
+
 import inspect
-from onshape_model import get_document
+# from onshape_model import get_document
 
 mplstyle.use('dark_background')
 
@@ -70,16 +75,7 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
 
 def main():
     
-    # Onshape Integration
-    st.header('Onshape Model Integration')
-    col1, col2 = st.columns(2)
-    with col1:
-        document_id = st.text_input('Document ID', '308d36ae2431fbf4b9b96a48')
-        workspace_id = st.text_input('Workspace ID', '4dfbfac17da94e7168ec10cd')
-        element_id = st.text_input('Element ID', '1c23a328748cc03fde2f37f5')
-    with col2:
-        parameter_id = st.text_input('Parameter ID', '')
-        new_value = st.text_input('New Value', '')
+    model_playground.main()
 
 
     if st.button('Load Document'):
@@ -138,8 +134,6 @@ def main():
     for property_name in properties:
         display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm)
         st.markdown('***')
-
-
 
 
 if __name__ == "__main__":
