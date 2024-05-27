@@ -32,13 +32,21 @@ def plot_properties(results_df):
     ax.tick_params(colors='white')
     st.pyplot(fig)
 
-def display_theories(property_name, fiber_material, matrix_material, Vf, Vm):
-    st.header(property_name.replace('_', ' ').title())
+def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm):
     theory_names = list(theories[property_name].keys())
-    
+
+    col1, col2, col3 = st.columns([3,1,1])
+    with col1:
+        st.subheader(property_name.replace('_', ' ').title())
+    with col2:
+        # st.write(f'{fiber_key}')
+        st.json(fiber_material, expanded=False)
+    with col3:
+        # st.write(f'{matrix_key}')
+        st.json(matrix_material, expanded=False)
+
     if len(theory_names) > 1:
-        # selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True)
-        selected_theory = st.radio('', theory_names, horizontal=True, key=f"{property_name}_theory_selector", label_visibility="collapsed")
+        selected_theory = st.radio(f'', theory_names, horizontal=True, key=f"{property_name}_theory_selector", label_visibility='collapsed')
     else:
         selected_theory = theory_names[0]
 
@@ -46,11 +54,11 @@ def display_theories(property_name, fiber_material, matrix_material, Vf, Vm):
     formula = theory_details['formula']
     latex = theory_details['latex']
 
-    # st.subheader(f"{property_name.replace('_', ' ').title()} using {selected_theory}")
-
     result = formula(fiber_material, matrix_material, Vf, Vm)
     
     st.latex(latex + f" = {result:.3f}")
+
+    st.write(f"Result: {result:.2f}")
     
     # Display the raw code of the formula
     formula_code = inspect.getsource(formula)
@@ -92,20 +100,18 @@ def main():
     st.dataframe(results_df)
 
     plot_properties(results_df)
-    st.markdown('***')
 
-    st.header('Math')
+    st.header('📐 Math')
+    st.markdown('***')
 
     properties = ["youngs_modulus", "shear_modulus", "poisson_ratio", 
                   "tensile_strength", "compressive_strength", 
                   "transverse_tensile_strength", "transverse_compressive_strength",
                   "in_plane_shear_strength", "failure_criterion"]
 
-    
-    with st.expander("Full math", expanded=True):
-        for property_name in properties:
-            display_theories(property_name, fiber_material, matrix_material, Vf, Vm)
-            st.markdown('***')
+    for property_name in properties:
+        display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm)
+        st.markdown('***')
 
 if __name__ == "__main__":
     main()
