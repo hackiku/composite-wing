@@ -37,7 +37,8 @@ def display_theories(property_name, fiber_material, matrix_material, Vf, Vm):
     theory_names = list(theories[property_name].keys())
     
     if len(theory_names) > 1:
-        selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True)
+        # selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True)
+        selected_theory = st.radio('', theory_names, horizontal=True, key=f"{property_name}_theory_selector", label_visibility="collapsed")
     else:
         selected_theory = theory_names[0]
 
@@ -45,15 +46,11 @@ def display_theories(property_name, fiber_material, matrix_material, Vf, Vm):
     formula = theory_details['formula']
     latex = theory_details['latex']
 
-    st.subheader(f"{property_name.replace('_', ' ').title()} using {selected_theory}")
-    st.latex(latex)
+    # st.subheader(f"{property_name.replace('_', ' ').title()} using {selected_theory}")
 
-    if property_name == "failure_criterion":
-        result = formula(sigma, F)  # Assuming sigma and F are defined elsewhere in the scope
-    else:
-        result = formula(fiber_material, matrix_material, Vf, Vm)
-
-    st.write(f"Result: {result:.2f}")
+    result = formula(fiber_material, matrix_material, Vf, Vm)
+    
+    st.latex(latex + f" = {result:.3f}")
     
     # Display the raw code of the formula
     formula_code = inspect.getsource(formula)
@@ -104,9 +101,11 @@ def main():
                   "transverse_tensile_strength", "transverse_compressive_strength",
                   "in_plane_shear_strength", "failure_criterion"]
 
-    for property_name in properties:
-        display_theories(property_name, fiber_material, matrix_material, Vf, Vm)
-        st.markdown('***')
+    
+    with st.expander("Full math", expanded=True):
+        for property_name in properties:
+            display_theories(property_name, fiber_material, matrix_material, Vf, Vm)
+            st.markdown('***')
 
 if __name__ == "__main__":
     main()
