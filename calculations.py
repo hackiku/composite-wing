@@ -5,9 +5,9 @@ theories = {
     "E1_modulus": {
         "unit": "GPa",
         "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E1f'] * 4 * Vf + m['Em'] * Vm,
+            "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
             "latex": r"E_1 = E_{1f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
+            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
         "Voigt Model": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
