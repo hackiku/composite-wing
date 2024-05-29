@@ -11,26 +11,43 @@ theories = {
         },
         "Voigt Model": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m"
+            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
         },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
+            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}",
+            "math": lambda f, m, Vf, Vm: f"\frac{1}{f['E1f']} = \frac{{Vf}}{{{f['E1f']}}} + \frac{{Vm}}{{{m['Em']}}}"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}"
+            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
+            "math": lambda f, m, Vf, Vm: f"E_1 = \frac{{{f['E1f']} \cdot {m['Em']}}}{{{Vf} \cdot {m['Em']} + {Vm} \cdot {f['E1f']}}}"
         },
     },
     "E2_modulus": {
         "unit": "GPa",
         "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E1f'] * 4 * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
+            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_2 = {f['E2f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
+        },
+        "Voigt Model": {
+            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_2 = {f['E2f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
+        },
+        "Inverse Rule of Mixtures": {
+            "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E2f'] + Vm / m['Em']),
+            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}",
+            "math": lambda f, m, Vf, Vm: f"\frac{1}{f['E1f']} = \frac{{Vf}}{{{f['E2f']}}} + \frac{{Vm}}{{{m['Em']}}}"
+        },
+        "Halpin-Tsai": {
+            "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E2f']),
+            "latex": r"E_2 = \frac{E_{2f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{2f}}",
+            "math": lambda f, m, Vf, Vm: f"E_2 = \frac{{{f['E2f']} \cdot {m['Em']}}}{{{Vf} \cdot {m['Em']} + {Vm} \cdot {f['E2f']}}}"
         },
     },
-
     "shear_modulus": {
         "unit": "GPa",
         "Rule of Mixtures": {
@@ -68,7 +85,7 @@ theories = {
         }
     },
     "poisson_ratio": {
-        "unit": "dimensionless",
+        "unit": "-",
         "Chamis": {
             "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
             "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
@@ -142,7 +159,7 @@ theories = {
         }
     },
     "failure_criterion": {
-        "unit": "dimensionless",
+        "unit": "-",
         "Tsai-Wu": {
             "formula": lambda sigma, F: (F['F1'] * sigma['sigma1'] + F['F2'] * sigma['sigma2'] + F['F11'] * sigma['sigma1']**2 + F['F22'] * sigma['sigma2']**2 + 2 * F['F12'] * sigma['sigma1'] * sigma['sigma2'] + F['F66'] * sigma['tau12']**2),
             "latex": r"F_1 \sigma_1 + F_2 \sigma_2 + F_{11} \sigma_1^2 + F_{22} \sigma_2^2 + 2 F_{12} \sigma_1 \sigma_2 + F_{66} \tau_{12}^2 = 1"

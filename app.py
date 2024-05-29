@@ -82,9 +82,9 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
     if show_math:
         st.latex(f"{latex}")
         math = math_results[property_name][selected_theory]
-        st.latex(f"{math} = {result:.3f} \\ {unit}")
+        st.latex(f"{math} = {result:.3f} \\ [{unit}]")
     else:
-        st.latex(f"{latex} = {result:.3f} \\ {unit}")
+        st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
     
     formula_code = inspect.getsource(formula)
     st.code(formula_code, language='python')
