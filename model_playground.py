@@ -59,10 +59,10 @@ def main():
     # Presets
     presets = {
         "COMPOSITE": {
-            "did": "308d36ae2431fbf4b9b96a48",
+            "did": "cae4cba9e2f625664baf1122",
             "wv": "w",
-            "wvid": "4dfbfac17da94e7168ec10cd",
-            "eid": "1c23a328748cc03fde2f37f5",
+            "wvid": "ba81e6382142c773cd7b78ba",
+            "eid": "640a7618098c9be6fe97b244",
             "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244"
         },
         "Parametric Wing": {
@@ -70,7 +70,7 @@ def main():
             "wv": "w",
             "wvid": "4dfbfac17da94e7168ec10cd",
             "eid": "1c23a328748cc03fde2f37f5",
-            "url": "https://cad.onshape.com/documents/308d36ae2431fbf4b9b96a48/w/4dfbfac17da94e7168ec10cd/e/1c23a328748cc03fde2f37f5"
+            "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
         }
     }
 
