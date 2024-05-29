@@ -8,7 +8,11 @@ import model_playground
 import inspect
 import numpy as np
 
-mplstyle.use('dark_background')
+def set_mpl_style(theme_mode):
+    if theme_mode == "dark":
+        mplstyle.use('dark_background')
+    else:
+        mplstyle.use('default')
 
 def spacer(height='2em'):
     st.markdown(f'<div style="margin: {height};"></div>', unsafe_allow_html=True)
@@ -22,6 +26,7 @@ def materials_dataframe(fiber, matrix):
     st.dataframe(matrix_properties)
 
 def plot_properties(results_df, theme_mode):
+    set_mpl_style(theme_mode)
     results_df = results_df.set_index("Property").transpose()
     fig, ax = plt.subplots(figsize=(12, 8))
     for property_name in results_df.columns:
@@ -35,6 +40,7 @@ def plot_properties(results_df, theme_mode):
     st.pyplot(fig)
 
 def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode):
+    set_mpl_style(theme_mode)
     theory_names = [name for name in theories[property_name].keys() if name != "unit"]
 
     coefficients = {}
@@ -113,21 +119,25 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
 def main():
     model_playground.main()
 
-    st.sidebar.title('Composite Materials Calculator')
+    st.sidebar.title('Composite Wing')
 
-    st.sidebar.markdown('### Settings')
-    theme_mode = st.sidebar.selectbox("Select Theme", options=["System", "Light", "Dark"], index=0)
-    theme_mode = theme_mode.lower()
 
-    show_individual_graphs = st.sidebar.checkbox("Show Individual Graphs", value=True)
-
-    st.sidebar.markdown('### Material Selection')
+    # st.sidebar.markdown('***')
+    st.sidebar.markdown('### Choose Material')
     
     fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
     matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
     
-    Vf = st.sidebar.slider('Fiber Volume Fraction (Vf)', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
+    Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
     Vm = 1 - Vf
+
+    st.sidebar.markdown('')
+
+    theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
+    show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=True)
+
+
+    # =========================
 
     materials_dataframe(fiber_material_key, matrix_material_key)
     st.markdown('***')
