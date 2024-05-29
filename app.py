@@ -6,6 +6,7 @@ from materials import fibers, matrices
 from calculations import calculate_properties, theories
 import model_playground
 import inspect
+import numpy as np
 
 mplstyle.use('dark_background')
 
@@ -20,24 +21,22 @@ def materials_dataframe(fiber, matrix):
     st.write("Selected Matrix Material Properties:")
     st.dataframe(matrix_properties)
 
-def plot_properties(results_df):
+def plot_properties(results_df, theme_mode):
     results_df = results_df.set_index("Property").transpose()
     fig, ax = plt.subplots(figsize=(12, 8))
     for property_name in results_df.columns:
-        ax.plot(results_df.index, results_df[property_name], marker='o', label=property_name)
-    ax.set_title('Comparison of Composite Properties by Theory', color='white')
-    ax.set_xlabel('Theory', color='white')
-    ax.set_ylabel('Value', color='white')
+        ax.scatter(results_df.index, results_df[property_name], label=property_name)
+    ax.set_title('Comparison of Composite Properties by Theory', color='white' if theme_mode == 'dark' else 'black')
+    ax.set_xlabel('Theory', color='white' if theme_mode == 'dark' else 'black')
+    ax.set_ylabel('Value', color='white' if theme_mode == 'dark' else 'black')
     ax.legend()
     ax.grid(True, color='gray')
-    ax.tick_params(colors='white')
+    ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
     st.pyplot(fig)
 
-
-def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm):
+def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode):
     theory_names = [name for name in theories[property_name].keys() if name != "unit"]
 
-    # Dictionary to hold specific coefficients
     coefficients = {}
 
     col1, col2, col3 = st.columns([4, 1, 1])
@@ -58,9 +57,8 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
     theory_details = theories[property_name][selected_theory]
     formula = theory_details['formula']
     latex = theory_details['latex']
-    unit = theories[property_name]['unit']  # Get unit from global object
+    unit = theories[property_name]['unit']
 
-    # Add logic to add specific coefficients procedurally
     if 'coefficients' in theory_details:
         for coeff_name, coeff_details in theory_details['coefficients'].items():
             if 'formula' in coeff_details:
@@ -77,38 +75,58 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
 
     st.latex(latex + f" = {result:.3f} \\ {unit}")
     
-    # Display the raw code of the formula
     formula_code = inspect.getsource(formula)
     st.code(formula_code, language='python')
 
+    if show_individual_graphs:
+        vfs = np.linspace(0, 1, 100)
+        all_values = {theory: [] for theory in theory_names}
+        
+        for vf in vfs:
+            vm = 1 - vf
+            for theory in theory_names:
+                coeffs = {}
+                if 'coefficients' in theories[property_name][theory]:
+                    for coeff_name, coeff_details in theories[property_name][theory]['coefficients'].items():
+                        if 'formula' in coeff_details:
+                            coeffs[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
+                        else:
+                            coeffs[coeff_name] = coeff_details['default']
+                if theory in ["Halpin-Tsai", "Modified Rule of Mixtures (MROM)"]:
+                    value = theories[property_name][theory]['formula'](fiber_material, matrix_material, vf, vm, **coeffs)
+                else:
+                    value = theories[property_name][theory]['formula'](fiber_material, matrix_material, vf, vm)
+                all_values[theory].append(value)
 
+        fig, ax = plt.subplots(figsize=(12, 6))
+        for theory, values in all_values.items():
+            ax.plot(vfs, values, label=theory)
+        ax.axvline(Vf, color='red', linestyle='--', alpha=0.5, label=f'Current Vf = {Vf}')
+        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction', color='white' if theme_mode == 'dark' else 'black')
+        ax.set_xlabel('Fiber Volume Fraction (Vf)', color='white' if theme_mode == 'dark' else 'black')
+        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})', color='white' if theme_mode == 'dark' else 'black')
+        ax.legend()
+        ax.grid(True, color='gray')
+        ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
+        st.pyplot(fig)
 
 def main():
     model_playground.main()
 
-    st.markdown('***')
-    st.markdown('***')
+    st.sidebar.title('Composite Materials Calculator')
+
+    st.sidebar.markdown('### Settings')
+    theme_mode = st.sidebar.selectbox("Select Theme", options=["System", "Light", "Dark"], index=0)
+    theme_mode = theme_mode.lower()
+
+    show_individual_graphs = st.sidebar.checkbox("Show Individual Graphs", value=True)
+
+    st.sidebar.markdown('### Material Selection')
     
-    st.title('Composite Materials Calculator')
-
-    if st.button('Show All Material Data'):
-        fiber_df = pd.DataFrame(fibers).transpose()
-        matrix_df = pd.DataFrame(matrices).transpose()
-        st.write("Fiber Materials Data")
-        st.dataframe(fiber_df)
-        st.write("Matrix Materials Data")
-        st.dataframe(matrix_df)
-
-    col1, col2 = st.columns(2)
-    default_fiber_index = 3  
-    default_matrix_index = 7 
-
-    with col1:
-        fiber_material_key = st.selectbox('Fiber Material', list(fibers.keys()), index=default_fiber_index, help="Choose the type of fiber material")
-    with col2:
-        matrix_material_key = st.selectbox('Matrix Material', list(matrices.keys()), index=default_matrix_index, help="Choose the type of matrix material")
-
-    Vf = st.slider('Fiber Volume Fraction (Vf)', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
+    fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
+    matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
+    
+    Vf = st.sidebar.slider('Fiber Volume Fraction (Vf)', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
     Vm = 1 - Vf
 
     materials_dataframe(fiber_material_key, matrix_material_key)
@@ -119,7 +137,6 @@ def main():
 
     results = calculate_properties(fiber_material, matrix_material, Vf, Vm)
 
-    # Convert the results to a DataFrame, ensuring all theory columns are the same length
     max_len = max(len(results[theory]) for theory in results if theory != "Property")
     for theory in results:
         if theory != "Property" and len(results[theory]) < max_len:
@@ -129,7 +146,7 @@ def main():
     st.subheader("Calculated Properties by Theory")
     st.dataframe(results_df)
 
-    plot_properties(results_df)
+    plot_properties(results_df, theme_mode)
     st.markdown('***')
 
     st.header('Math')
@@ -140,7 +157,7 @@ def main():
                   "in_plane_shear_strength"]
 
     for property_name in properties:
-        display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm)
+        display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode)
         st.markdown('***')
 
 if __name__ == "__main__":
