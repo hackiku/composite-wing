@@ -39,7 +39,7 @@ def plot_properties(results_df, theme_mode):
     ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
     st.pyplot(fig)
 
-def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode):
+def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode, latex_results, math_results, show_math):
     set_mpl_style(theme_mode)
     theory_names = [name for name in theories[property_name].keys() if name != "unit"]
 
@@ -62,7 +62,7 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
 
     theory_details = theories[property_name][selected_theory]
     formula = theory_details['formula']
-    latex = theory_details['latex']
+    latex = latex_results[property_name][selected_theory]
     unit = theories[property_name]['unit']
 
     if 'coefficients' in theory_details:
@@ -72,14 +72,19 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
             else:
                 coeff_value = coeff_details['default']
             coefficients[coeff_name] = st.number_input(f'{coeff_name} for {selected_theory}', value=coeff_value)
-            st.latex(coeff_details['latex'] + f" = {coeff_value}")
+            st.latex(f"{coeff_details['latex']} = {coeff_value}")
 
     if selected_theory in ["Halpin-Tsai", "Modified Rule of Mixtures (MROM)"]:
         result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
     else:
         result = formula(fiber_material, matrix_material, Vf, Vm)
 
-    st.latex(latex + f" = {result:.3f} \\ {unit}")
+    st.latex(f"{latex} = {result:.3f} \\ {unit}")
+
+    if show_math:
+        math = math_results[property_name][selected_theory]
+        st.latex(math)
+        st.latex(f"{math} = {result:.3f} \\ {unit}")
     
     formula_code = inspect.getsource(formula)
     st.code(formula_code, language='python')
@@ -116,13 +121,12 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
         ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
         st.pyplot(fig)
 
+
 def main():
     model_playground.main()
 
     st.sidebar.title('Composite Wing')
 
-
-    # st.sidebar.markdown('***')
     st.sidebar.markdown('### Choose Material')
     
     fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
@@ -131,13 +135,9 @@ def main():
     Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
     Vm = 1 - Vf
 
-    st.sidebar.markdown('')
-
     theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
     show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=True)
-
-
-    # =========================
+    show_math = st.sidebar.checkbox("Show Math", value=True)
 
     materials_dataframe(fiber_material_key, matrix_material_key)
     st.markdown('***')
@@ -145,7 +145,7 @@ def main():
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
 
-    results = calculate_properties(fiber_material, matrix_material, Vf, Vm)
+    results, latex_results, math_results = calculate_properties(fiber_material, matrix_material, Vf, Vm, show_math)
 
     max_len = max(len(results[theory]) for theory in results if theory != "Property")
     for theory in results:
@@ -161,13 +161,13 @@ def main():
 
     st.header('Math')
 
-    properties = ["youngs_modulus", "shear_modulus", "poisson_ratio", 
+    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", 
                   "tensile_strength", "compressive_strength", 
                   "transverse_tensile_strength", "transverse_compressive_strength",
                   "in_plane_shear_strength"]
 
     for property_name in properties:
-        display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode)
+        display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode, latex_results, math_results, show_math)
         st.markdown('***')
 
 if __name__ == "__main__":

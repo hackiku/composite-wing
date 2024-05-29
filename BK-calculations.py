@@ -1,36 +1,25 @@
 # calculations.py
 import numpy as np
 
+def calculate_xi(G12f, Gm):
+    return (G12f / Gm - 1) / (G12f / Gm + 2)
+
 theories = {
-    "E1_modulus": {
+    "youngs_modulus": {
         "unit": "GPa",
-        "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E1f'] * 4 * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
+        "Chamis": {
+            "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (f['E1f'] - np.sqrt(Vf) * (f['E1f'] - m['Em'])),
+            "latex": r"E_1 = \frac{{E_{1f} \cdot E_m}}{{E_{1f} - \sqrt{V_f} \cdot (E_{1f} - E_m)}}"
         },
-        "Voigt Model": {
+        "Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
             "latex": r"E_1 = E_{1f}V_f + E_mV_m"
         },
-        "Inverse Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
-        },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}"
-        },
+            "latex": r"E_1 = \frac{{E_{1f} \cdot E_m}}{{V_f \cdot E_m + V_m \cdot E_{1f}}}"
+        }
     },
-    "E2_modulus": {
-        "unit": "GPa",
-        "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E1f'] * 4 * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf} + {m['Em']} \cdot {Vm}"
-        },
-    },
-
     "shear_modulus": {
         "unit": "GPa",
         "Rule of Mixtures": {
@@ -99,13 +88,17 @@ theories = {
     },
     "compressive_strength": {
         "unit": "MPa",
-        "Timoshenko-Gere": {
-            "formula": lambda f, m, Vf, Vm: ((1 - Vf**0.5) * f['F1ft'] + Vf**0.5 * m['FmC']),
-            "latex": r"F_{1C} = (1 - V_f^{1/2}) F_{1ft} + V_f^{1/2} F_{mC}"
+        "Chamis": {
+            "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm),
+            "latex": r"F_{1C} = \frac{(E_fV_f + E_mV_m)(1 - V_f^{1/3}) \epsilon_m}{\nu_fV_f + \nu_mV_m}"
         },
         "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: f['F1ft'] * Vf + m['FmC'] * Vm,
-            "latex": r"F_{1C} = F_{1ft}V_f + F_mCV_m"
+            "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm),
+            "latex": r"F_{1C} = \frac{(E_fV_f + E_mV_m)(1 - V_f^{1/3}) \epsilon_m}{\nu_fV_f + \nu_mV_m}"
+        },
+        "Halpin-Tsai": {
+            "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['FmC'] / (f['v12f'] * Vf + m['vm'] * Vm),
+            "latex": r"F_{1C} = \frac{(E_fV_f + E_mV_m)(1 - V_f^{1/3}) \epsilon_m}{\nu_fV_f + \nu_mV_m}"
         }
     },
     "transverse_tensile_strength": {
@@ -115,6 +108,10 @@ theories = {
             "latex": r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_m \cdot (1 - V_f^{1/3})}"
         },
         "Rule of Mixtures": {
+            "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3))),
+            "latex": r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_m \cdot (1 - V_f^{1/3})}"
+        },
+        "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3))),
             "latex": r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_m \cdot (1 - V_f^{1/3})}"
         }
@@ -128,6 +125,10 @@ theories = {
         "Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f'])),
             "latex": r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{E_m}{E_{2f}}\right)\right]"
+        },
+        "Halpin-Tsai": {
+            "formula": lambda f, m, Vf, Vm: m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f'])),
+            "latex": r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{E_m}{E_{2f}}\right)\right]"
         }
     },
     "in_plane_shear_strength": {
@@ -137,6 +138,10 @@ theories = {
             "latex": r"F_{6} = F_{ms} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{G_m}{G_{12f}}\right)\right]"
         },
         "Rule of Mixtures": {
+            "formula": lambda f, m, Vf, Vm: m['FmS'] * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
+            "latex": r"F_{6} = F_{ms} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{G_m}{G_{12f}}\right)\right]"
+        },
+        "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: m['FmS'] * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
             "latex": r"F_{6} = F_{ms} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{G_m}{G_{12f}}\right)\right]"
         }
@@ -154,35 +159,22 @@ theories = {
     }
 }
 
-def calculate_properties(fiber_material, matrix_material, Vf, Vm, show_math=True):
-    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", 
+def calculate_properties(fiber_material, matrix_material, Vf, Vm):
+    properties = ["youngs_modulus", "shear_modulus", "poisson_ratio", 
                   "tensile_strength", "compressive_strength", 
                   "transverse_tensile_strength", "transverse_compressive_strength",
                   "in_plane_shear_strength"]
-
-    # Initialize the results dictionary with the property names
     results = {"Property": properties}
-    latex_results = {property_name: {} for property_name in properties}
-    math_results = {property_name: {} for property_name in properties} if show_math else None
 
-    # Extract all theory names
-    all_theories = set()
     for property_name in properties:
-        all_theories.update(theory_name for theory_name in theories[property_name].keys() if theory_name != "unit")
-    
-    # Initialize lists for each theory to ensure consistent length
-    for theory_name in all_theories:
-        results[theory_name] = [None] * len(properties)
-    
-    # Calculate properties using each theory
-    for i, property_name in enumerate(properties):
+        unit = theories[property_name]["unit"]
         for theory_name, theory_details in theories[property_name].items():
             if theory_name == "unit":
                 continue
+            if theory_name not in results:
+                results[theory_name] = []
             
             formula = theory_details["formula"]
-            latex_formula = theory_details["latex"]
-            math_formula = theory_details.get("math", None)
 
             # Handle coefficients if they exist
             if 'coefficients' in theory_details:
@@ -196,18 +188,6 @@ def calculate_properties(fiber_material, matrix_material, Vf, Vm, show_math=True
             else:
                 result = formula(fiber_material, matrix_material, Vf, Vm)
             
-            results[theory_name][i] = result
-            
-            # Interpolate the LaTeX formula with actual values
-            if callable(latex_formula):
-                latex_results[property_name][theory_name] = latex_formula(fiber_material, matrix_material, Vf, Vm)
-            else:
-                latex_results[property_name][theory_name] = latex_formula
-
-            # Interpolate the math formula with actual values if show_math is True
-            if show_math and math_formula:
-                math_results[property_name][theory_name] = math_formula(fiber_material, matrix_material, Vf, Vm)
-            elif show_math:
-                math_results[property_name][theory_name] = ""
-
-    return results, latex_results, math_results
+            results[theory_name].append(result)
+    
+    return results
