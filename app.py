@@ -4,18 +4,17 @@ import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from calculations import calculate_properties, theories
+from utils import spacer
 import model_playground
 import inspect
 import numpy as np
 
+# graph styling
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
         mplstyle.use('dark_background')
     else:
         mplstyle.use('default')
-
-def spacer(height='2em'):
-    st.markdown(f'<div style="margin: {height};"></div>', unsafe_allow_html=True)
 
 def materials_dataframe(fiber, matrix):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber], orient='index', columns=[fiber]).transpose()
