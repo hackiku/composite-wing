@@ -1,6 +1,7 @@
+
 FeatureScript 2368;
 import(path : "onshape/std/common.fs", version : "2368.0");
-// import(path : "onshape/std/geometry.fs", version : "442.0");
+import(path : "onshape/std/geometry.fs", version : "442.0");
 
 
 annotation { "Feature Type Name" : "Airfoil Smoothie v2" }
@@ -19,7 +20,9 @@ export const multiSpline = defineFeature(function(context is Context, id is Id, 
         
         annotation { "Name" : "Loft Between Aerofoils?" }
         definition.Loft is boolean;
-        
+
+        annotation { "Name" : "Show Lines?" }
+        definition.showLines is boolean;        
     }
     {
         var ElapsedTime = 'Ellapsed Time';
