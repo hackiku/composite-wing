@@ -1,50 +1,53 @@
 import streamlit as st
-from vedo import load, show, Plotter
+from stl import mesh
+import plotly.graph_objects as go
+import numpy as np
 import os
-import uuid
-from pathlib import Path
-from multiprocessing import Process, Queue
-import time
 
-def load_show(stl_path: str, queue: Queue):  # Function to load and show the 3D object
+def load_show(stl_path: str):
     try:
-        mesh = load(stl_path).color('#ffc800')  # Loading the 3D object and setting its color
-        plotter = Plotter(offscreen=True)  # Create an offscreen plotter
-        plotter.show(mesh, bg='black', interactive=False)  # Displaying the 3D object with a black background
-        screenshot_path = f"{stl_path}.png"  # Screenshot path
-        plotter.screenshot(screenshot_path)  # Save a screenshot
-        plotter.close()  # Close the plotter
-        queue.put(screenshot_path)  # Put the screenshot path in the queue
+        your_mesh = mesh.Mesh.from_file(stl_path)
+        
+        # Extract vertices and faces
+        vertices = your_mesh.vectors.reshape(-1, 3)
+        faces = np.arange(len(vertices), dtype=np.int32).reshape(-1, 3)
+
+        # Prepare data for Plotly
+        x, y, z = vertices.T
+        i, j, k = faces.T
+
+        fig = go.Figure(data=[go.Mesh3d(
+            x=x, y=y, z=z,
+            i=i, j=j, k=k,
+            color='orange',
+            opacity=0.50
+        )])
+
+        fig.update_layout(scene=dict(
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            zaxis=dict(visible=False)
+        ))
+
+        st.plotly_chart(fig)
     except Exception as e:
-        queue.put(str(e))  # Put the error message in the queue if an exception occurs
+        st.error(f"Error loading model: {e}")
 
 def main():
-    st.title('Vedo Visualization in Streamlit')  # Setting the title of the page
+    st.title('Interactive 3D Model Viewer in Streamlit')
 
-    uploaded_file = st.file_uploader("Choose an STL file", type="stl")  # Creating a file uploader for STL files
-    if uploaded_file is not None:  # Checking if a file has been uploaded
-        unique_id = str(uuid.uuid4())  # Generating a unique identifier
-        file_path = f'./data/{unique_id}/file.stl'  # Setting the path for the uploaded file
-        os.makedirs(f'./data/{unique_id}', exist_ok=True)  # Creating a new directory for the uploaded file
+    models_path = './models/'
+    model_files = [f for f in os.listdir(models_path) if f.endswith('.stl')]
 
-        with open(file_path, 'wb') as f:  # Opening the file in write mode
-            f.write(uploaded_file.getbuffer())  # Writing the uploaded file to the new path
+    selected_model = st.selectbox("Select an STL file", model_files)
+    model_path = os.path.join(models_path, selected_model)
 
-        st.success("File uploaded and saved in directory: " + str(file_path))  # Displaying a success message with the file path
-
-        if st.button('Show Mesh'):  # Creating a button for displaying the 3D object
-            queue = Queue()  # Creating a queue for parallel processing
-            p = Process(target=load_show, args=(file_path, queue))  # Creating a process for loading and showing the 3D object
-            p.start()  # Starting the process
-            while True:  # Creating an infinite loop
-                if not queue.empty():  # Checking if the queue is not empty
-                    result = queue.get()  # Get the result from the queue
-                    if os.path.exists(result):  # Check if the result is a valid path
-                        st.image(result)  # Display the screenshot
-                    else:
-                        st.error(result)  # Display the error message
-                    break  # Breaking the loop if the queue is not empty
-                time.sleep(0.1)  # Pausing the loop for 0.1 seconds
+    if selected_model:
+        st.success("Selected file: " + str(model_path))
+        
+        load_show(model_path)
+        # if st.button('Show Mesh'):
+            # load_show(model_path)
 
 if __name__ == "__main__":
     main()
