@@ -3,6 +3,8 @@ from stl import mesh
 import plotly.graph_objects as go
 import numpy as np
 
+# https://3dviewer.net/
+
 def apply_transformations(vertices, scale_factor=1.0, translation_vector=None, rotation_matrix=None):
     """Apply transformations to the vertices."""
     if scale_factor != 1.2:

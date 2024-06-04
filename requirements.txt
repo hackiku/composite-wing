@@ -10,3 +10,4 @@ vedo
 Pillow
 numpy-stl
 plotly
+pythonocc-core
