@@ -6,9 +6,10 @@ from materials import fibers, matrices
 from calculations import calculate_properties, theories
 from utils import spacer
 import model_playground
-import show_model
+from show_model import load_stl, get_model_files
 import inspect
 import numpy as np
+import os
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -16,9 +17,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# Yay keep it *wingy*"
+        'About': "# Yay keep it *wingy*",
+        'Get Help': 'https://jzro.co'
     }
 )
 
@@ -193,8 +193,6 @@ def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_le
 # ===============================================================
 
 def main():
-
-    # show_model.main()
     # Sidebar
     st.sidebar.markdown('### Choose wing material')
     
@@ -218,10 +216,6 @@ def main():
     
     st.subheader('1️⃣ Design wing')
     
-    with st.expander(label="Onshape stuff", expanded=False):
-        model_playground.main()
-
-    # STL/STEP loader
 
     # Onshape geometry
     col1, col2 = st.columns([1, 4])
@@ -233,14 +227,26 @@ def main():
         front_sweep = st.number_input('Front Sweep (deg)', value=20)
         rib_inc = st.number_input('Rib Increment (mm)', value=20)
 
+        # Model selection dropdown
+        models_path = './models/'
+
     with col2:
-        show_model.main()
+        model_files = get_model_files(models_path)
+        selected_model = st.selectbox("Select an STL file", model_files)
+        model_path = os.path.join(models_path, selected_model)
+        if selected_model:
+            fig = load_stl(model_path)
+            if fig:
+                st.plotly_chart(fig)
         st.button("Apply Onshape Parameters")
 
     spacer()
+    
+    with st.expander(label="Onshape stuff", expanded=False):
+        model_playground.main()
+
 
     st.subheader("Wing load")
-    # GPT, REWRITE FROM HERE ONLY
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -288,9 +294,9 @@ def main():
     st.markdown('***')
 
     properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", 
-                "tensile_strength", "compressive_strength", 
-                "transverse_tensile_strength", "transverse_compressive_strength",
-                "in_plane_shear_strength"]
+                  "tensile_strength", "compressive_strength", 
+                  "transverse_tensile_strength", "transverse_compressive_strength",
+                  "in_plane_shear_strength"]
 
     for property_name in properties:
         display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode, latex_results, math_results, show_math)

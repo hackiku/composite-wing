@@ -1,10 +1,10 @@
-import streamlit as st
+import os
 from stl import mesh
 import plotly.graph_objects as go
 import numpy as np
-import os
 
-def load_show(stl_path: str):
+def load_stl(stl_path: str):
+    """Load an STL file and return Plotly figure data for visualization."""
     try:
         your_mesh = mesh.Mesh.from_file(stl_path)
         
@@ -29,25 +29,11 @@ def load_show(stl_path: str):
             zaxis=dict(visible=False)
         ))
 
-        st.plotly_chart(fig)
+        return fig
     except Exception as e:
-        st.error(f"Error loading model: {e}")
+        print(f"Error loading model: {e}")
+        return None
 
-def main():
-    st.title('Interactive 3D Model Viewer in Streamlit')
-
-    models_path = './models/'
-    model_files = [f for f in os.listdir(models_path) if f.endswith('.stl')]
-
-    selected_model = st.selectbox("Select an STL file", model_files)
-    model_path = os.path.join(models_path, selected_model)
-
-    if selected_model:
-        st.success("Selected file: " + str(model_path))
-        
-        load_show(model_path)
-        # if st.button('Show Mesh'):
-            # load_show(model_path)
-
-if __name__ == "__main__":
-    main()
+def get_model_files(models_path='./models/'):
+    """Get a list of STL files from the specified directory."""
+    return [f for f in os.listdir(models_path) if f.endswith('.stl')]
