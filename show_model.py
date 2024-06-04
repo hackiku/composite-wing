@@ -5,7 +5,7 @@ import numpy as np
 
 def apply_transformations(vertices, scale_factor=1.0, translation_vector=None, rotation_matrix=None):
     """Apply transformations to the vertices."""
-    if scale_factor != 1.0:
+    if scale_factor != 1.2:
         vertices *= scale_factor
     if translation_vector is not None:
         vertices += translation_vector
@@ -13,7 +13,7 @@ def apply_transformations(vertices, scale_factor=1.0, translation_vector=None, r
         vertices = np.dot(vertices, rotation_matrix)
     return vertices
 
-def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_matrix=None):
+def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_matrix=None, width=800, height=600):
     """Load an STL file and return Plotly figure data for visualization with optional transformations."""
     try:
         your_mesh = mesh.Mesh.from_file(stl_path)
@@ -37,10 +37,12 @@ def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_
         )])
 
         fig.update_layout(scene=dict(
-            xaxis=dict(visible=True),
-            yaxis=dict(visible=True),
-            zaxis=dict(visible=True)
-        ))
+            xaxis=dict(visible=True,  backgroundcolor="rgba(0, 0, 0, 0)", gridcolor="gray", showbackground=True, zerolinecolor="red", title="X"),
+            yaxis=dict(visible=True, backgroundcolor="rgba(0, 0, 0, 0)", gridcolor="gray", showbackground=True, zerolinecolor="green", title="Y"),
+            zaxis=dict(visible=True, backgroundcolor="rgba(0, 0, 0, 0)", gridcolor="gray", showbackground=True, zerolinecolor="blue", title="Z")
+        ), width=600, height=600)
+
+        
 
         return fig
     except Exception as e:
@@ -50,30 +52,3 @@ def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_
 def get_model_files(models_path='./models/'):
     """Get a list of STL files from the specified directory."""
     return [f for f in os.listdir(models_path) if f.endswith('.stl')]
-
-def main():
-    models_path = './models/'
-    model_files = get_model_files(models_path)
-
-    print("Available STL files:")
-    for i, file in enumerate(model_files):
-        print(f"{i + 1}. {file}")
-
-    selected_index = int(input("Select an STL file by number: ")) - 1
-    if 0 <= selected_index < len(model_files):
-        model_path = os.path.join(models_path, model_files[selected_index])
-        print(f"Selected file: {model_path}")
-
-        # Example transformations
-        scale_factor = 1.0
-        translation_vector = np.array([0, 0, -100])
-        rotation_matrix = np.eye(3)  # No rotation
-
-        fig = load_stl(model_path, scale_factor, translation_vector, rotation_matrix)
-        if fig:
-            fig.show()
-    else:
-        print("Invalid selection")
-
-if __name__ == "__main__":
-    main()

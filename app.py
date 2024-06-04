@@ -22,7 +22,6 @@ st.set_page_config(
     }
 )
 
-
 # graph styling
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
@@ -220,7 +219,12 @@ def main():
     # Onshape geometry
     col1, col2 = st.columns([1, 4])
 
+    
     with col1:
+        models_path = './models/'
+        model_files = get_model_files(models_path)
+        selected_model = st.selectbox("Select an STL file", model_files)
+        spacer()
         span = st.number_input('Span (mm)', value=1200)
         root = st.number_input('Root (mm)', value=400)
         tip = st.number_input('Tip (mm)', value=100)
@@ -228,18 +232,17 @@ def main():
         rib_inc = st.number_input('Rib Increment (mm)', value=20)
 
         # Model selection dropdown
-        models_path = './models/'
 
     with col2:
-        model_files = get_model_files(models_path)
-        selected_model = st.selectbox("Select an STL file", model_files)
+
         model_path = os.path.join(models_path, selected_model)
         if selected_model:
             fig = load_stl(model_path)
             if fig:
                 st.plotly_chart(fig)
+    
         st.button("Apply Onshape Parameters")
-
+    
     spacer()
     
     with st.expander(label="Onshape stuff", expanded=False):
