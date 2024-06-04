@@ -9,6 +9,19 @@ import model_playground
 import inspect
 import numpy as np
 
+st.set_page_config(
+    page_title="Composite Wing",
+    page_icon="🪃",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://www.extremelycoolapp.com/help',
+        'Report a bug': "https://www.extremelycoolapp.com/bug",
+        'About': "# Yay keep it *wingy*"
+    }
+)
+
+
 # graph styling
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
@@ -23,6 +36,16 @@ def materials_dataframe(fiber, matrix):
     st.dataframe(fiber_properties)
     st.write("Selected Matrix Material Properties:")
     st.dataframe(matrix_properties)
+
+
+# for button
+def display_all_materials():
+    all_fibers = pd.DataFrame(fibers).transpose()
+    all_matrices = pd.DataFrame(matrices).transpose()
+    st.write("All Fiber Materials:")
+    st.dataframe(all_fibers)
+    st.write("All Matrix Materials:")
+    st.dataframe(all_matrices)
 
 def plot_properties(results_df, theme_mode):
     set_mpl_style(theme_mode)
@@ -122,11 +145,14 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
 
 
 def main():
-    model_playground.main()
+    
+    
+    # Onshape integration WIP
+    
+    
 
-    st.sidebar.title('Composite Wing')
-
-    st.sidebar.markdown('### Choose Material')
+    # Sidebar
+    st.sidebar.markdown('### Choose wing material')
     
     fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
     matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
@@ -138,12 +164,36 @@ def main():
     show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=True)
     show_math = st.sidebar.checkbox("Show Math", value=True)
 
-    materials_dataframe(fiber_material_key, matrix_material_key)
-    st.markdown('***')
+    # ----------- end sidebar
+    
+    st.title("Wingy Business 0.01")
+    st.write("Design a composite wing. You can build a parametric wing in Onashape API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
+    st.info('Choose materials in the sidebar', icon="👈")
 
+    st.markdown("***") # -------------------
+    
+    st.subheader('1️⃣ Wing model')
+    
+    # STL/STEP loader
+    
+    with st.expander(label="Onshape stuff", expanded=False):
+        model_playground.main()
+
+    st.markdown("***") # -------------------
+    
+    st.subheader('2️⃣ Composite materials')
+
+    
+    if st.button("Show all materials", type="secondary"):
+        display_all_materials()
+
+    
+    
+    materials_dataframe(fiber_material_key, matrix_material_key)
+    
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
-
+ 
     results, latex_results, math_results = calculate_properties(fiber_material, matrix_material, Vf, Vm, show_math)
 
     max_len = max(len(results[theory]) for theory in results if theory != "Property")
@@ -158,7 +208,7 @@ def main():
     plot_properties(results_df, theme_mode)
     st.markdown('***')
 
-    st.header('Math')
+    
 
     properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", 
                   "tensile_strength", "compressive_strength", 

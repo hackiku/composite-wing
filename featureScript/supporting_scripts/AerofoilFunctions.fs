@@ -2,7 +2,6 @@ FeatureScript 608;
 import(path : "onshape/std/geometry.fs", version : "608.0");
 import(path:"595c85ba951f303c2032d9c4/309147ceb3195f716e224949/c6b8188181f340be01627764",version:"c4628aea4c65a27ed9733969");
 
-
 export function nacaDistribution(context is Context, id is Id, debug is array, keyPoints is array, accuracy is number)
 {
     /**
