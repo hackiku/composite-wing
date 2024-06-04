@@ -1,3 +1,7 @@
+
+
+
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -143,14 +147,56 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
         ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
         st.pyplot(fig)
 
+def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes):
+    g = 9.81
+    total_force = mass * g * load_factor / 2
+    total_nodes = nodes_between_ribs * num_ribs - (num_ribs - 2)
+    y_positions = np.linspace(0, wing_length, total_nodes)
+    dy_position = y_positions[1] - y_positions[0]
+    p = round(wing_length / (dy_position * num_nodes))
+    st.write(f'Forces are applied every {p-1} nodes.')
+    dy = p * dy_position
+    y_interpolated = np.arange(0, num_nodes * dy, dy)
+    if y_interpolated[-1] > wing_length:
+        y_interpolated = y_interpolated[:-1]
+
+    a = 3 / 2 * total_force / wing_length
+    y = np.linspace(0, wing_length, 1001)
+    assumed_force_distribution = np.sqrt(a ** 2 / wing_length * (wing_length - y))
+
+    interpolated_forces = np.interp(y_interpolated, y, assumed_force_distribution)
+
+    fig1, ax1 = plt.subplots()
+    ax1.plot(y, assumed_force_distribution, label='Assumed Distribution', linewidth=2)
+    ax1.plot(y_interpolated, interpolated_forces, '--', label='Interpolated', linewidth=2)
+    ax1.legend()
+    ax1.set_title('Load Distribution Along the Wing')
+    ax1.set_xlabel('y [mm]')
+    ax1.set_ylabel('F [N/mm]')
+    st.pyplot(fig1)
+
+    yk = np.zeros(len(y_interpolated))
+    Fk = np.zeros(len(y_interpolated))
+    yk[1:] = np.cumsum(np.full(len(y_interpolated)-1, dy))
+    Fk[1:] = (interpolated_forces[1:] + interpolated_forces[:-1]) / 2 * dy
+    total_interpolated_force = np.sum(Fk)
+
+    fig2, ax2 = plt.subplots()
+    ax2.stem(yk[1:], Fk[1:], basefmt=" ")
+    ax2.set_title('Distribution of Concentrated Forces on the Front Spar')
+    ax2.set_xlabel('y [mm]')
+    ax2.set_ylabel('F [N]')
+    st.pyplot(fig2)
+
+    st.write(f'Relative error for normal force: {abs(100 - total_force / total_interpolated_force * 100):.2f} %.')
+
+
+
+
+# ===============================================================
 
 def main():
-    
-    
-    # Onshape integration WIP
-    
-    
-
+        
     # Sidebar
     st.sidebar.markdown('### Choose wing material')
     
@@ -172,28 +218,62 @@ def main():
 
     st.markdown("***") # -------------------
     
-    st.subheader('1️⃣ Wing model')
-    
-    # STL/STEP loader
+    st.subheader('1️⃣ Design wing')
     
     with st.expander(label="Onshape stuff", expanded=False):
         model_playground.main()
 
-    st.markdown("***") # -------------------
-    
-    st.subheader('2️⃣ Composite materials')
+    # STL/STEP loader
 
+    # Onshape geometry
+    col1, col2 = st.columns([1, 4])
+
+    with col1:
+        span = st.number_input('Span (mm)', value=1200)
+        root = st.number_input('Root (mm)', value=400)
+        tip = st.number_input('Tip (mm)', value=100)
+        front_sweep = st.number_input('Front Sweep (deg)', value=20)
+        rib_inc = st.number_input('Rib Increment (mm)', value=20)
+
+    with col2:
+        st.button("Apply Onshape Parameters")
+
+    spacer()
+
+    st.subheader("Wing load")
+    # GPT, REWRITE FROM HERE ONLY
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        mass = st.number_input('Mass of aircraft (kg)', value=11300)
+        load_factor = st.number_input('Load Factor', value=6)
+        st.button("Update Onshape Model")
+        
+    with col2:
+        nodes_between_ribs = st.number_input('Nodes between Ribs', value=15)
+        num_ribs = st.number_input('Number of Ribs', value=12)
+
+    with col3:
+        wing_length = st.number_input('Wing Length (mm)', value=3821.4)
+        num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20)
     
+    st.markdown('***')
+    
+    if st.button('Calculate Load Forces'):
+        calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
+
+    st.markdown("***")  # -------------------
+
+    st.subheader('2️⃣ Choose composite materials')
+
     if st.button("Show all materials", type="secondary"):
         display_all_materials()
 
-    
-    
     materials_dataframe(fiber_material_key, matrix_material_key)
-    
+
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
- 
+
     results, latex_results, math_results = calculate_properties(fiber_material, matrix_material, Vf, Vm, show_math)
 
     max_len = max(len(results[theory]) for theory in results if theory != "Property")
@@ -208,12 +288,10 @@ def main():
     plot_properties(results_df, theme_mode)
     st.markdown('***')
 
-    
-
     properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", 
-                  "tensile_strength", "compressive_strength", 
-                  "transverse_tensile_strength", "transverse_compressive_strength",
-                  "in_plane_shear_strength"]
+                "tensile_strength", "compressive_strength", 
+                "transverse_tensile_strength", "transverse_compressive_strength",
+                "in_plane_shear_strength"]
 
     for property_name in properties:
         display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode, latex_results, math_results, show_math)
