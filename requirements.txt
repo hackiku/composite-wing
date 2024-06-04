@@ -9,3 +9,4 @@ scipy
 vedo
 Pillow
 numpy-stl
+plotly

@@ -194,7 +194,7 @@ def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_le
 
 def main():
 
-    show_model.main()
+    # show_model.main()
     # Sidebar
     st.sidebar.markdown('### Choose wing material')
     
@@ -234,6 +234,7 @@ def main():
         rib_inc = st.number_input('Rib Increment (mm)', value=20)
 
     with col2:
+        show_model.main()
         st.button("Apply Onshape Parameters")
 
     spacer()
