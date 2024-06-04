@@ -1,7 +1,3 @@
-
-
-
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,6 +6,7 @@ from materials import fibers, matrices
 from calculations import calculate_properties, theories
 from utils import spacer
 import model_playground
+import show_model
 import inspect
 import numpy as np
 
@@ -196,7 +193,8 @@ def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_le
 # ===============================================================
 
 def main():
-        
+
+    show_model.main()
     # Sidebar
     st.sidebar.markdown('### Choose wing material')
     
@@ -207,8 +205,8 @@ def main():
     Vm = 1 - Vf
 
     theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
-    show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=True)
-    show_math = st.sidebar.checkbox("Show Math", value=True)
+    show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
+    show_math = st.sidebar.checkbox("Show Math", value=False)
 
     # ----------- end sidebar
     
