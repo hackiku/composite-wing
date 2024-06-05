@@ -23,14 +23,16 @@ def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_le
 
     interpolated_forces = np.interp(y_interpolated, y, assumed_force_distribution)
 
-    fig1, ax1 = plt.subplots()
-    ax1.plot(y, assumed_force_distribution, label='Assumed Distribution', linewidth=2)
-    ax1.plot(y_interpolated, interpolated_forces, '--', label='Interpolated', linewidth=2)
-    ax1.legend()
-    ax1.set_title('Load Distribution Along the Wing')
-    ax1.set_xlabel('y [mm]')
-    ax1.set_ylabel('F [N/mm]')
-    st.pyplot(fig1)
+    col1, col2 = st.columns(2)
+    with col1:
+        fig1, ax1 = plt.subplots()
+        ax1.plot(y, assumed_force_distribution, label='Assumed Distribution', linewidth=2)
+        ax1.plot(y_interpolated, interpolated_forces, '--', label='Interpolated', linewidth=2)
+        ax1.legend()
+        ax1.set_title('Load Distribution Along the Wing')
+        ax1.set_xlabel('y [mm]')
+        ax1.set_ylabel('F [N/mm]')
+        st.pyplot(fig1)
 
     yk = np.zeros(len(y_interpolated))
     Fk = np.zeros(len(y_interpolated))
@@ -38,16 +40,18 @@ def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_le
     Fk[1:] = (interpolated_forces[1:] + interpolated_forces[:-1]) / 2 * dy
     total_interpolated_force = np.sum(Fk)
 
-    fig2, ax2 = plt.subplots()
-    ax2.stem(yk[1:], Fk[1:], basefmt=" ")
-    ax2.set_title('Distribution of Concentrated Forces on the Front Spar')
-    ax2.set_xlabel('y [mm]')
-    ax2.set_ylabel('F [N]')
-    st.pyplot(fig2)
+    with col2:
+        fig2, ax2 = plt.subplots()
+        ax2.stem(yk[1:], Fk[1:], basefmt=" ")
+        ax2.set_title('Distribution of Concentrated Forces on the Front Spar')
+        ax2.set_xlabel('y [mm]')
+        ax2.set_ylabel('F [N]')
+        st.pyplot(fig2)
 
     st.write(f'Relative error for normal force: {abs(100 - total_force / total_interpolated_force * 100):.2f} %.')
 
-    st.latex(r"""
-    \sum F_l = \frac{R_z}{2} = \frac{m_{max} \cdot g \cdot n}{2} = \frac{11300 \cdot 9.81 \cdot 6}{2} = 333 \, \text{kN}
+    st.latex(fr"""
+    \sum F_l = \frac{{R_z}}{{2}} = \frac{{m_{{max}} \cdot g \cdot n}}{{2}} = \frac{{{mass} \cdot {g} \cdot {load_factor}}}{{2}} = {total_force / 1000:.2f} \, \text{{kN}}
     """)
+
 

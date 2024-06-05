@@ -115,8 +115,10 @@ def main():
         tip = st.number_input('Tip (mm)', value=st.session_state.variables.get('tip', {}).get('value', 100))
         front_sweep = st.number_input('Front Sweep (deg)', value=st.session_state.variables.get('wing_sweep', {}).get('value', 20))
         rib_inc = st.number_input('Rib Increment (mm)', value=st.session_state.variables.get('rib_inc', {}).get('value', 20))
+        rib_num_total = int(st.session_state.variables.get('rib_num_total', {}).get('value', 12))
+        st.write(f"Number of ribs = `{rib_num_total}`")
 
-        if st.button("Apply Parameters"):
+        if st.button("Update STL model", type="primary"):
             if st.session_state.selected_preset != "None":
                 preset = PRESETS[selected_preset]
                 updated_variables = {
@@ -124,7 +126,8 @@ def main():
                     "root": root,
                     "tip": tip,
                     "front_sweep": front_sweep,
-                    "rib_inc": rib_inc
+                    "rib_inc": rib_inc,
+                    "rib_num_total": rib_num_total,
                 }
                 try:
                     onshape_variables.update_custom_variables(preset["did"], preset["wv"], preset["wvid"], preset["eid"], updated_variables)
@@ -142,23 +145,22 @@ def main():
 
     spacer()
 
-    st.header("Wing load")
+
     st.markdown("***")
+    st.header("Wing load")
     col1, col2, col3 = st.columns(3)
     with col1:
-        mass = st.number_input('Mass of aircraft (kg)', value=11300)
+        mass = st.number_input('Mass of aircraft (kg)', value=11300, step=1)
         load_factor = st.number_input('Load Factor', value=6)
-        st.button("Update Onshape Model")
     with col2:
         nodes_between_ribs = st.number_input('Nodes between Ribs', value=15)
-        num_ribs = st.number_input('Number of Ribs', value=12)
+        num_ribs = st.number_input('Number of Ribs', value=rib_num_total)
     with col3:
-        wing_length = st.number_input('Wing Length (mm)', value=3821.4)
+        wing_length = st.number_input('Wing Length (mm)', value=span)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20)
-    st.markdown('***')
     
-    if st.button('Calculate Load Forces'):
-        calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
+    # if st.button('Calculate Load Forces'):
+    calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
     st.markdown("***")
     st.subheader('2️⃣ Choose composite materials')
