@@ -1,11 +1,7 @@
-# stl_show.py
-
 import os
 from stl import mesh
 import plotly.graph_objects as go
 import numpy as np
-
-# https://3dviewer.net/
 
 def apply_transformations(vertices, scale_factor=1.0, translation_vector=None, rotation_matrix=None):
     """Apply transformations to the vertices."""
@@ -40,13 +36,41 @@ def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_
             opacity=0.50
         )])
 
-        fig.update_layout(scene=dict(
-            xaxis=dict(visible=True,  backgroundcolor="rgba(0, 0, 0, 0)", gridcolor="gray", showbackground=True, zerolinecolor="red", title="X"),
-            yaxis=dict(visible=True, backgroundcolor="rgba(0, 0, 0, 0)", gridcolor="gray", showbackground=True, zerolinecolor="green", title="Y"),
-            zaxis=dict(visible=True, backgroundcolor="rgba(0, 0, 0, 0)", gridcolor="gray", showbackground=True, zerolinecolor="blue", title="Z")
-        ), width=600, height=600)
+        max_range = max(np.ptp(x), np.ptp(y), np.ptp(z))
+        mean_x = np.mean(x)
+        mean_y = np.mean(y)
+        mean_z = np.mean(z)
 
-        
+        fig.update_layout(scene=dict(
+            aspectmode='cube',
+            xaxis=dict(
+                range=[mean_x - max_range / 2, mean_x + max_range / 2],
+                visible=True,
+                backgroundcolor="rgba(0, 0, 0, 0)",
+                gridcolor="gray",
+                showbackground=True,
+                zerolinecolor="red",
+                title="X"
+            ),
+            yaxis=dict(
+                range=[mean_y - max_range / 2, mean_y + max_range / 2],
+                visible=True,
+                backgroundcolor="rgba(0, 0, 0, 0)",
+                gridcolor="gray",
+                showbackground=True,
+                zerolinecolor="green",
+                title="Y"
+            ),
+            zaxis=dict(
+                range=[mean_z - max_range / 2, mean_z + max_range / 2],
+                visible=True,
+                backgroundcolor="rgba(0, 0, 0, 0)",
+                gridcolor="gray",
+                showbackground=True,
+                zerolinecolor="blue",
+                title="Z"
+            )
+        ), width=600, height=800)
 
         return fig
     except Exception as e:

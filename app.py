@@ -6,8 +6,7 @@ import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from calculations import calculate_properties
 from utils import spacer
-import model_playground
-from stl_fetch import fetch_stl, PRESETS  # Import the required functions and presets
+from stl_fetch import fetch_stl, PRESETS 
 from stl_show import load_stl, get_model_files
 from wing_load_calculator import calculate_wing_load
 import inspect
@@ -20,7 +19,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'About': "# Yay keep it *wingy*",
+        'About': "# Keep it *wingy*",
         'Get Help': 'https://jzro.co'
     }
 )
@@ -90,10 +89,10 @@ def main():
     with col2:
         selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
 
-    st.markdown("***")
     
     col1, col2 = st.columns([1, 4])
     with col1:
+        spacer('2em')
         span = st.number_input('Span (mm)', value=1200)
         root = st.number_input('Root (mm)', value=400)
         tip = st.number_input('Tip (mm)', value=100)
@@ -105,7 +104,6 @@ def main():
             with st.spinner('Fetching STL model...'):
                 try:
                     stl_content = fetch_stl(selected_preset)
-                    st.write("Preparing visualization...")
                     stl_path = f"/tmp/{selected_preset}_model.stl"
                     with open(stl_path, 'wb') as f:
                         f.write(stl_content)
@@ -124,9 +122,6 @@ def main():
         st.button("Apply Onshape Parameters")
 
     spacer()
-
-    with st.expander(label="Onshape stuff", expanded=False):
-        model_playground.main()
 
     st.header("Wing load")
     st.markdown("***")
