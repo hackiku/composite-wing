@@ -84,10 +84,12 @@ def main():
 
     st.markdown("***")
 
-    st.header('1️⃣ Wing design')
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([3,2])
     with col1:
+        st.header('1️⃣ Wing design')
+
+    with col2:
         selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
         if selected_preset != "None" and st.session_state.selected_preset != selected_preset:
             st.session_state.selected_preset = selected_preset
@@ -102,6 +104,8 @@ def main():
                     st.session_state.variables = onshape_variables.fetch_custom_variables(preset["did"], preset["wv"], preset["wvid"], preset["eid"])
                 except Exception as e:
                     st.error(f"Error: {e}")
+
+
 
     col1, col2 = st.columns([1, 4])
     with col1:
@@ -134,7 +138,7 @@ def main():
         if st.session_state.stl_model:
             st.plotly_chart(st.session_state.stl_model)
 
-    st.json(st.session_state.variables)
+    st.json(st.session_state.variables, expanded=False)
 
     spacer()
 

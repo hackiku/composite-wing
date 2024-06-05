@@ -41,36 +41,41 @@ def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_
         mean_y = np.mean(y)
         mean_z = np.mean(z)
 
-        fig.update_layout(scene=dict(
-            aspectmode='cube',
-            xaxis=dict(
-                range=[mean_x - max_range / 2, mean_x + max_range / 2],
-                visible=True,
-                backgroundcolor="rgba(0, 0, 0, 0)",
-                gridcolor="gray",
-                showbackground=True,
-                zerolinecolor="red",
-                title="X"
+        fig.update_layout(
+            scene=dict(
+                aspectmode='cube',
+                xaxis=dict(
+                    range=[mean_x - max_range / 2, mean_x + max_range / 2],
+                    visible=True,
+                    backgroundcolor="rgba(0, 0, 0, 0)",
+                    gridcolor="gray",
+                    showbackground=True,
+                    zerolinecolor="red",
+                    title="X"
+                ),
+                yaxis=dict(
+                    range=[mean_y - max_range / 2, mean_y + max_range / 2],
+                    visible=True,
+                    backgroundcolor="rgba(0, 0, 0, 0)",
+                    gridcolor="gray",
+                    showbackground=True,
+                    zerolinecolor="green",
+                    title="Y"
+                ),
+                zaxis=dict(
+                    range=[mean_z - max_range / 2, mean_z + max_range / 2],
+                    visible=True,
+                    backgroundcolor="rgba(0, 0, 0, 0)",
+                    gridcolor="gray",
+                    showbackground=True,
+                    zerolinecolor="blue",
+                    title="Z"
+                )
             ),
-            yaxis=dict(
-                range=[mean_y - max_range / 2, mean_y + max_range / 2],
-                visible=True,
-                backgroundcolor="rgba(0, 0, 0, 0)",
-                gridcolor="gray",
-                showbackground=True,
-                zerolinecolor="green",
-                title="Y"
-            ),
-            zaxis=dict(
-                range=[mean_z - max_range / 2, mean_z + max_range / 2],
-                visible=True,
-                backgroundcolor="rgba(0, 0, 0, 0)",
-                gridcolor="gray",
-                showbackground=True,
-                zerolinecolor="blue",
-                title="Z"
-            )
-        ), width=600, height=800)
+            width=600,
+            height=600,  # Adjust height to make it more square
+            margin=dict(l=0, r=0, b=0, t=0)  # Remove margins
+        )
 
         return fig
     except Exception as e:
