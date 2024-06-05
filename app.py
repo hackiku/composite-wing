@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
@@ -6,9 +7,10 @@ from materials import fibers, matrices
 from calculations import calculate_properties, theories
 from utils import spacer
 import model_playground
+import stl_fetch
 from show_model import load_stl, get_model_files
+from wing_load_calculator import calculate_wing_load
 import inspect
-import numpy as np
 import os
 
 st.set_page_config(
@@ -60,6 +62,7 @@ def plot_properties(results_df, theme_mode):
     ax.grid(True, color='gray')
     ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
     st.pyplot(fig)
+
 
 def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode, latex_results, math_results, show_math):
     set_mpl_style(theme_mode)
@@ -143,56 +146,26 @@ def display_theories(property_name, fiber_key, fiber_material, matrix_key, matri
         ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
         st.pyplot(fig)
 
-def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes):
-    g = 9.81
-    total_force = mass * g * load_factor / 2
-    total_nodes = nodes_between_ribs * num_ribs - (num_ribs - 2)
-    y_positions = np.linspace(0, wing_length, total_nodes)
-    dy_position = y_positions[1] - y_positions[0]
-    p = round(wing_length / (dy_position * num_nodes))
-    st.write(f'Forces are applied every {p-1} nodes.')
-    dy = p * dy_position
-    y_interpolated = np.arange(0, num_nodes * dy, dy)
-    if y_interpolated[-1] > wing_length:
-        y_interpolated = y_interpolated[:-1]
-
-    a = 3 / 2 * total_force / wing_length
-    y = np.linspace(0, wing_length, 1001)
-    assumed_force_distribution = np.sqrt(a ** 2 / wing_length * (wing_length - y))
-
-    interpolated_forces = np.interp(y_interpolated, y, assumed_force_distribution)
-
-    fig1, ax1 = plt.subplots()
-    ax1.plot(y, assumed_force_distribution, label='Assumed Distribution', linewidth=2)
-    ax1.plot(y_interpolated, interpolated_forces, '--', label='Interpolated', linewidth=2)
-    ax1.legend()
-    ax1.set_title('Load Distribution Along the Wing')
-    ax1.set_xlabel('y [mm]')
-    ax1.set_ylabel('F [N/mm]')
-    st.pyplot(fig1)
-
-    yk = np.zeros(len(y_interpolated))
-    Fk = np.zeros(len(y_interpolated))
-    yk[1:] = np.cumsum(np.full(len(y_interpolated)-1, dy))
-    Fk[1:] = (interpolated_forces[1:] + interpolated_forces[:-1]) / 2 * dy
-    total_interpolated_force = np.sum(Fk)
-
-    fig2, ax2 = plt.subplots()
-    ax2.stem(yk[1:], Fk[1:], basefmt=" ")
-    ax2.set_title('Distribution of Concentrated Forces on the Front Spar')
-    ax2.set_xlabel('y [mm]')
-    ax2.set_ylabel('F [N]')
-    st.pyplot(fig2)
-
-    st.write(f'Relative error for normal force: {abs(100 - total_force / total_interpolated_force * 100):.2f} %.')
-
-
-
 
 # ===============================================================
 
 def main():
     # Sidebar
+    
+    stl_fetch.main()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    st.markdown("***")
+    
+    
+    
     st.sidebar.markdown('### Choose wing material')
     
     fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
@@ -215,11 +188,9 @@ def main():
     
     st.subheader('1️⃣ Design wing')
     
-
     # Onshape geometry
     col1, col2 = st.columns([1, 4])
 
-    
     with col1:
         models_path = './models/'
         model_files = get_model_files(models_path)
@@ -245,11 +216,13 @@ def main():
     
     spacer()
     
+    
     with st.expander(label="Onshape stuff", expanded=False):
         model_playground.main()
 
-
     st.subheader("Wing load")
+
+    st.markdown("***") # -------------------
     col1, col2, col3 = st.columns(3)
 
     with col1:
