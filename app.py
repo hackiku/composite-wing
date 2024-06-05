@@ -8,10 +8,11 @@ from calculations import calculate_properties
 from utils import spacer
 from stl_fetch import fetch_stl, PRESETS 
 from stl_show import load_stl, get_model_files
+import onshape_variables  # Updated import
+import micromechanics
 from wing_load_calculator import calculate_wing_load
 import inspect
 import os
-import micromechanics
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -66,6 +67,7 @@ def main():
     if 'stl_model' not in st.session_state:
         st.session_state.stl_model = None
         st.session_state.selected_preset = "None"
+        st.session_state.variables = {}
 
     st.sidebar.markdown('### Choose wing material')
     fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
@@ -77,7 +79,7 @@ def main():
     show_math = st.sidebar.checkbox("Show Math", value=False)
 
     st.title("Wingy Business 0.01")
-    st.write("Design a composite wing. You can build a parametric wing in Onashape API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
+    st.write("Design a composite wing. You can build a parametric wing in Onshap API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
     st.info('Choose materials in the sidebar', icon="👈")
 
     st.markdown("***")
@@ -89,35 +91,50 @@ def main():
         selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
         if selected_preset != "None" and st.session_state.selected_preset != selected_preset:
             st.session_state.selected_preset = selected_preset
-            with st.spinner('Fetching STL model...'):
+            with st.spinner('Fetching STL model and variables...'):
                 try:
                     stl_content = fetch_stl(selected_preset)
                     stl_path = f"/tmp/{selected_preset}_model.stl"
                     with open(stl_path, 'wb') as f:
                         f.write(stl_content)
                     st.session_state.stl_model = load_stl(stl_path)
+                    preset = PRESETS[selected_preset]
+                    st.session_state.variables = onshape_variables.fetch_custom_variables(preset["did"], preset["wv"], preset["wvid"], preset["eid"])
                 except Exception as e:
                     st.error(f"Error: {e}")
 
     col1, col2 = st.columns([1, 4])
     with col1:
         spacer('2em')
-        span = st.number_input('Span (mm)', value=1200)
-        root = st.number_input('Root (mm)', value=400)
-        tip = st.number_input('Tip (mm)', value=100)
-        front_sweep = st.number_input('Front Sweep (deg)', value=20)
-        rib_inc = st.number_input('Rib Increment (mm)', value=20)
+        span = st.number_input('Span (mm)', value=st.session_state.variables.get('span', {}).get('value', 1200))
+        root = st.number_input('Root (mm)', value=st.session_state.variables.get('root', {}).get('value', 400))
+        tip = st.number_input('Tip (mm)', value=st.session_state.variables.get('tip', {}).get('value', 100))
+        front_sweep = st.number_input('Front Sweep (deg)', value=st.session_state.variables.get('wing_sweep', {}).get('value', 20))
+        rib_inc = st.number_input('Rib Increment (mm)', value=st.session_state.variables.get('rib_inc', {}).get('value', 20))
 
         if st.button("Apply Parameters"):
             if st.session_state.selected_preset != "None":
-                # Add logic to post parameters to API
-                st.success("Parameters applied and model updated.")
+                preset = PRESETS[selected_preset]
+                updated_variables = {
+                    "span": span,
+                    "root": root,
+                    "tip": tip,
+                    "front_sweep": front_sweep,
+                    "rib_inc": rib_inc
+                }
+                try:
+                    onshape_variables.update_custom_variables(preset["did"], preset["wv"], preset["wvid"], preset["eid"], updated_variables)
+                    st.success("Parameters applied and model updated.")
+                except Exception as e:
+                    st.error(f"Error: {e}")
             else:
                 st.warning("No Onshape preset selected.")
 
     with col2:
         if st.session_state.stl_model:
             st.plotly_chart(st.session_state.stl_model)
+
+    st.json(st.session_state.variables)
 
     spacer()
 

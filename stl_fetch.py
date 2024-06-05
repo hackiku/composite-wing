@@ -13,19 +13,22 @@ ONSHAPE_BASE_URL = os.getenv("ONSHAPE_BASE_URL")
 PRESETS = {
     "Torsion box": {
         "did": "f6ac5c0b25ce21ecd85991db",
-        "wid": "2f1903d2edb515536def7421",
+        "wv": "w",
+        "wvid": "2f1903d2edb515536def7421",
         "eid": "1746a09d07c6f27e71172a7f",
         "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
     },
     "Full wing (old)": {
         "did": "f6ac5c0b25ce21ecd85991db",
-        "wid": "2f1903d2edb515536def7421",
+        "wvid": "2f1903d2edb515536def7421",
+        "wv": "w",
         "eid": "b879915fba35863ee60116c6",
         "url": ""
     },
     "Parametric Wing": {
         "did": "308d36ae2431fbf4b9b96a48",
-        "wid": "4dfbfac17da94e7168ec10cd",
+        "wvid": "4dfbfac17da94e7168ec10cd",
+        "wv": "w",
         "eid": "1c23a328748cc03fde2f37f5",
         "url": "https://cad.onshape.com/documents/308d36ae2431fbf4b9b96a48/w/4dfbfac17da94e7168ec10cd/e/1c23a328748cc03fde2f37f5"
     },
@@ -40,8 +43,8 @@ def get_basic_auth_headers():
     }
     return headers
 
-def initiate_stl_export(did, wid, eid):
-    url = f"{ONSHAPE_BASE_URL}/api/v6/partstudios/d/{did}/w/{wid}/e/{eid}/stl?mode=text&grouping=true&scale=1&units=inch"
+def initiate_stl_export(did, wv, wvid, eid):
+    url = f"{ONSHAPE_BASE_URL}/api/v6/partstudios/d/{did}/{wv}/{wvid}/e/{eid}/stl?mode=text&grouping=true&scale=1&units=inch"
     headers = get_basic_auth_headers()
     response = requests.get(url, headers=headers, allow_redirects=False)
     if response.status_code == 307:
@@ -60,6 +63,6 @@ def download_stl_model(redirect_url):
 
 def fetch_stl(preset_name):
     preset = PRESETS[preset_name]
-    redirect_url = initiate_stl_export(preset['did'], preset['wid'], preset['eid'])
+    redirect_url = initiate_stl_export(preset['did'], preset['wv'], preset['wvid'], preset['eid'])
     stl_content = download_stl_model(redirect_url)
     return stl_content

@@ -25,7 +25,7 @@ def get_basic_auth_headers():
     return headers
 
 def fetch_custom_variables(did, wv, wvid, eid):
-    url = f"{ONSHAPE_BASE_URL}/api/variables/d/{did}/{wv}/{wvid}/e/{eid}/variables"
+    url = f"{ONSHAPE_BASE_URL}/api/variables/d/{did}/{wv}/{wvid}/e/{eid}/variables?includeValuesAndReferencedVariables=true"
     headers = get_basic_auth_headers()
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
