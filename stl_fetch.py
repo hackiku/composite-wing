@@ -1,11 +1,7 @@
-import streamlit as st
 import os
 import requests
 import base64
 from dotenv import load_dotenv
-from utils import spacer
-from stl_show import load_stl, get_model_files
-from io import BytesIO
 
 # Load environment variables
 load_dotenv()
@@ -13,6 +9,15 @@ load_dotenv()
 ONSHAPE_ACCESS_KEY = os.getenv("ONSHAPE_ACCESS_KEY")
 ONSHAPE_SECRET_KEY = os.getenv("ONSHAPE_SECRET_KEY")
 ONSHAPE_BASE_URL = os.getenv("ONSHAPE_BASE_URL")
+
+PRESETS = {
+    "composite_wing": {
+        "did": "f6ac5c0b25ce21ecd85991db",
+        "wid": "2f1903d2edb515536def7421",
+        "eid": "1746a09d07c6f27e71172a7f",
+        "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
+    }
+}
 
 def get_basic_auth_headers():
     credentials = f"{ONSHAPE_ACCESS_KEY}:{ONSHAPE_SECRET_KEY}"
@@ -31,9 +36,7 @@ def initiate_stl_export(did, wid, eid):
         redirect_url = response.headers['Location']
         return redirect_url
     else:
-        st.error(f"Failed to initiate export: {response.status_code} {response.reason}")
-        st.write(response.text)
-        return None
+        raise Exception(f"Failed to initiate export: {response.status_code} {response.reason}")
 
 def download_stl_model(redirect_url):
     headers = get_basic_auth_headers()
@@ -41,42 +44,10 @@ def download_stl_model(redirect_url):
     if response.status_code == 200:
         return response.content
     else:
-        st.write(response.text)
-        return None
+        raise Exception(f"Failed to download STL model: {response.status_code} {response.reason}")
 
-def main():
-    st.header('Fetch Onshape STL')
-
-    # Presets
-    presets = {
-        "composite_wing": {
-            "did": "f6ac5c0b25ce21ecd85991db",
-            "wid": "2f1903d2edb515536def7421",
-            "eid": "1746a09d07c6f27e71172a7f",
-            "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
-        }
-    }
-
-    # Hardcoded to first preset for now
-    preset = "composite_wing"
-    st.write(f"Using preset: {preset}")
-
-    did = presets[preset]['did']
-    wid = presets[preset]['wid']
-    eid = presets[preset]['eid']
-
-    if st.button('Fetch and Visualize STL Model'):
-        with st.spinner('Fetching STL model...'):
-            redirect_url = initiate_stl_export(did, wid, eid)
-            if redirect_url:
-                stl_content = download_stl_model(redirect_url)
-                if stl_content:
-                    stl_path = f"/tmp/{preset}_model.stl"
-                    with open(stl_path, 'wb') as f:
-                        f.write(stl_content)
-                    fig = load_stl(stl_path)
-                    if fig:
-                        st.plotly_chart(fig)
-
-if __name__ == "__main__":
-    main()
+def fetch_stl(preset_name):
+    preset = PRESETS[preset_name]
+    redirect_url = initiate_stl_export(preset['did'], preset['wid'], preset['eid'])
+    stl_content = download_stl_model(redirect_url)
+    return stl_content
