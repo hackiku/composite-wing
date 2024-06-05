@@ -11,14 +11,21 @@ ONSHAPE_SECRET_KEY = os.getenv("ONSHAPE_SECRET_KEY")
 ONSHAPE_BASE_URL = os.getenv("ONSHAPE_BASE_URL")
 
 PRESETS = {
-    "composite_wing": {
+    "Torsion box": {
         "did": "f6ac5c0b25ce21ecd85991db",
         "wid": "2f1903d2edb515536def7421",
         "eid": "1746a09d07c6f27e71172a7f",
         "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
+    },
+    "Full wing (old)": {
+        "did": "f6ac5c0b25ce21ecd85991db",
+        "wid": "2f1903d2edb515536def7421",
+        "eid": "b879915fba35863ee60116c6",
+        "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
     }
 }
-
+# https://cad.onshape.com/documents/f6ac5c0b25ce21ecd85991db/w/2f1903d2edb515536def7421/e/1746a09d07c6f27e71172a7f
+# https://cad.onshape.com/documents/f6ac5c0b25ce21ecd85991db/w/2f1903d2edb515536def7421/e/b879915fba35863ee60116c6
 def get_basic_auth_headers():
     credentials = f"{ONSHAPE_ACCESS_KEY}:{ONSHAPE_SECRET_KEY}"
     basic_auth = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')

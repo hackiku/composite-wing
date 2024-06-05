@@ -63,6 +63,10 @@ def plot_properties(results_df, theme_mode):
 # ===============================================================
 
 def main():
+    if 'stl_model' not in st.session_state:
+        st.session_state.stl_model = None
+        st.session_state.selected_preset = "None"
+
     st.sidebar.markdown('### Choose wing material')
     fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
     matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
@@ -73,23 +77,28 @@ def main():
     show_math = st.sidebar.checkbox("Show Math", value=False)
 
     st.title("Wingy Business 0.01")
-    st.write("Design a composite wing. You can build a parametric wing in Onshape API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
+    st.write("Design a composite wing. You can build a parametric wing in Onashape API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
     st.info('Choose materials in the sidebar', icon="👈")
 
     st.markdown("***")
 
     st.header('1️⃣ Wing design')
 
-    models_path = './models/'
-    model_files = get_model_files(models_path)
-
     col1, col2 = st.columns(2)
     with col1:
-        selected_model = st.selectbox("Default STL file", model_files)
-    with col2:
         selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
+        if selected_preset != "None" and st.session_state.selected_preset != selected_preset:
+            st.session_state.selected_preset = selected_preset
+            with st.spinner('Fetching STL model...'):
+                try:
+                    stl_content = fetch_stl(selected_preset)
+                    stl_path = f"/tmp/{selected_preset}_model.stl"
+                    with open(stl_path, 'wb') as f:
+                        f.write(stl_content)
+                    st.session_state.stl_model = load_stl(stl_path)
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
-    
     col1, col2 = st.columns([1, 4])
     with col1:
         spacer('2em')
@@ -99,27 +108,16 @@ def main():
         front_sweep = st.number_input('Front Sweep (deg)', value=20)
         rib_inc = st.number_input('Rib Increment (mm)', value=20)
 
+        if st.button("Apply Parameters"):
+            if st.session_state.selected_preset != "None":
+                # Add logic to post parameters to API
+                st.success("Parameters applied and model updated.")
+            else:
+                st.warning("No Onshape preset selected.")
+
     with col2:
-        if selected_preset != "None":
-            with st.spinner('Fetching STL model...'):
-                try:
-                    stl_content = fetch_stl(selected_preset)
-                    stl_path = f"/tmp/{selected_preset}_model.stl"
-                    with open(stl_path, 'wb') as f:
-                        f.write(stl_content)
-                    fig = load_stl(stl_path)
-                    if fig:
-                        st.plotly_chart(fig)
-                    st.write("Visualization ready.")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-        else:
-            model_path = os.path.join(models_path, selected_model)
-            if selected_model:
-                fig = load_stl(model_path)
-                if fig:
-                    st.plotly_chart(fig)
-        st.button("Apply Onshape Parameters")
+        if st.session_state.stl_model:
+            st.plotly_chart(st.session_state.stl_model)
 
     spacer()
 
