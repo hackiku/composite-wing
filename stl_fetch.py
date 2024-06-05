@@ -4,7 +4,7 @@ import requests
 import base64
 from dotenv import load_dotenv
 from utils import spacer
-from show_model import load_stl, get_model_files
+from stl_show import load_stl, get_model_files
 from io import BytesIO
 
 # Load environment variables
@@ -39,10 +39,8 @@ def download_stl_model(redirect_url):
     headers = get_basic_auth_headers()
     response = requests.get(redirect_url, headers=headers)
     if response.status_code == 200:
-        st.write("STL model downloaded.")
         return response.content
     else:
-        st.error(f"Failed to download STL model: {response.status_code} {response.reason}")
         st.write(response.text)
         return None
 

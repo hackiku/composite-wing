@@ -1,3 +1,5 @@
+# stl_show.py
+
 import os
 from stl import mesh
 import plotly.graph_objects as go
@@ -7,7 +9,7 @@ import numpy as np
 
 def apply_transformations(vertices, scale_factor=1.0, translation_vector=None, rotation_matrix=None):
     """Apply transformations to the vertices."""
-    if scale_factor != 1.2:
+    if scale_factor != 1.0:
         vertices *= scale_factor
     if translation_vector is not None:
         vertices += translation_vector

@@ -8,7 +8,7 @@ from calculations import calculate_properties, theories
 from utils import spacer
 import model_playground
 import stl_fetch
-from show_model import load_stl, get_model_files
+from stl_show import load_stl, get_model_files
 from wing_load_calculator import calculate_wing_load
 import inspect
 import os
@@ -161,7 +161,6 @@ def main():
     
     
     
-    
     st.markdown("***")
     
     
@@ -184,18 +183,24 @@ def main():
     st.write("Design a composite wing. You can build a parametric wing in Onashape API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
     st.info('Choose materials in the sidebar', icon="👈")
 
-    st.markdown("***") # -------------------
+    st.markdown("***")
     
-    st.subheader('1️⃣ Design wing')
+    # --------------------
     
-    # Onshape geometry
+    st.header('1️⃣ Wing design')
+    
+    models_path = './models/'
+    model_files = get_model_files(models_path)
+    
+    
+    selected_model = st.selectbox("Default STL file", model_files)
+    spacer()
+    
+    
+    # =============== MODEL ===============
     col1, col2 = st.columns([1, 4])
 
     with col1:
-        models_path = './models/'
-        model_files = get_model_files(models_path)
-        selected_model = st.selectbox("Select an STL file", model_files)
-        spacer()
         span = st.number_input('Span (mm)', value=1200)
         root = st.number_input('Root (mm)', value=400)
         tip = st.number_input('Tip (mm)', value=100)
@@ -220,7 +225,7 @@ def main():
     with st.expander(label="Onshape stuff", expanded=False):
         model_playground.main()
 
-    st.subheader("Wing load")
+    st.header("Wing load")
 
     st.markdown("***") # -------------------
     col1, col2, col3 = st.columns(3)
