@@ -1,12 +1,11 @@
-# micromechanics.py
-
+# composite_math/display_math.py
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
+from composite_math.calculations import calculate_properties
 import numpy as np
 import inspect
-from calculations import theories
 
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
@@ -14,8 +13,23 @@ def set_mpl_style(theme_mode):
     else:
         mplstyle.use('default')
 
-def display_theories(property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, latex_results, math_results, show_math):
+def plot_properties(results_df, theme_mode):
     set_mpl_style(theme_mode)
+    results_df = results_df.set_index("Property").transpose()
+    fig, ax = plt.subplots(figsize=(12, 8))
+    for property_name in results_df.columns:
+        ax.scatter(results_df.index, results_df[property_name], label=property_name)
+    ax.set_title('Comparison of Composite Properties by Theory', color='white' if theme_mode == 'dark' else 'black')
+    ax.set_xlabel('Theory', color='white' if theme_mode == 'dark' else 'black')
+    ax.set_ylabel('Value', color='white' if theme_mode == 'dark' else 'black')
+    ax.legend()
+    ax.grid(True, color='gray')
+    ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
+    st.pyplot(fig)
+
+def display_theories(theory_type, property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, latex_results, math_results, show_math):
+    set_mpl_style(theme_mode)
+    theories = calculate_properties.__globals__[theory_type + "_theories"]
     theory_names = [name for name in theories[property_name].keys() if name != "unit"]
 
     coefficients = {}

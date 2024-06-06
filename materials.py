@@ -9,7 +9,7 @@ fibers = {
         "alpha1": 5.6, "alpha2": 5.6
     },
     "AS-4 Carbon": {
-        "E1f": 235, "E2f": 15, "G12f": 27, "G23f": 7, "v12f": 0.20, "F1ft": 3700,
+        "E1f": 225, "E2f": 15, "G12f": 27, "G23f": 7, "v12f": 0.20, "F1ft": 3700,
         "alpha1": -0.5, "alpha2": 15
     },
     "T-300 Carbon": {
@@ -36,7 +36,7 @@ fibers = {
 
 matrices = {
     "Epoxy_3501_6": {
-        "density": 1.27, "Em": 4.3, "Gm": 1.60, "vm": 0.35,
+        "density": 1.27, "Em": 4.2, "Gm": 1.57, "vm": 0.34,
         "FmT": 69, "FmC": 200, "FmS": 100, "alpha_m": 45,
         "Tg": 200, "Tmax": 150, "epsilon_mT": 2.5
     },
