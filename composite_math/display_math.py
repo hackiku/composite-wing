@@ -1,11 +1,13 @@
 # composite_math/display_math.py
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
-from composite_math.calculations import calculate_properties
 import numpy as np
 import inspect
+from composite_math.micromechanics import micromechanics_theories
+from composite_math.failure_theories import failure_theories
 
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
@@ -15,7 +17,8 @@ def set_mpl_style(theme_mode):
 
 def plot_properties(results_df, theme_mode):
     set_mpl_style(theme_mode)
-    results_df = results_df.set_index("Property").transpose()
+    if "Property" in results_df:
+        results_df = results_df.set_index("Property").transpose()
     fig, ax = plt.subplots(figsize=(12, 8))
     for property_name in results_df.columns:
         ax.scatter(results_df.index, results_df[property_name], label=property_name)
@@ -29,7 +32,7 @@ def plot_properties(results_df, theme_mode):
 
 def display_theories(theory_type, property_name, fiber_key, fiber_material, matrix_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, latex_results, math_results, show_math):
     set_mpl_style(theme_mode)
-    theories = calculate_properties.__globals__[theory_type + "_theories"]
+    theories = micromechanics_theories if theory_type == "micromechanics" else failure_theories
     theory_names = [name for name in theories[property_name].keys() if name != "unit"]
 
     coefficients = {}
@@ -52,7 +55,7 @@ def display_theories(theory_type, property_name, fiber_key, fiber_material, matr
     theory_details = theories[property_name][selected_theory]
     formula = theory_details['formula']
     latex = latex_results[property_name][selected_theory]
-    unit = theories[property_name]['unit']
+    unit = theories[property_name].get('unit', '')
 
     if 'coefficients' in theory_details:
         for coeff_name, coeff_details in theory_details['coefficients'].items():
@@ -63,10 +66,7 @@ def display_theories(theory_type, property_name, fiber_key, fiber_material, matr
             coefficients[coeff_name] = st.number_input(f'{coeff_name} for {selected_theory}', value=coeff_value)
             st.latex(f"{coeff_details['latex']} = {coeff_value}")
 
-    if selected_theory in ["Halpin-Tsai", "Modified Rule of Mixtures (MROM)"]:
-        result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
-    else:
-        result = formula(fiber_material, matrix_material, Vf, Vm)
+    result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients) if selected_theory in ["Halpin-Tsai", "Modified Rule of Mixtures (MROM)"] else formula(fiber_material, matrix_material, Vf, Vm)
 
     if show_math:
         st.latex(f"{latex}")
@@ -92,10 +92,7 @@ def display_theories(theory_type, property_name, fiber_key, fiber_material, matr
                             coeffs[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
                         else:
                             coeffs[coeff_name] = coeff_details['default']
-                if theory in ["Halpin-Tsai", "Modified Rule of Mixtures (MROM)"]:
-                    value = theories[property_name][theory]['formula'](fiber_material, matrix_material, vf, vm, **coeffs)
-                else:
-                    value = theories[property_name][theory]['formula'](fiber_material, matrix_material, vf, vm)
+                value = theories[property_name][theory]['formula'](fiber_material, matrix_material, vf, vm, **coeffs) if theory in ["Halpin-Tsai", "Modified Rule of Mixtures (MROM)"] else theories[property_name][theory]['formula'](fiber_material, matrix_material, vf, vm)
                 all_values[theory].append(value)
 
         fig, ax = plt.subplots(figsize=(12, 6))

@@ -1,21 +1,15 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from utils import spacer
-# math & calcs
-from wing_load_calculator import calculate_wing_load
 from composite_math.calculations import calculate_micromechanics_properties, calculate_failure_theories
 from composite_math.display_math import plot_properties, display_theories
-# cad
 from stl_fetch import fetch_stl, PRESETS 
 from stl_show import load_stl, get_model_files
-import onshape_variables 
-import inspect
-import os
-
+import onshape_variables
+from wing_load_calculator import calculate_wing_load
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -49,8 +43,6 @@ def display_all_materials():
     st.dataframe(all_fibers)
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
-
-# --------------------------------------------------------
 
 def main():
     if 'stl_model' not in st.session_state:
@@ -161,6 +153,8 @@ def main():
     materials_dataframe(fiber_material_key, matrix_material_key)
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
+
+
     
     results, latex_results, math_results = calculate_micromechanics_properties(fiber_material, matrix_material, Vf, Vm, show_math)
     max_len = max(len(results[theory]) for theory in results if theory != "Property")
@@ -173,10 +167,9 @@ def main():
     plot_properties(results_df, theme_mode)
     st.markdown('***')
 
-    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", 
-                  "tensile_strength", "compressive_strength", 
-                  "transverse_tensile_strength", "transverse_compressive_strength",
-                  "in_plane_shear_strength"]
+    # ------------------------------------------------
+    st.subheader('Micromechanics calculations')
+    properties = ["E1_modulus", "E2_modulus"]
     for property_name in properties:
         display_theories("micromechanics", property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, latex_results, math_results, show_math)
         st.markdown('***')

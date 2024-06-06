@@ -2,7 +2,7 @@
 from composite_math.micromechanics import calculate_micromechanics_properties
 from composite_math.failure_theories import calculate_failure_theories
 
-def calculate_properties(fiber_material, matrix_material, Vf, Vm, Vvoid, sigma, F, show_math=True):
+def calculate_properties(fiber_material, matrix_material, Vf, Vm, Vvoid, sigma, F, show_math=False):
     micromechanics_results, micromechanics_latex, micromechanics_math = calculate_micromechanics_properties(fiber_material, matrix_material, Vf, Vm, show_math)
     failure_results, failure_latex = calculate_failure_theories(sigma, F)
 
