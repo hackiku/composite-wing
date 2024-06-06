@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from utils import spacer
 from composite_math.calculations import calculate_micromechanics_properties, calculate_failure_theories
@@ -153,8 +151,6 @@ def main():
     materials_dataframe(fiber_material_key, matrix_material_key)
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
-
-
     
     results, latex_results, math_results = calculate_micromechanics_properties(fiber_material, matrix_material, Vf, Vm, show_math)
     max_len = max(len(results[theory]) for theory in results if theory != "Property")
@@ -167,8 +163,6 @@ def main():
     plot_properties(results_df, theme_mode)
     st.markdown('***')
 
-    # ------------------------------------------------
-    st.subheader('Micromechanics calculations')
     properties = ["E1_modulus", "E2_modulus"]
     for property_name in properties:
         display_theories("micromechanics", property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, latex_results, math_results, show_math)
@@ -181,7 +175,10 @@ def main():
     
     # Placeholder for failure theories calculations
     sigma = {"sigma1": 100, "sigma2": 50, "tau12": 30}  # Replace with actual values
-    F = {"F1": 200, "F2": 150, "F11": 0.1, "F22": 0.2, "F12": 0.05, "F66": 0.1}  # Replace with actual values
+    F = {
+        "F1": 200, "F2": 150, "F11": 0.1, "F22": 0.2, "F12": 0.05, "F66": 0.1, 
+        "F1ft": 3700, "F2t": 1500, "FmS": 100  # Add any additional necessary parameters here
+    }
     failure_results, failure_latex_results = calculate_failure_theories(sigma, F)
     
     st.subheader("Calculated Failure Theories")
