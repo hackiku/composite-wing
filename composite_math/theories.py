@@ -34,11 +34,11 @@ micromechanics_theories = {
         },
         "Voigt Model": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m"
+            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
         },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
+            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}",
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
@@ -49,19 +49,19 @@ micromechanics_theories = {
         "unit": "GPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m"
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
         },
         "Voigt Model": {
             "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m"
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
         },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E2f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}"
+            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}",
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E2f']),
-            "latex": r"E_2 = \frac{E_{2f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{2f}}"
+            "latex": r"E_2 = \frac{E_{2f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{2f}}",
         },
     },
     "shear_modulus": {

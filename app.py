@@ -60,7 +60,8 @@ def main():
         st.session_state.variables = {}
 
     st.title("Composite Wingy 🪃")
-    st.write("Design a wing with composite materials. You can build a parametric wing in Onshap API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
+    st.write("Design a wing with composite materials")
+    st.write("Visualize and edit a live CAD in Onshape, combine fibers and matrices, export config to Femap with NASTRAN solver.")
 
     st.markdown("***")
 
@@ -192,7 +193,7 @@ def main():
 
     # Display results and plots for each category
     for category, properties in [("Micromechanics", micromechanics_properties), ("Strength", strength_properties), ("Failure Theories", failure_properties)]:
-        st.subheader(f"Calculated Properties by {category}")
+        st.header(f"👉 {category} properties")
         results_df = pd.DataFrame(results_combined[category])
         st.dataframe(results_df)
         plot_properties(results_df, theme_mode)

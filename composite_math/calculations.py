@@ -89,7 +89,7 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
     set_mpl_style(theme_mode)
     theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
 
-    col1, col2, col3 = st.columns([4, 1, 1])
+    col1, col2, col3 = st.columns([4, 2, 2])
     with col1:
         st.subheader(property_name.replace('_', ' ').title())
     with col2:
@@ -108,6 +108,17 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
     formula = theory_details['formula']
     latex = latex_results[property_name][selected_theory]
     unit = theory_dict[property_name].get('unit', '')
+
+    # Extract the variables used in the formula
+    used_variables = {'Vf': Vf, 'Vm': Vm}
+    used_variables.update(fiber_material)
+    used_variables.update(matrix_material)
+    
+    # Display the variables
+    st.write("Variables used in the formula:")
+    for var_name, var_value in used_variables.items():
+        st.write(f"{var_name} = {var_value}")
+
 
     if 'coefficients' in theory_details:
         coefficients = {coeff_name: coeff_details['formula'](fiber_material, matrix_material) if 'formula' in coeff_details else coeff_details['default']
@@ -128,7 +139,7 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
         all_values = {theory: [] for theory in theory_names}
 
         for vf in vfs:
-            vm = 1 - vf
+            vm = 1 - vf # TODO avoid recalculation
             for theory in theory_names:
                 coeffs = {}
                 if 'coefficients' in theory_dict[property_name][theory]:
