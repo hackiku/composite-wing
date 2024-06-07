@@ -5,15 +5,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 import streamlit as st
-from composite_math.theories import micromechanics_theories, failure_theories
+from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
 
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
         mplstyle.use('dark_background')
     else:
         mplstyle.use('default')
-
-
 
 def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, show_math=True):
     results = {"Property": properties}
@@ -22,45 +20,55 @@ def calculate_properties(theory_dict, properties, fiber_material, matrix_materia
 
     all_theories = set()
     for property_name in properties:
-        all_theories.update(theory_name for theory_name in theory_dict[property_name].keys() if theory_name != "unit")
-
+        if property_name in theory_dict:
+            all_theories.update(theory_name for theory_name in theory_dict[property_name].keys() if theory_name != "unit")
+    
     for theory_name in all_theories:
         results[theory_name] = [None] * len(properties)
 
     for i, property_name in enumerate(properties):
-        for theory_name, theory_details in theory_dict[property_name].items():
-            if theory_name == "unit":
-                continue
+        if property_name in theory_dict:
+            for theory_name, theory_details in theory_dict[property_name].items():
+                if theory_name == "unit":
+                    continue
 
-            formula = theory_details["formula"]
-            latex_formula = theory_details["latex"]
-            math_formula = theory_details.get("math", None)
+                # Ensure theory_details is a dictionary
+                if not isinstance(theory_details, dict):
+                    print(f"Expected a dictionary for theory details of {property_name} in {theory_name}, but got {type(theory_details)}.")
+                    continue
 
-            if 'coefficients' in theory_details:
-                coefficients = {}
-                for coeff_name, coeff_details in theory_details['coefficients'].items():
-                    if 'formula' in coeff_details:
-                        coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
-                    else:
-                        coefficients[coeff_name] = coeff_details['default']
-                result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
-            else:
-                result = formula(fiber_material, matrix_material, Vf, Vm)
+                formula = theory_details.get("formula", None)
+                latex_formula = theory_details.get("latex", "")
+                math_formula = theory_details.get("math", None)
 
-            results[theory_name][i] = result
+                if formula is None:
+                    print(f"Formula not found for {property_name} in {theory_name}")
+                    continue
 
-            if callable(latex_formula):
-                latex_results[property_name][theory_name] = latex_formula(fiber_material, matrix_material, Vf, Vm)
-            else:
-                latex_results[property_name][theory_name] = latex_formula
+                if 'coefficients' in theory_details:
+                    coefficients = {}
+                    for coeff_name, coeff_details in theory_details['coefficients'].items():
+                        if 'formula' in coeff_details:
+                            coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
+                        else:
+                            coefficients[coeff_name] = coeff_details['default']
+                    result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
+                else:
+                    result = formula(fiber_material, matrix_material, Vf, Vm)
 
-            if show_math and math_formula:
-                math_results[property_name][theory_name] = math_formula(fiber_material, matrix_material, Vf, Vm)
-            elif show_math:
-                math_results[property_name][theory_name] = ""
+                results[theory_name][i] = result
+
+                if callable(latex_formula):
+                    latex_results[property_name][theory_name] = latex_formula(fiber_material, matrix_material, Vf, Vm)
+                else:
+                    latex_results[property_name][theory_name] = latex_formula
+
+                if show_math and math_formula:
+                    math_results[property_name][theory_name] = math_formula(fiber_material, matrix_material, Vf, Vm)
+                elif show_math:
+                    math_results[property_name][theory_name] = ""
 
     return results, latex_results, math_results
-
 
 def plot_properties(results_df, theme_mode):
     set_mpl_style(theme_mode)

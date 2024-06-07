@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
 from utils import spacer
-from composite_math.calculations import calculate_micromechanics_properties, calculate_failure_theories
-from composite_math.display_math import plot_properties, display_theories
+from composite_math.calculations import calculate_properties, plot_properties, display_theories
+from composite_math.theories import micromechanics_theories, strength_theories, failure_theories, theory_categories
 from stl_fetch import fetch_stl, PRESETS 
 from stl_show import load_stl, get_model_files
 import onshape_variables
@@ -19,12 +19,6 @@ st.set_page_config(
         'Get Help': 'https://jzro.co'
     }
 )
-
-def set_mpl_style(theme_mode):
-    if theme_mode == "dark":
-        mplstyle.use('dark_background')
-    else:
-        mplstyle.use('default')
 
 def materials_dataframe(fiber, matrix):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber], orient='index', columns=[fiber]).transpose()
@@ -42,25 +36,31 @@ def display_all_materials():
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
 
+
+# ================ SIDEBAR =================    
+st.sidebar.markdown('### Choose wing material')
+fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
+matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
+Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
+Vm = 1 - Vf
+Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
+
+theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
+show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
+show_math = st.sidebar.checkbox("Show Math", value=False)
+
+
+# ------------------------------------
+
 def main():
+    
     if 'stl_model' not in st.session_state:
         st.session_state.stl_model = None
         st.session_state.selected_preset = "None"
         st.session_state.variables = {}
 
-    st.sidebar.markdown('### Choose wing material')
-    fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
-    matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
-    Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
-    Vm = 1 - Vf
-    Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
-    
-    theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
-    show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
-    show_math = st.sidebar.checkbox("Show Math", value=False)
-
-    st.title("Composite Wing Designer")
-    st.write("Design a composite wing. You can build a parametric wing in Onshap API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
+    st.title("Composite Wingy 🪃")
+    st.write("Design a wing with composite materials. You can build a parametric wing in Onshap API, calculate composite material properties, and then export STEP to FEMAP for finite elements analysis.")
 
     st.markdown("***")
 
@@ -127,7 +127,7 @@ def main():
     st.header("Wing load")
     col1, col2, col3 = st.columns(3)
     with col1:
-        mass = st.number_input('Mass of aircraft (kg)', value=11300, step=1)
+        mass = st.number_input('Mass of aircraft (kg)', value=11300, step=100)
         load_factor = st.number_input('Load Factor', value=6, help="The load factor represents the ratio of the maximum load the wing can support to the aircraft's weight. A higher load factor indicates greater structural stress.")
         
     with col2:
@@ -140,55 +140,61 @@ def main():
     # if st.button('Calculate Load Forces'):
     calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
-    # Composite materials section
+    # =================== MATERIALS ===================
     st.markdown("***")
     st.header('2️⃣ Composite materials')
     st.write('Now it\'s time to choose the fiber and matrix materials. For faster processing, deselect the Show Graphs option.')
     st.info('Choose materials & options in the sidebar', icon="👈")
-    
+
     if st.button("Show all material properties", type="secondary"):
         display_all_materials()
+
     materials_dataframe(fiber_material_key, matrix_material_key)
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
-    
-    results, latex_results, math_results = calculate_micromechanics_properties(fiber_material, matrix_material, Vf, Vm, show_math)
-    max_len = max(len(results[theory]) for theory in results if theory != "Property")
-    for theory in results:
-        if theory != "Property" and len(results[theory]) < max_len:
-            results[theory].extend([None] * (max_len - len(results[theory])))
-    results_df = pd.DataFrame(results)
-    st.subheader("Calculated Properties by Theory")
-    st.dataframe(results_df)
-    plot_properties(results_df, theme_mode)
-    st.markdown('***')
 
-    properties = ["E1_modulus", "E2_modulus"]
-    for property_name in properties:
-        display_theories("micromechanics", property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, latex_results, math_results, show_math)
-        st.markdown('***')
+    # Failure inputs
+    sigma = {"sigma1": 0, "sigma2": 0, "tau12": 0}
+    F = {"F1": 0, "F2": 0, "F11": 0, "F22": 0, "F12": 0, "F66": 0}
 
-    # Failure theories section
-    st.markdown("***")
-    st.header('3️⃣ Failure Theories')
-    st.write('Analyze failure theories such as Tsai-Hill and Tsai-Wu.')
-    
-    # Placeholder for failure theories calculations
-    sigma = {"sigma1": 100, "sigma2": 50, "tau12": 30}  # Replace with actual values
-    F = {
-        "F1": 200, "F2": 150, "F11": 0.1, "F22": 0.2, "F12": 0.05, "F66": 0.1, 
-        "F1ft": 3700, "F2t": 1500, "FmS": 100  # Add any additional necessary parameters here
+    # Define properties to calculate
+    micromechanics_properties = ["E1_modulus"]
+    strength_properties = ["tensile_strength"]
+    failure_properties = ["Tsai-Wu"]
+
+    # Calculate properties for each category
+    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, show_math)
+    results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, show_math)
+    results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, show_math)
+
+    # Combine results
+    results_combined = {
+        "Micromechanics": results_micromechanics,
+        "Strength": results_strength,
+        "Failure Theories": results_failure
     }
-    failure_results, failure_latex_results = calculate_failure_theories(sigma, F)
-    
-    st.subheader("Calculated Failure Theories")
-    failure_results_df = pd.DataFrame.from_dict(failure_results, orient='index', columns=['Value'])
-    st.dataframe(failure_results_df)
-    
-    for theory_name in failure_results:
-        st.subheader(theory_name)
-        st.latex(failure_latex_results[theory_name])
-        # Add additional graphs and analysis specific to failure theories here if needed
+    latex_combined = {
+        "Micromechanics": latex_micromechanics,
+        "Strength": latex_strength,
+        "Failure Theories": latex_failure
+    }
+    math_combined = {
+        "Micromechanics": math_micromechanics,
+        "Strength": math_strength,
+        "Failure Theories": math_failure
+    }
+
+    # Display results and plots for each category
+    for category, properties in [("Micromechanics", micromechanics_properties), ("Strength", strength_properties), ("Failure Theories", failure_properties)]:
+        st.subheader(f"Calculated Properties by {category}")
+        results_df = pd.DataFrame(results_combined[category])
+        st.dataframe(results_df)
+        plot_properties(results_df, theme_mode)
+        st.markdown('***')
+        
+        for property_name in properties:
+            display_theories(property_name, micromechanics_theories if category == "Micromechanics" else strength_theories if category == "Strength" else failure_theories, results_combined[category], latex_combined[category], math_combined[category], fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, show_math)
+            st.markdown('***')
 
 if __name__ == "__main__":
     main()
