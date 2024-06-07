@@ -158,14 +158,15 @@ def main():
     F = {"F1": 0, "F2": 0, "F11": 0, "F22": 0, "F12": 0, "F66": 0}
 
     # Define properties to calculate
-    micromechanics_properties = ["E1_modulus"]
-    strength_properties = ["tensile_strength"]
-    failure_properties = ["Tsai-Wu"]
+    micromechanics_properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
+    strength_properties = ["tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
+    failure_properties = ["Tsai-Wu", "Tsai-Hill"]
 
     # Calculate properties for each category
     results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, show_math)
     results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, show_math)
     results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, show_math)
+
 
     # Combine results
     results_combined = {
