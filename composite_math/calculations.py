@@ -13,7 +13,8 @@ def set_mpl_style(theme_mode):
     else:
         mplstyle.use('default')
 
-def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, show_math=True):
+# Vvoid + other vars
+def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math=True):
     results = {"Property": properties}
     latex_results = {property_name: {} for property_name in properties}
     math_results = {property_name: {} for property_name in properties} if show_math else None

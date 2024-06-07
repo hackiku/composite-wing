@@ -162,11 +162,16 @@ def main():
     strength_properties = ["tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
     failure_properties = ["Tsai-Wu", "Tsai-Hill"]
 
-    # Calculate properties for each category
-    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, show_math)
-    results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, show_math)
-    results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, show_math)
+    # Calculate properties for each category    
+    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
+    results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
+    results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
 
+    
+    # Calculate properties for each category
+    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
+    results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
+    results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
 
     # Combine results
     results_combined = {
