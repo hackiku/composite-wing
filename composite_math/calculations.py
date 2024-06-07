@@ -114,12 +114,7 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
     used_variables.update(fiber_material)
     used_variables.update(matrix_material)
     
-    # Display the variables
-    st.write("Variables used in the formula:")
-    for var_name, var_value in used_variables.items():
-        st.write(f"{var_name} = {var_value}")
-
-
+    
     if 'coefficients' in theory_details:
         coefficients = {coeff_name: coeff_details['formula'](fiber_material, matrix_material) if 'formula' in coeff_details else coeff_details['default']
                         for coeff_name, coeff_details in theory_details['coefficients'].items()}
@@ -139,7 +134,7 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
         all_values = {theory: [] for theory in theory_names}
 
         for vf in vfs:
-            vm = 1 - vf # TODO avoid recalculation
+            vm = 1 - vf
             for theory in theory_names:
                 coeffs = {}
                 if 'coefficients' in theory_dict[property_name][theory]:

@@ -30,19 +30,22 @@ micromechanics_theories = {
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
             "latex": r"E_1 = E_{1f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
+            "math": lambda f, m, Vf, Vm: f"E_{{1}} = {f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
         "Voigt Model": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
             "latex": r"E_1 = E_{1f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_{{1}} = {f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
             "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}",
+            "math": lambda f, m, Vf, Vm: f"\frac{{1}}{{E_{{1}}}} = \frac{{{Vf:.3f}}}{{{f['E1f']}}} + \frac{{{Vm:.3f}}}{{{m['Em']}}}"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}"
+            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
+            "math": lambda f, m, Vf, Vm: f"E_{{1}} = \frac{{{f['E1f']} \cdot {m['Em']}}}{{{Vf:.3f} \cdot {m['Em']} + {Vm:.3f} \cdot {f['E1f']}}}"
         },
     },
     "E2_modulus": {
@@ -68,15 +71,13 @@ micromechanics_theories = {
         "unit": "GPa",
         "Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: f['G12f'] * Vf + m['Gm'] * Vm,
-            "latex": r"G_{12} = G_{12f}V_f + G_mV_m"
+            "latex": r"G_{12} = G_{12f}V_f + G_mV_m",
+            "math": lambda f, m, Vf, Vm: f"G_{{12}} = {f['G12f']} \cdot {Vf:.3f} + {m['Gm']} \cdot {Vm:.3f}"
         },
         "Hashin-Rosen": {
             "formula": lambda f, m, Vf, Vm: (m['Gm'] * (f['G12f'] * (1 + Vf) + m['Gm'] * Vm)) / (f['G12f'] * Vm + m['Gm'] * (1 + Vf)),
-            "latex": r"G_{12} = G_m \frac{G_{12f} (1 + V_f) + G_m V_m}{G_{12f} V_m + G_m (1 + V_f)}"
-        },
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f'])),
-            "latex": r"G_{12} = \frac{G_m}{1 - \sqrt{V_f} \left( 1 - \frac{G_m}{G_{12f}} \right)}"
+            "latex": r"G_{12} = G_m \frac{G_{12f} (1 + V_f) + G_m V_m}{G_{12f} V_m + G_m (1 + V_f)}",
+            "math": lambda f, m, Vf, Vm: f"G_{{12}} = {m['Gm']} \cdot \frac{{{f['G12f']} \cdot (1 + {Vf:.3f}) + {m['Gm']} \cdot {Vm:.3f}}}{{{f['G12f']} \cdot {Vm:.3f} + {m['Gm']} \cdot (1 + {Vf:.3f})}}"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm, xi: m['Gm'] * ((1 + 2 * xi * Vf) / (1 - xi * Vf)),
@@ -93,15 +94,18 @@ micromechanics_theories = {
         "unit": "-",
         "Chamis": {
             "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
-            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
+            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m",
+            "math": lambda f, m, Vf, Vm: f"\nu_{{12}} = {f['v12f']} \cdot {Vf:.3f} + {m['vm']} \cdot {Vm:.3f}"
         },
         "Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
-            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
+            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m",
+            "math": lambda f, m, Vf, Vm: f"\nu_{{12}} = {f['v12f']} \cdot {Vf:.3f} + {m['vm']} \cdot {Vm:.3f}"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['v12f'] * m['vm']) / (Vf * m['vm'] + Vm * f['v12f']),
-            "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}"
+            "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}",
+            "math": lambda f, m, Vf, Vm: f"\nu_{{12}} = \frac{{{f['v12f']} \cdot {m['vm']}}}{{{Vf:.3f} \cdot {m['vm']} + {Vm:.3f} \cdot {f['v12f']}}}"
         }
     }
 }
