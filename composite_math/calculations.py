@@ -115,6 +115,7 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
     used_variables.update(matrix_material)
     
     
+
     if 'coefficients' in theory_details:
         coefficients = {coeff_name: coeff_details['formula'](fiber_material, matrix_material) if 'formula' in coeff_details else coeff_details['default']
                         for coeff_name, coeff_details in theory_details['coefficients'].items()}

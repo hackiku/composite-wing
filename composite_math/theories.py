@@ -110,69 +110,59 @@ micromechanics_theories = {
     }
 }
 
+
+
 # Define strength theories
 strength_theories = {
     "tensile_strength": {
         "unit": "MPa",
-        "Chamis": {
+        "ROM": {
             "formula": lambda f, m, Vf, Vm: f['F1ft'] * Vf + m['FmT'] * Vm,
             "latex": r"F_{1T} = F_{1ft}V_f + F_mTV_m",
-            "math": lambda f, m, Vf, Vm: f"F_{{1T}} = {f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f}"
         },
-        "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: f['F1ft'] * Vf + m['FmT'] * Vm,
-            "latex": r"F_{1T} = F_{1ft}V_f + F_mTV_m"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm: (f['F1ft'] * m['FmT']) / (Vf * m['FmT'] + Vm * f['F1ft']),
-            "latex": r"F_{1T} = \frac{F_{1ft} \cdot F_{mT}}{V_f \cdot F_{mT} + V_m \cdot F_{1ft}}"
+        "Tensile Strength Composite Model": {
+            "formula": lambda f, m, Vf, Vm, eps_f, eps_m: f['F1ft'] * (Vf + (Vm * m['Em'] / f['E1f'])) if eps_f <= eps_m else m['FmT'] * ((f['E1f'] / m['Em']) * Vf + Vm),
+            "latex": r"F_{1T}"
         }
     },
     "compressive_strength": {
         "unit": "MPa",
         "Timoshenko-Gere": {
-            "formula": lambda f, m, Vf, Vm: ((1 - Vf**0.5) * f['F1ft'] + Vf**0.5 * m['FmC']),
-            "latex": r"F_{1C} = (1 - V_f^{1/2}) F_{1ft} + V_f^{1/2} F_{mC}"
+            "formula": lambda f, m, Vf, Vm: 2 * Vf * np.sqrt((Vf * f['E1f'] * m['Em']) / (3 * (1 - Vf))),
+            "latex": r"F_{1C} = 2V_f \sqrt{\frac{V_f E_{1f} E_m}{3(1 - V_f)}}",
         },
-        "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: f['F1ft'] * Vf + m['FmC'] * Vm,
-            "latex": r"F_{1C} = F_{1ft}V_f + F_mCV_m"
+        "Agarwal-Broutman": {
+            "formula": lambda f, m, Vf, Vm, eps_m: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * eps_m) / (f['v12f'] * Vf + m['vm'] * Vm),
+            "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}",
         }
     },
     "transverse_tensile_strength": {
         "unit": "MPa",
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3))),
-            "latex": r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_m \cdot (1 - V_f^{1/3})}"
+        "Nielsen": {
+            "formula": lambda f, m, Vf, Vm: (1 - Vf**(1/3)) * (f['E2f'] * m['FmT']) / m['Em'],
+            "latex": r"F_{2T} = \left( 1 - V_f^{1/3} \right) \frac{E_{2f} F_{mT}}{E_m}"
         },
-        "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['FmT']) / (m['Em'] * (1 - Vf**(1/3))),
-            "latex": r"F_{2T} = \frac{E_{2f} \cdot F_{mT}}{E_m \cdot (1 - V_f^{1/3})}"
+        "Barbero": {
+            "formula": lambda f, m, Vf, Vm, Vvoid: m['FmT'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Em'] / f['E2f'])),
+            "latex": r"F_{2T} = F_{mT} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)",
         }
     },
     "transverse_compressive_strength": {
         "unit": "MPa",
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f'])),
-            "latex": r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{E_m}{E_{2f}}\right)\right]"
-        },
-        "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: m['FmC'] * (1 + (Vf - Vf**(1/2)) * (1 - m['Em'] / f['E2f'])),
-            "latex": r"F_{2C} = F_{mC} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{E_m}{E_{2f}}\right)\right]"
+        "Weeton": {
+            "formula": lambda f, m, Vf, Vm, Vvoid: m['FmC'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Em'] / f['E2f'])),
+            "latex": r"F_{2C} = F_{mC} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)",
         }
     },
     "in_plane_shear_strength": {
         "unit": "MPa",
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: m['FmS'] * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
-            "latex": r"F_{6} = F_{ms} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{G_m}{G_{12f}}\right)\right]"
-        },
-        "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: m['FmS'] * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
-            "latex": r"F_{6} = F_{ms} \cdot \left[1 + \left(V_f - V_f^{1/2}\right) \cdot \left(1 - \frac{G_m}{G_{12f}}\right)\right]"
+        "Stellbrink": {
+            "formula": lambda f, m, Vf, Vm, Vvoid: m['FmS'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
+            "latex": r"F_{6} = F_{mS} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{G_m}{G_{12f}} \right) \right)",
         }
     }
 }
+
 
 # Define failure theories
 failure_theories = {

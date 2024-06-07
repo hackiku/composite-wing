@@ -4,7 +4,7 @@ from materials import fibers, matrices
 from utils import spacer
 from composite_math.calculations import calculate_properties, plot_properties, display_theories
 from composite_math.theories import micromechanics_theories, strength_theories, failure_theories, theory_categories
-from stl_fetch import fetch_stl, PRESETS 
+from stl_fetch import fetch_stl, PRESETS
 from stl_show import load_stl, get_model_files
 import onshape_variables
 from wing_load_calculator import calculate_wing_load
@@ -36,7 +36,6 @@ def display_all_materials():
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
 
-
 # ================ SIDEBAR =================    
 st.sidebar.markdown('### Choose wing material')
 fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
@@ -49,11 +48,7 @@ theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
 
-
-# ------------------------------------
-
 def main():
-    
     if 'stl_model' not in st.session_state:
         st.session_state.stl_model = None
         st.session_state.selected_preset = "None"
@@ -157,6 +152,9 @@ def main():
     # Failure inputs
     sigma = {"sigma1": 0, "sigma2": 0, "tau12": 0}
     F = {"F1": 0, "F2": 0, "F11": 0, "F22": 0, "F12": 0, "F66": 0}
+    
+    eps_f = 0.1
+    eps_m = 1
 
     # Define properties to calculate
     micromechanics_properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
@@ -164,15 +162,15 @@ def main():
     failure_properties = ["Tsai-Wu", "Tsai-Hill"]
 
     # Calculate properties for each category    
-    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
-    results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
-    results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
-
-    
-    # Calculate properties for each category
-    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
-    results_strength, latex_strength, math_strength = calculate_properties(strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
-    results_failure, latex_failure, math_failure = calculate_properties(failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math)
+    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(
+        micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math
+    )
+    results_strength, latex_strength, math_strength = calculate_properties(
+        strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math, eps_f=eps_f, eps_m=eps_m
+    )
+    results_failure, latex_failure, math_failure = calculate_properties(
+        failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math
+    )
 
     # Combine results
     results_combined = {
