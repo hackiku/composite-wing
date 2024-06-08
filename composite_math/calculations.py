@@ -5,8 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 import streamlit as st
-from composite_math.theories import micromechanics_theories
-# from materials import fibers, matrices
+from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
 
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":

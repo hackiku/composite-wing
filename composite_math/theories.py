@@ -2,18 +2,6 @@
 
 import numpy as np
 
-# Wrapper functions
-def micromechanics_wrapper(formula, params):
-    return formula(params['f'], params['m'], params['Vf'], params['Vm'])
-
-def strength_wrapper(formula, params):
-    return formula(params['f'], params['m'], params['Vf'], params['Vm'], params['Vvoid'])
-
-def failure_wrapper(formula, params):
-    return formula(params['f'], params['m'], params['sigma'], params['F'])
-
-import numpy as np
-
 # Micromechanics theories
 micromechanics_theories = {
     "E1_modulus": {

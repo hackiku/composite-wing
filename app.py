@@ -1,9 +1,11 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from utils import spacer
 from composite_math.calculations import calculate_properties, plot_properties, display_theories
-from composite_math.theories import micromechanics_theories
+from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
 from stl_fetch import fetch_stl, PRESETS
 from stl_show import load_stl, get_model_files
 import onshape_variables
@@ -19,6 +21,13 @@ st.set_page_config(
         'Get Help': 'https://jzro.co'
     }
 )
+
+def set_mpl_style(theme_mode):
+    if theme_mode == "dark":
+        mplstyle.use('dark_background')
+    else:
+        mplstyle.use('default')
+
 
 def materials_dataframe(fiber, matrix):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber], orient='index', columns=[fiber]).transpose()
@@ -38,8 +47,8 @@ def display_all_materials():
 
 # ================ SIDEBAR =================    
 st.sidebar.markdown('### Choose wing material')
-fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=3, help="Choose the type of fiber material")
-matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=7, help="Choose the type of matrix material")
+fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=0, help="Choose the type of fiber material")
+matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=0, help="Choose the type of matrix material")
 Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
 Vm = 1 - Vf
 Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
@@ -47,6 +56,8 @@ Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, h
 theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
+
+# app.py
 
 def main():
     if 'stl_model' not in st.session_state:
@@ -176,6 +187,7 @@ def main():
     for property_name in micromechanics_properties:
         display_theories(property_name, micromechanics_theories, results_micromechanics, latex_micromechanics, math_micromechanics, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid)
         st.markdown('***')
+
 
 if __name__ == "__main__":
     main()
