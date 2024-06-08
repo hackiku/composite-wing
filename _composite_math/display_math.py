@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 import numpy as np
 import inspect
-from composite_math.micromechanics import micromechanics_theories
-from composite_math.failure_theories import failure_theories
+from _composite_math.micromechanics import micromechanics_theories
+from _composite_math.failure_theories import failure_theories
 
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
