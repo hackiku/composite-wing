@@ -1,5 +1,21 @@
 # materials.py
 fibers = {
+    "AS-4 Carbon": {
+        "E1f": 225, "E2f": 15, "G12f": 15, "G23f": 7, "v12f": 0.2, "F1ft": 3350,
+        "alpha1": -0.5, "alpha2": 15, "F1fc": 2500, "epsilon1ft": 1.4, "epsilon1fc": 1.1
+    },
+    "T-300 Carbon": {
+        "E1f": 230, "E2f": 15, "G12f": 15, "G23f": 7, "v12f": 0.2, "F1ft": 2500,
+        "alpha1": -0.7, "alpha2": 12, "F1fc": 2000, "epsilon1ft": 1.086, "epsilon1fc": 0.869
+    },
+    "E-Glass 21xK43": {
+        "E1f": 80, "E2f": 80, "G12f": 33.3, "G23f": 33.3, "v12f": 0.2, "F1ft": 2150,
+        "alpha1": 4.9, "alpha2": 4.9, "F1fc": 1450, "epsilon1ft": 2.687, "epsilon1fc": 1.811
+    },
+    "Silenka E-Glass 1200tex": {
+        "E1f": 74, "E2f": 74, "G12f": 30.8, "G23f": 30.8, "v12f": 0.2, "F1ft": 2150,
+        "alpha1": 4.9, "alpha2": 4.9, "F1fc": 1450, "epsilon1ft": 2.905, "epsilon1fc": 1.959
+    },
     "E-Glass": {
         "E1f": 73, "E2f": 73, "G12f": 30, "G23f": 30, "v12f": 0.23, "F1ft": 3450,
         "alpha1": 5.0, "alpha2": 5.0
@@ -7,14 +23,6 @@ fibers = {
     "S-Glass": {
         "E1f": 86, "E2f": 86, "G12f": 35, "G23f": 35, "v12f": 0.23, "F1ft": 4500,
         "alpha1": 5.6, "alpha2": 5.6
-    },
-    "AS-4 Carbon": {
-        "E1f": 225, "E2f": 15, "G12f": 27, "G23f": 7, "v12f": 0.20, "F1ft": 3700,
-        "alpha1": -0.5, "alpha2": 15
-    },
-    "T-300 Carbon": {
-        "E1f": 230, "E2f": 15, "G12f": 27, "G23f": 7, "v12f": 0.20, "F1ft": 3100,
-        "alpha1": -0.7, "alpha2": 12
     },
     "IM7 Carbon": {
         "E1f": 290, "E2f": 21, "G12f": 14, "G23f": None, "v12f": 0.20, "F1ft": 5170,
@@ -34,11 +42,27 @@ fibers = {
     }
 }
 
+
 matrices = {
     "Epoxy_3501_6": {
         "density": 1.27, "Em": 4.2, "Gm": 1.57, "vm": 0.34,
-        "FmT": 69, "FmC": 200, "FmS": 100, "alpha_m": 45,
-        "Tg": 200, "Tmax": 150, "epsilon_mT": 2.5
+        "FmT": 69, "FmC": 250, "FmS": 50, "alpha_m": 45,
+        "Tg": 200, "Tmax": 150, "epsilon_mT": 1.7
+    },
+    "Epoxy_BSL914C": {
+        "density": 0.00, "Em": 4.0, "Gm": 1.481, "vm": 0.35,
+        "FmT": 75, "FmC": 150, "FmS": 70, "alpha_m": 55,
+        "Tg": None, "Tmax": None, "epsilon_mT": 4
+    },
+    "Epoxy_LY556_HT907_DY063": {
+        "density": 1.17, "Em": 3.4, "Gm": 1.26, "vm": 0.36,
+        "FmT": 80, "FmC": 120, "FmS": 52, "alpha_m": 58,
+        "Tg": 152, "Tmax": None, "epsilon_mT": 5
+    },
+    "Epoxy_MY750_HY917_DY063": {
+        "density": 1.15, "Em": 3.5, "Gm": 1.30, "vm": 0.35,
+        "FmT": 77.5, "FmC": 127, "FmS": 53, "alpha_m": 58,
+        "Tg": 100, "Tmax": None, "epsilon_mT": 5
     },
     "Epoxy_977_3": {
         "density": 1.28, "Em": 3.7, "Gm": 1.37, "vm": 0.35,
@@ -69,10 +93,5 @@ matrices = {
         "density": 1.32, "Em": 3.7, "Gm": 4.65, "vm": 0.35,
         "FmT": 108, "FmC": 143, "FmS": 58, "alpha_m": 90,
         "Tg": 143, "Tmax": 250, "epsilon_mT": 2.5
-    },
-    "BSL914C": {
-        "density": 0.00, "Em": 4.0, "Gm": 1.481, "vm": 0.35,
-        "FmT": 75, "FmC": 150, "FmS": 70, "alpha_m": None,
-        "Tg": None, "Tmax": None, "epsilon_mT": None
-    },   
+    }
 }

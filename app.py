@@ -3,7 +3,7 @@ import pandas as pd
 from materials import fibers, matrices
 from utils import spacer
 from composite_math.calculations import calculate_properties, plot_properties, display_theories
-from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
+from composite_math.theories import micromechanics_theories
 from stl_fetch import fetch_stl, PRESETS
 from stl_show import load_stl, get_model_files
 import onshape_variables
@@ -47,8 +47,6 @@ Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, h
 theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
-
-# app.py
 
 def main():
     if 'stl_model' not in st.session_state:
@@ -153,52 +151,31 @@ def main():
 
     # Define properties to calculate
     micromechanics_properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
-    strength_properties = ["tensile_strength", "compressive_strength", "transverse_tensile_strength"]
-    failure_properties = ["Tsai-Wu", "Tsai-Hill", "Maximum Stress"]
 
-    # Placeholder failure inputs (can be dynamically generated based on user input or other logic)
-    sigma = {"sigma1": 0, "sigma2": 0, "tau12": 0}
-    F = {"F1": 0, "F2": 0, "F11": 0, "F22": 0, "F12": 0, "F66": 0}
-
-    # Calculate properties for each category
+    # Calculate micromechanics properties
     results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(
         micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, show_math=show_math
     )
-    results_strength, latex_strength, math_strength = calculate_properties(
-        strength_theories, strength_properties, fiber_material, matrix_material, Vf, Vm, Vvoid=Vvoid, show_math=show_math
-    )
-    results_failure, latex_failure, math_failure = calculate_properties(
-        failure_theories, failure_properties, fiber_material, matrix_material, Vf, Vm, sigma=sigma, F=F, show_math=show_math
-    )
 
-    # Combine results
-    results_combined = {
-        "Micromechanics": results_micromechanics,
-        "Strength": results_strength,
-        "Failure Theories": results_failure
-    }
-    latex_combined = {
-        "Micromechanics": latex_micromechanics,
-        "Strength": latex_strength,
-        "Failure Theories": latex_failure
-    }
-    math_combined = {
-        "Micromechanics": math_micromechanics,
-        "Strength": math_strength,
-        "Failure Theories": math_failure
-    }
+    # Check lengths of arrays in results_micromechanics
+    lengths = {key: len(value) for key, value in results_micromechanics.items()}
+    st.write("Lengths of arrays in results_micromechanics:", lengths)
 
-    # Display results and plots for each category
-    for category, properties in [("Micromechanics", micromechanics_properties), ("Strength", strength_properties), ("Failure Theories", failure_properties)]:
-        st.header(f"👉 {category} properties")
-        results_df = pd.DataFrame(results_combined[category])
-        st.dataframe(results_df)
-        plot_properties(results_df, theme_mode)
+    # Ensure all arrays are of the same length
+    min_length = min(lengths.values())
+    for key in results_micromechanics:
+        results_micromechanics[key] = results_micromechanics[key][:min_length]
+
+    # Display micromechanics results and plots
+    st.header("👉 Micromechanics properties")
+    results_df = pd.DataFrame(results_micromechanics)
+    st.dataframe(results_df)
+    plot_properties(results_df, theme_mode)
+    st.markdown('***')
+
+    for property_name in micromechanics_properties:
+        display_theories(property_name, micromechanics_theories, results_micromechanics, latex_micromechanics, math_micromechanics, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid)
         st.markdown('***')
-        
-        for property_name in properties:
-            display_theories(property_name, micromechanics_theories if category == "Micromechanics" else strength_theories if category == "Strength" else failure_theories, results_combined[category], latex_combined[category], math_combined[category], fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs, theme_mode, show_math)
-            st.markdown('***')
 
 if __name__ == "__main__":
     main()

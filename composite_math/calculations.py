@@ -5,8 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 import streamlit as st
-from composite_math.theories import micromechanics_theories, strength_theories, failure_theories, failure_wrapper, strength_wrapper, micromechanics_wrapper
-
+from composite_math.theories import micromechanics_theories
+# from materials import fibers, matrices
 
 def set_mpl_style(theme_mode):
     if theme_mode == "dark":
@@ -14,21 +14,10 @@ def set_mpl_style(theme_mode):
     else:
         mplstyle.use('default')
 
-
 def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, Vvoid=0, sigma=None, F=None, show_math=True):
-    results = {"Property": properties}
+    results = {property_name: [] for property_name in properties}
     latex_results = {property_name: {} for property_name in properties}
     math_results = {property_name: {} for property_name in properties} if show_math else None
-
-    param_dict = {
-        'f': fiber_material,
-        'm': matrix_material,
-        'Vf': Vf,
-        'Vm': Vm,
-        'Vvoid': Vvoid,
-        'sigma': sigma,
-        'F': F
-    }
 
     for property_name in properties:
         if property_name in theory_dict:
@@ -38,24 +27,25 @@ def calculate_properties(theory_dict, properties, fiber_material, matrix_materia
 
                 formula = theory_details["formula"]
                 latex_formula = theory_details["latex"]
-                math_formula = theory_details.get("math", None)
 
-                if "sigma" in formula.__code__.co_varnames:
-                    result = failure_wrapper(formula, param_dict)
-                elif "Vvoid" in formula.__code__.co_varnames:
-                    result = strength_wrapper(formula, param_dict)
-                else:
-                    result = micromechanics_wrapper(formula, param_dict)
+                try:
+                    if "sigma" in formula.__code__.co_varnames:
+                        result = formula(fiber_material, matrix_material, sigma, F)
+                    elif "Vvoid" in formula.__code__.co_varnames:
+                        result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid)
+                    else:
+                        result = formula(fiber_material, matrix_material, Vf, Vm)
+                except TypeError as e:
+                    st.error(f"Error calculating {property_name} with {theory_name}: {e}")
+                    continue
 
-                results.setdefault(theory_name, []).append(result)
-
-                if show_math and math_formula:
-                    math_results[property_name][theory_name] = result
+                results[property_name].append(result)
 
                 latex_results[property_name][theory_name] = latex_formula
+                if math_results is not None:
+                    math_results[property_name][theory_name] = result
 
     return results, latex_results, math_results
-
 
 def plot_properties(results_df, theme_mode):
     set_mpl_style(theme_mode)
@@ -71,9 +61,8 @@ def plot_properties(results_df, theme_mode):
     ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
     st.pyplot(fig)
 
-def display_theories(property_name, theory_dict, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, **kwargs):
-    
-    set_mpl_style(kwargs.get('theme_mode', 'default'))
+def display_theories(property_name, theory_dict, results, latex_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs=False, theme_mode='default', show_math=False):
+    set_mpl_style(theme_mode)
     theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
 
     col1, col2, col3 = st.columns([4, 2, 2])
@@ -92,30 +81,17 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
         selected_theory = theory_names[0]
 
     theory_details = theory_dict[property_name][selected_theory]
-    formula = theory_details['formula']
     latex = latex_results[property_name][selected_theory]
     unit = theory_dict[property_name].get('unit', '')
 
-    # Extract the variables used in the formula
-    used_variables = {'Vf': Vf, 'Vm': Vm}
-    used_variables.update(fiber_material)
-    used_variables.update(matrix_material)
-    
-    if 'coefficients' in theory_details:
-        coefficients = {coeff_name: coeff_details['formula'](fiber_material, matrix_material) if 'formula' in coeff_details else coeff_details['default']
-                        for coeff_name, coeff_details in theory_details['coefficients'].items()}
-        result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
-    else:
-        result = formula(fiber_material, matrix_material, Vf, Vm)
-
-    if kwargs.get('show_math', False):
+    if show_math:
         st.latex(f"{latex}")
-        math = math_results[property_name][selected_theory]
-        st.latex(f"{math} = {result:.3f} \\ [{unit}]")
+        result = results[property_name][theory_names.index(selected_theory)]
+        st.latex(f"{result:.3f} \\ [{unit}]")
     else:
-        st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
+        st.latex(f"{latex} = {results[property_name][theory_names.index(selected_theory)]:.3f} \\ [{unit}]")
 
-    if kwargs.get('show_individual_graphs', False):
+    if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)
         all_values = {theory: [] for theory in theory_names}
 
@@ -133,10 +109,10 @@ def display_theories(property_name, theory_dict, results, latex_results, math_re
         for theory, values in all_values.items():
             ax.plot(vfs, values, label=theory)
         ax.axvline(Vf, color='red', linestyle='--', alpha=0.5, label=f'Current Vf = {Vf}')
-        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction', color='white' if kwargs.get('theme_mode', 'default') == 'dark' else 'black')
-        ax.set_xlabel('Fiber Volume Fraction (Vf)', color='white' if kwargs.get('theme_mode', 'default') == 'dark' else 'black')
-        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})', color='white' if kwargs.get('theme_mode', 'default') == 'dark' else 'black')
+        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction', color='white' if theme_mode == 'dark' else 'black')
+        ax.set_xlabel('Fiber Volume Fraction (Vf)', color='white' if theme_mode == 'dark' else 'black')
+        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})', color='white' if theme_mode == 'dark' else 'black')
         ax.legend()
         ax.grid(True, color='gray')
-        ax.tick_params(colors='white' if kwargs.get('theme_mode', 'default') == 'dark' else 'black')
+        ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
         st.pyplot(fig)

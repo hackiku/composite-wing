@@ -12,6 +12,9 @@ def strength_wrapper(formula, params):
 def failure_wrapper(formula, params):
     return formula(params['f'], params['m'], params['sigma'], params['F'])
 
+import numpy as np
+
+# Micromechanics theories
 micromechanics_theories = {
     "E1_modulus": {
         "unit": "GPa",
@@ -19,13 +22,13 @@ micromechanics_theories = {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
             "latex": r"E_1 = E_{1f}V_f + E_mV_m"
         },
+        "Voigt Model": {
+            "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
+            "latex": r"E_1 = E_{1f}V_f + E_mV_m"
+        },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
             "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm, xi=0.5: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}"
         }
     },
     "E2_modulus": {
@@ -34,13 +37,13 @@ micromechanics_theories = {
             "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
             "latex": r"E_2 = E_{2f}V_f + E_mV_m"
         },
+        "Voigt Model": {
+            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m"
+        },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E2f'] + Vm / m['Em']),
             "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm, xi=0.5: (f['E2f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E2f']),
-            "latex": r"E_2 = \frac{E_{2f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{2f}}"
         }
     },
     "shear_modulus": {
@@ -49,13 +52,13 @@ micromechanics_theories = {
             "formula": lambda f, m, Vf, Vm: f['G12f'] * Vf + m['Gm'] * Vm,
             "latex": r"G_{12} = G_{12f}V_f + G_mV_m"
         },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm, xi=0.5: m['Gm'] * ((1 + 2 * xi * Vf) / (1 - xi * Vf)),
-            "latex": r"G_{12} = G_m \left( \frac{1 + 2 \cdot \xi \cdot V_f}{1 - \xi \cdot V_f} \right)"
-        },
         "Chamis": {
             "formula": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f'])),
             "latex": r"G_{12} = \frac{G_m}{1 - \sqrt{V_f} \left( 1 - \frac{G_m}{G_{12f}} \right)}"
+        },
+        "Halpin-Tsai": {
+            "formula": lambda f, m, Vf, Vm: (f['G12f'] * m['Gm']) / (Vf * m['Gm'] + Vm * f['G12f']),
+            "latex": r"G_{12} = \frac{G_{12f} \cdot G_m}{V_f \cdot G_m + V_m \cdot G_{12f}}"
         }
     },
     "poisson_ratio": {
@@ -75,6 +78,7 @@ micromechanics_theories = {
     }
 }
 
+# Strength theories
 strength_theories = {
     "tensile_strength": {
         "unit": "MPa",
@@ -98,11 +102,11 @@ strength_theories = {
             "latex": r"F_{1C} = 2V_f \sqrt{\frac{V_f E_{1f} E_m}{3(1 - V_f)}}"
         },
         "Agarwal-Broutman": {
-            "formula": lambda f, m, Vf, Vm, eps_m: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * eps_m) / (f['v12f'] * Vf + m['vm'] * Vm),
+            "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['v12f'] * Vf + m['vm'] * Vm),
             "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}"
         },
         "Modified ROM": {
-            "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmC'] * Vm) (1 - Vvoid),
+            "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmC'] * Vm) * (1 - Vvoid),
             "latex": r"F_{1C} = (F_{1ft}V_f + F_mCV_m)(1 - V_{void})"
         }
     },
@@ -110,19 +114,20 @@ strength_theories = {
         "unit": "MPa",
         "Nielsen": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (1 - Vvoid**(1/3)) * (f['E2f'] * m['FmT']) / m['Em'],
-            "latex": r"F_{2T} = \left( 1 - V_f^{1/3} \right) \frac{E_{2f} F_{mT}}{E_m}"
+            "latex": r"F_{2T} = \left( 1 - V_{void}^{1/3} \right) \frac{E_{2f} F_{mT}}{E_m}"
         },
         "Barbero": {
             "formula": lambda f, m, Vf, Vm, Vvoid: m['FmT'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Em'] / f['E2f'])),
             "latex": r"F_{2T} = F_{mT} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)"
         },
         "Modified ROM": {
-            "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmT'] * Vm) (1 - Vvoid),
+            "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmT'] * Vm) * (1 - Vvoid),
             "latex": r"F_{2T} = (F_{1ft}V_f + F_mTV_m)(1 - V_{void})"
         }
     }
 }
 
+# Failure theories
 failure_theories = {
     "Tsai-Wu": {
         "formula": lambda f, m, sigma, F: (F['F1'] * sigma['sigma1'] + F['F2'] * sigma['sigma2'] + 
