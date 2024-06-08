@@ -13,8 +13,7 @@ def set_mpl_style(theme_mode):
     else:
         mplstyle.use('default')
 
-# Vvoid + other vars
-def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math=True):
+def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math=True, **kwargs):
     results = {"Property": properties}
     latex_results = {property_name: {} for property_name in properties}
     math_results = {property_name: {} for property_name in properties} if show_math else None
@@ -33,11 +32,6 @@ def calculate_properties(theory_dict, properties, fiber_material, matrix_materia
                 if theory_name == "unit":
                     continue
 
-                # Ensure theory_details is a dictionary
-                if not isinstance(theory_details, dict):
-                    print(f"Expected a dictionary for theory details of {property_name} in {theory_name}, but got {type(theory_details)}.")
-                    continue
-
                 formula = theory_details.get("formula", None)
                 latex_formula = theory_details.get("latex", "")
                 math_formula = theory_details.get("math", None)
@@ -53,9 +47,12 @@ def calculate_properties(theory_dict, properties, fiber_material, matrix_materia
                             coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
                         else:
                             coefficients[coeff_name] = coeff_details['default']
-                    result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
+                    result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients, **kwargs)
                 else:
-                    result = formula(fiber_material, matrix_material, Vf, Vm)
+                    try:
+                        result = formula(fiber_material, matrix_material, Vf, Vm, **kwargs)
+                    except TypeError:
+                        result = formula(fiber_material, matrix_material, Vf, Vm)
 
                 results[theory_name][i] = result
 
