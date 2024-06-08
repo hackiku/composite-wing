@@ -1,10 +1,10 @@
-# material_math/laminate.py
+# material_math/calculate_properties.py
 
 import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
+from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 
 def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, Vvoid=0, sigma=None, F=None, show_math=True):
     results = {property_name: [] for property_name in properties}

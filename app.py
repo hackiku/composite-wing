@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import matplotlib.style as mplstyle
 from materials import fibers, matrices
 from utils import spacer
-from composite_math.calculations import calculate_properties, plot_properties, display_theories
-from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
 from onshape_cad.model_ui import model_ui
-from wing_load_calculator import calculate_wing_load
+from wing_load_calculator import calculate_wing_load # root
+from material_math.math_ui import materials_ui, set_mpl_style
+from material_math.calculate_properties import calculate_properties, plot_properties, display_theories
+from material_math.formulas import micromech_properties
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -22,11 +23,6 @@ st.set_page_config(
     }
 )
 
-def set_mpl_style(theme_mode):
-    if theme_mode == "dark":
-        mplstyle.use('dark_background')
-    else:
-        mplstyle.use('default')
 
 def materials_dataframe(fiber, matrix):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber], orient='index', columns=[fiber]).transpose()
@@ -56,6 +52,10 @@ theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
 
+set_mpl_style(theme_mode)
+
+# =========================================================
+
 def main():
     st.title("Composite Wingy 🪃")
     st.write("Design a wing with composite materials")
@@ -63,11 +63,14 @@ def main():
 
     st.markdown("***")
 
+
+    # ------------------ CAD MODEL -------------------
     model_ui()
 
     spacer()
 
-    # Wing load section
+    
+    # -------  Wing load section
     st.markdown("***")
     st.header("Wing load")
     col1, col2, col3 = st.columns(3)
@@ -84,6 +87,7 @@ def main():
     
     calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
+
     # =================== MATERIALS ===================
     st.markdown("***")
     st.header('2️⃣ Composite materials')
@@ -98,11 +102,11 @@ def main():
     matrix_material = matrices[matrix_material_key]
 
     # Define properties to calculate
-    micromechanics_properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
+    micromech_properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
 
     # Calculate micromechanics properties
     results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(
-        micromechanics_theories, micromechanics_properties, fiber_material, matrix_material, Vf, Vm, show_math=show_math
+        micromech_properties, micromech_properties, fiber_material, matrix_material, Vf, Vm, show_math=show_math
     )
 
     # Check lengths of arrays in results_micromechanics
@@ -121,8 +125,8 @@ def main():
     plot_properties(results_df, theme_mode)
     st.markdown('***')
 
-    for property_name in micromechanics_properties:
-        display_theories(property_name, micromechanics_theories, results_micromechanics, latex_micromechanics, math_micromechanics, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid)
+    for property_name in micromech_properties:
+        display_theories(property_name, micromech_properties, results_micromechanics, latex_micromechanics, math_micromechanics, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid)
         st.markdown('***')
 
 if __name__ == "__main__":

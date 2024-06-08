@@ -1,8 +1,8 @@
-# material_math/theories.py
+# material_math/formulas.py
 
 import numpy as np
 
-micromechanics_properties = {
+micromech_properties = {
     "E1_modulus": {
         "unit": "GPa",
         "ROM": {
