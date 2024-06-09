@@ -11,6 +11,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
     results = {}
     latex_results = {}
     math_results = {} if show_math else None
+    coefficients_latex = {}
     theories_map = {}
 
     fiber_material = fibers[fiber_material_key]
@@ -19,6 +20,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
     for property_name, theories in category.items():
         results[property_name] = []
         latex_results[property_name] = {}
+        coefficients_latex[property_name] = {}
         theories_map[property_name] = [theory_name for theory_name in theories if theory_name != "unit"]
 
         for theory_name, theory_details in theories.items():
@@ -27,31 +29,52 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
 
             formula = theory_details["formula"]
             latex_formula = theory_details["latex"]
+            math_formula = theory_details.get("math", None)
 
             try:
+                coefficients = {}
+                if 'coefficients' in theory_details:
+                    coefficients_latex[property_name][theory_name] = {}
+                    for coeff_name, coeff_details in theory_details['coefficients'].items():
+                        if 'formula' in coeff_details:
+                            coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
+                            coefficients_latex[property_name][theory_name][coeff_name] = f"{coeff_details['latex']} = {coefficients[coeff_name]:.3f}"
+                        else:
+                            coefficients[coeff_name] = coeff_details['default']
+                            coefficients_latex[property_name][theory_name][coeff_name] = f"{coeff_details['latex']} = {coefficients[coeff_name]:.3f}"
+
                 if "Vvoid" in formula.__code__.co_varnames:
-                    result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid)
+                    result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid, **coefficients)
                 else:
-                    result = formula(fiber_material, matrix_material, Vf, Vm)
+                    result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
+                
+                # Generate LaTeX formula with actual values
+                if math_formula:
+                    interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
+                else:
+                    interpolated_math = None
+
             except TypeError as e:
                 st.error(f"Error calculating {property_name} with {theory_name}: {e}")
                 result = None
+                interpolated_math = None
 
             results[property_name].append(result)
             latex_results[property_name][theory_name] = latex_formula
+
             if show_math:
                 if property_name not in math_results:
                     math_results[property_name] = {}
-                math_results[property_name][theory_name] = result
+                math_results[property_name][theory_name] = interpolated_math
 
-        # Ensure all lists are the same length
-        max_length = max(len(results[prop]) for prop in results)
-        for prop in results:
-            while len(results[prop]) < max_length:
-                results[prop].append(None)
+    # Ensure all lists are the same length
+    max_length = max(len(lst) for lst in results.values())
+    for prop, lst in results.items():
+        while len(lst) < max_length:
+            lst.append(None)
 
-    # results_df = pd.DataFrame(results).transpose()
-    return results, latex_results, math_results, theories_map
+    return results, latex_results, math_results, coefficients_latex, theories_map
+
 
 def plot_properties(results, properties, units, theories):
     flattened_data = {}
@@ -105,7 +128,7 @@ def get_property_units(properties):
     unit_map = {**micromech_properties, **strength_properties, **failure_criteria}
     return [unit_map[prop].get("unit", '') for prop in properties]
 
-def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, show_math=False):
+def display_theories(property_name, results, latex_results, math_results, coefficients_latex, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, show_math=False):
     theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
     theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
 
@@ -130,7 +153,12 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
     if show_math:
         st.latex(f"{latex}")
         result = results[property_name][theory_names.index(selected_theory)]
+        if selected_theory in coefficients_latex[property_name]:
+            for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():
+                st.latex(coeff_latex)
         st.latex(f"{result:.3f} \\ [{unit}]")
+        if math_results[property_name][selected_theory]:
+            st.latex(math_results[property_name][selected_theory])
     else:
         st.latex(f"{latex} = {results[property_name][theory_names.index(selected_theory)]:.3f} \\ [{unit}]")
 
@@ -152,7 +180,7 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
                 if "Vvoid" in formula.__code__.co_varnames:
                     value = formula(fiber_material, matrix_material, vf, vm, Vvoid, **coeffs)
                 else:
-                    value = formula(fiber_material, matrix_material, vf, vm)
+                    value = formula(fiber_material, matrix_material, vf, vm, **coeffs)
                 all_values[theory].append(value)
 
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -166,4 +194,5 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
         ax.grid(True, color='gray')
         ax.tick_params(colors='white')
         st.pyplot(fig)
+
     return theory_names

@@ -46,8 +46,26 @@ micromech_properties = {
             "latex": r"G_{12} = \frac{G_m}{1 - \sqrt{V_f} \left( 1 - \frac{G_m}{G_{12f}} \right)}"
         },
         "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm: (f['G12f'] * m['Gm']) / (Vf * m['Gm'] + Vm * f['G12f']),
-            "latex": r"G_{12} = \frac{G_{12f} \cdot G_m}{V_f \cdot G_m + V_m \cdot G_{12f}}"
+            "formula": lambda f, m, Vf, Vm, xi: m['Gm'] * ((1 + 2 * xi * Vf) / (1 - xi * Vf)),
+            "latex": r"G_{12} = G_m \left( \frac{1 + 2 \cdot \xi \cdot V_f}{1 - \xi \cdot V_f} \right)",
+            "coefficients": {
+                "xi": {
+                    "formula": lambda f, m: (f['G12f'] / m['Gm'] - 1) / (f['G12f'] / m['Gm'] + 2),
+                    "latex": r"\xi = \frac{\frac{G_{12f}}{G_m} - 1}{\frac{G_{12f}}{G_m} + 2}",
+                    "default": 0.5
+                }
+            }
+        },
+        "Modified Rule of Mixtures (MROM)": {
+            # "formula": lambda f, m, Vf, Vm, eta: 1 / ((Vf / f['G12f']) + (eta * Vm / m['Gm'])),
+            "formula": lambda f, m, Vf, Vm: 1 / ((Vf / f['G12f']) + (100 * Vm / m['Gm'])),
+            "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}",
+            # "coefficients": {
+            #     "eta": {
+            #         "default": 0.6,
+            #         "latex": r"\eta"
+            #     }
+            # }
         }
     },
     "poisson_ratio": {
