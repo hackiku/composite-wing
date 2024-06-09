@@ -21,10 +21,10 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
         results[property_name] = []
         latex_results[property_name] = {}
         coefficients_latex[property_name] = {}
-        theories_map[property_name] = [theory_name for theory_name in theories if theory_name != "unit"]
+        theories_map[property_name] = [theory_name for theory_name in theories if theory_name not in ["unit", "name", "help"]]
 
         for theory_name, theory_details in theories.items():
-            if theory_name == "unit":
+            if theory_name in ["unit", "name", "help"]:
                 continue
 
             formula = theory_details["formula"]
@@ -48,7 +48,6 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                 else:
                     result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
                 
-                # Generate LaTeX formula with actual values
                 if math_formula:
                     interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
                 else:
@@ -66,12 +65,6 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                 if property_name not in math_results:
                     math_results[property_name] = {}
                 math_results[property_name][theory_name] = interpolated_math
-
-    # Ensure all lists are the same length
-    max_length = max(len(lst) for lst in results.values())
-    for prop, lst in results.items():
-        while len(lst) < max_length:
-            lst.append(None)
 
     return results, latex_results, math_results, coefficients_latex, theories_map
 
@@ -128,13 +121,16 @@ def get_property_units(properties):
     unit_map = {**micromech_properties, **strength_properties, **failure_criteria}
     return [unit_map[prop].get("unit", '') for prop in properties]
 
-def display_theories(property_name, results, latex_results, math_results, coefficients_latex, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, show_math=False):
+
+
+def display_theories(property_name, results, latex_results, math_results, coefficients_latex, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma=None, show_individual_graphs=False, show_math=False):
     theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
-    theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
+    theory_names = [name for name in theory_dict[property_name].keys() if name not in ["unit", "name", "help"]]
 
     col1, col2, col3 = st.columns([4, 2, 2])
     with col1:
-        st.subheader(property_name.replace('_', ' ').title())
+        st.subheader(f"{theory_dict[property_name]['name']} ({property_name.replace('_', ' ').title()})")
+        st.write(theory_dict[property_name]['help'])
     with col2:
         st.write()
     with col3:
@@ -150,17 +146,17 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
     latex = latex_results[property_name][selected_theory]
     unit = theory_dict[property_name].get('unit', '')
 
-    if show_math:
+    result = results[property_name][theory_names.index(selected_theory)]
+    
+    if selected_theory in coefficients_latex[property_name]:
+        for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():
+            st.latex(coeff_latex)
+            
+    if show_math and math_results[property_name][selected_theory]:
         st.latex(f"{latex}")
-        result = results[property_name][theory_names.index(selected_theory)]
-        if selected_theory in coefficients_latex[property_name]:
-            for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():
-                st.latex(coeff_latex)
-        st.latex(f"{result:.3f} \\ [{unit}]")
-        if math_results[property_name][selected_theory]:
-            st.latex(math_results[property_name][selected_theory])
+        st.latex(f"{math_results[property_name][selected_theory]} = {result:.3f} \\ [{unit}]")
     else:
-        st.latex(f"{latex} = {results[property_name][theory_names.index(selected_theory)]:.3f} \\ [{unit}]")
+        st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
 
     formula_code = inspect.getsource(theory_details["formula"])
     st.code(formula_code, language='python')

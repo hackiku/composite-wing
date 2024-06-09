@@ -2,25 +2,32 @@
 
 import numpy as np
 
+def calculate_density(rhof, rhom, Vf, Vm):
+    rho = rhof * Vf + rhom * Vm
+    return rho
+
 micromech_properties = {
-    "E1_modulus": {
+    "E1": {
+        "name": "Young's longitudinal modulus",
+        "help": "Measures the stiffness of the composite in the fiber direction",
         "unit": "GPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
             "latex": r"E_1 = E_{1f}V_f + E_mV_m",
             "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
-        "Inverse Rule of Mixtures": {
+        "Inverse ROM": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
             "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
-            "math": lambda f, m, Vf, Vm: f"E_1 = \frac{{{f['E1f']} \cdot {m['Em']}}}{{{Vf} \cdot {m['Em']} + {Vm} \cdot {f['E1f']}}}"
+            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}"
         }
     },
-    "E2_modulus": {
+    "E2": {
+        "name": "Young's transverse modulus",
+        "help": "Measures the stiffness of the composite perpendicular to the fiber direction",
         "unit": "GPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
@@ -35,7 +42,9 @@ micromech_properties = {
             "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}"
         }
     },
-    "shear_modulus": {
+    "G12": {
+        "name": "Shear modulus",
+        "help": "Measures the shear stiffness of the composite",
         "unit": "GPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['G12f'] * Vf + m['Gm'] * Vm,
@@ -57,18 +66,13 @@ micromech_properties = {
             }
         },
         "Modified Rule of Mixtures (MROM)": {
-            # "formula": lambda f, m, Vf, Vm, eta: 1 / ((Vf / f['G12f']) + (eta * Vm / m['Gm'])),
             "formula": lambda f, m, Vf, Vm: 1 / ((Vf / f['G12f']) + (100 * Vm / m['Gm'])),
-            "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}",
-            # "coefficients": {
-            #     "eta": {
-            #         "default": 0.6,
-            #         "latex": r"\eta"
-            #     }
-            # }
+            "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}"
         }
     },
-    "poisson_ratio": {
+    "nu12": {
+        "name": "Poisson's ratio",
+        "help": "Ratio of transverse strain to axial strain",
         "unit": "-",
         "Chamis": {
             "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
@@ -85,9 +89,10 @@ micromech_properties = {
     }
 }
 
-# Strength theories
 strength_properties = {
     "tensile_strength": {
+        "name": "Tensile strength",
+        "help": "Maximum stress the composite can withstand while being stretched",
         "unit": "MPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm, Vvoid: f['F1ft'] * Vf + m['FmT'] * Vm * (1 - Vvoid),
@@ -103,6 +108,8 @@ strength_properties = {
         }
     },
     "compressive_strength": {
+        "name": "Compressive strength",
+        "help": "Maximum stress the composite can withstand while being compressed",
         "unit": "MPa",
         "Timoshenko-Gere": {
             "formula": lambda f, m, Vf, Vm: 2 * Vf * np.sqrt((Vf * f['E1f'] * m['Em']) / (3 * (1 - Vf))),
@@ -118,6 +125,8 @@ strength_properties = {
         }
     },
     "transverse_tensile_strength": {
+        "name": "Transverse tensile strength",
+        "help": "Maximum stress the composite can withstand while being stretched perpendicular to the fiber direction",
         "unit": "MPa",
         "Nielsen": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (1 - Vvoid**(1/3)) * (f['E2f'] * m['FmT']) / m['Em'],

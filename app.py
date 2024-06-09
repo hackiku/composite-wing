@@ -88,25 +88,22 @@ def main():
     sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values, adjust as needed
 
     # Update the unpacking to handle the additional returned value
+    
     micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     strength_results, strength_latex, strength_math, strength_coefficients, strength_theories = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     # failure_results, failure_latex, failure_math = calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=show_math)
-    
-    
+        
     # ------ MICROMECH ------
     st.header("Micromechanical properties")
 
-    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
+    properties = ["E1", "E2", "G12", "nu12"]
     units = get_property_units(properties)
 
-    col1, col2 = st.columns([3,2])
+    col1, col2 = st.columns([3, 2])
     with col1:
         micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
-        # micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
     with col2:
         st.write(micromechanics_df)
-
-        # st.dataframe(micromechanics_df)
 
     st.markdown("***")
 
@@ -117,10 +114,10 @@ def main():
 
     # ------ STRENGTH ------
     st.header("Strength properties")
-    properties = ["compressive_strength", "transverse_tensile_strength"]
+    properties = ["tensile_strength", "compressive_strength", "transverse_tensile_strength"]
     units = get_property_units(properties)
 
-    col1, col2 = st.columns([3,2])
+    col1, col2 = st.columns([3, 2])
     with col1:
         strength_df = plot_properties(strength_results, properties, units, strength_theories)
     with col2:
@@ -135,6 +132,7 @@ def main():
     st.header("Failure criteria")
 
     st.markdown('***')
-
+    
+    
 if __name__ == "__main__":
     main()
