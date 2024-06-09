@@ -3,12 +3,14 @@
 import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
-from utils import spacer, materials_dataframe, set_mpl_style
+from utils import spacer, set_mpl_style
 from onshape_cad.model_ui import model_ui
 from wing_load_calculator import calculate_wing_load # root
 from material_math.math_ui import materials_ui
 from material_math.calculate_properties import calculate_properties, plot_properties, display_theories
 from material_math.formulas import micromech_properties
+from math_utils import materials_dataframe, compute_results
+
 
 st.set_page_config(
     page_title="Composite Wing",

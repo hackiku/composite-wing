@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 from utils import set_mpl_style
 
+
 theories = {
     "E1_modulus": micromech_properties["E1_modulus"],
     "E2_modulus": micromech_properties["E2_modulus"],
