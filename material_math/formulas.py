@@ -7,15 +7,17 @@ micromech_properties = {
         "unit": "GPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m"
-        },
-        "Voigt Model": {
-            "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m"
+            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
             "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
+        },
+        "Halpin-Tsai": {
+            "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
+            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
+            "math": lambda f, m, Vf, Vm: f"E_1 = \frac{{{f['E1f']} \cdot {m['Em']}}}{{{Vf} \cdot {m['Em']} + {Vm} \cdot {f['E1f']}}}"
         }
     },
     "E2_modulus": {

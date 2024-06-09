@@ -5,7 +5,6 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
-from utils import spacer, set_mpl_style
 import inspect
 
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
@@ -36,7 +35,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                     result = formula(fiber_material, matrix_material, Vf, Vm)
             except TypeError as e:
                 st.error(f"Error calculating {property_name} with {theory_name}: {e}")
-                continue
+                result = None
 
             results[property_name].append(result)
             latex_results[property_name][theory_name] = latex_formula
@@ -45,48 +44,61 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                     math_results[property_name] = {}
                 math_results[property_name][theory_name] = result
 
-    return results, latex_results, math_results, theories_map
+        # Ensure all lists are the same length
+        max_length = max(len(results[prop]) for prop in results)
+        for prop in results:
+            while len(results[prop]) < max_length:
+                results[prop].append(None)
 
+    # results_df = pd.DataFrame(results).transpose()
+    return results, latex_results, math_results, theories_map
 
 def plot_properties(results, properties, units, theories):
     flattened_data = {}
-    for property_name in properties:
-        if property_name in theories:
-            for idx, theory_name in enumerate(theories[property_name]):
-                flattened_data[f"{property_name} ({theory_name}, {units[properties.index(property_name)]})"] = results[property_name][idx]
 
-    results_df = pd.DataFrame([flattened_data])
-    
-    if results_df.empty:
-        st.write("No data to display.")
-        return results_df
-    
+    # Flatten data structure
+    for property_name in properties:
+        for idx, theory_name in enumerate(theories[property_name]):
+            key = f"{property_name} ({theory_name}, {units[properties.index(property_name)]})"
+            if key not in flattened_data:
+                flattened_data[key] = []
+            flattened_data[key].append(results[property_name][idx])
+
+    # Create DataFrame
+    max_len = max(len(v) for v in flattened_data.values())
+    for k, v in flattened_data.items():
+        while len(v) < max_len:
+            v.append(None)
+
+    index = [f"Theory {i+1}" for i in range(max_len)]
+    results_df = pd.DataFrame(flattened_data, index=index).transpose()
+
     fig, ax1 = plt.subplots(figsize=(12, 8))
-    
-    color_map = plt.get_cmap("tab10")
-    color_idx = 0
-    
-    for property_name in properties:
-        if property_name in theories:
-            for idx, theory_name in enumerate(theories[property_name]):
-                label = f"{property_name} ({theory_name}, {units[properties.index(property_name)]})"
-                if "GPa" in label or "MPa" in label:
-                    ax1.plot(results_df.index, results_df[label], marker='o', linestyle='-', color=color_map(color_idx), label=label)
-                elif "-" in label:  # Assuming dimensionless values for poisson_ratio
-                    ax2 = ax1.twinx()
-                    ax2.plot(results_df.index, results_df[label], marker='x', linestyle='--', color=color_map(color_idx), label=label)
-                    ax2.set_ylabel('Dimensionless', color='white')
-                color_idx += 1
+    ax2 = ax1.twinx()
 
+    colors = plt.cm.get_cmap('tab10', len(properties))
+
+    # Plot properties based on units
+    for idx, property_name in enumerate(properties):
+        unit = units[idx]
+        for theory_name in theories[property_name]:
+            column = f"{property_name} ({theory_name}, {unit})"
+            if unit in ['GPa', 'MPa']:
+                ax1.plot(results_df.columns, results_df.loc[column], marker='o', linestyle='-', color=colors(idx), label=column)
+            else:
+                ax2.plot(results_df.columns, results_df.loc[column], marker='x', linestyle='--', color=colors(idx), label=column)
+
+    ax1.set_xlabel('Theory')
+    ax1.set_ylabel('MPa / GPa')
+    ax2.set_ylabel('Dimensionless')
     ax1.set_title('Composite properties compared by theory', color='white')
-    ax1.set_xlabel('Property', color='white')
-    ax1.set_ylabel('MPa / GPa', color='white')
     ax1.grid(True, color='gray')
     ax1.tick_params(colors='white')
+    ax2.tick_params(colors='white')
 
-    fig.legend()
+    fig.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0))
     st.pyplot(fig)
-    
+
     return results_df
 
 def get_property_units(properties):
@@ -101,9 +113,9 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
     with col1:
         st.subheader(property_name.replace('_', ' ').title())
     with col2:
-        spacer()
+        st.write()
     with col3:
-        spacer()
+        st.write()
 
     if len(theory_names) > 1:
         selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")

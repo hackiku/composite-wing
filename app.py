@@ -87,30 +87,30 @@ def main():
 
     sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values, adjust as needed
 
+
+
     micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     strength_results, strength_latex, strength_math, strength_theories = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     # failure_results, failure_latex, failure_math = calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=show_math)
     
-    # st.dataframe(micromechanics_results)
-    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength"]
-    # properties = ["E1_modulus", "E2_modulus", "shear_modulus"]
-    units = get_property_units(properties)
-    
-    st.write(units)
-    
-    
     
     # ------ MICROMECH ------
     st.header("Micromechanical properties")
-    
+
+    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
+    units = get_property_units(properties)
+
     col1, col2 = st.columns([3,2])
-    with col1: 
+    with col1:
         micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
+        # micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
     with col2:
-        st.dataframe(micromechanics_df)
+        st.write(micromechanics_df)
+
+        # st.dataframe(micromechanics_df)
 
     st.markdown("***")
-    
+
     for property_name in properties:
         if property_name in micromech_properties:
             display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
@@ -118,12 +118,15 @@ def main():
 
     # ------ STRENGTH ------
     st.header("Strength properties")
+    properties = ["compressive_strength", "transverse_tensile_strength"]
+    units = get_property_units(properties)
+
     col1, col2 = st.columns([3,2])
-    with col1: 
+    with col1:
         strength_df = plot_properties(strength_results, properties, units, strength_theories)
     with col2:
         st.dataframe(strength_df)
-        
+
     st.markdown("***")
 
     for property_name in properties:
@@ -136,3 +139,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
