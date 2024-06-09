@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
-from utils import spacer, set_mpl_style
+from utils import spacer, set_mpl_style, crop_image
 from onshape_cad.model_ui import model_ui
 from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
@@ -19,6 +19,27 @@ st.set_page_config(
         'Get Help': 'https://jzro.co'
     }
 )
+# data/North_American_P-51B_Mustang_3-view_line_drawing.png
+
+aircraft_presets = {
+    "P-51 Mustang": {
+        "mass": 5579.18,
+        "wingspan": 11.285537,
+        "sweep_angle": 12,
+        "3_view": "data/North_American_P-51B_Mustang_3-view_line_drawing.png",
+        "crop_params": [100.2, 200, 200, 200],
+        "load_factor": 10
+    },
+    "Orao": {
+        "mass": 11300.00,
+        "wingspan": 9.262,
+        "sweep_angle": 12,
+        "3_view": "ssdata/North_American_P-51B_Mustang_3-view_line_drawing.png",
+        "crop_params": [400, 200, 200, 200],
+        "load_factor": 10
+    }
+}
+
 
 def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
@@ -38,9 +59,7 @@ def display_all_materials():
 
 # Sidebar setup
 # st.sidebar.markdown('### Wing material')
-aircraft = st.sidebar.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
-# mmax = st.sidebar.slider(f'Aircraft mass $$(m_{{max}})$$ [Kg]', 0.0, 10000.0, 5579.18, 0.01, format="%d", help="Adjust void ratio in the composite (between 0 and 1)")
-
+selected_aircraft = st.sidebar.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
 
 fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=0, help="Choose the type of fiber material")
 matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=0, help="Choose the type of matrix material")
@@ -63,6 +82,27 @@ def main():
 
     st.markdown("***")
 
+
+    if selected_aircraft:
+        aircraft = aircraft_presets[selected_aircraft]
+        mass = aircraft['mass']
+        wingspan = aircraft['wingspan']
+        sweep_angle = aircraft['sweep_angle']
+        image_path = aircraft['3_view']
+
+        # Display the selected aircraft's details
+        st.write(f"### Aircraft: {selected_aircraft}")
+        st.write(f"**Mass**: {mass} kg")
+        st.write(f"**Wingspan**: {wingspan} m")
+        st.write(f"**Sweep Angle**: {sweep_angle} degrees")
+        
+
+
+        three_view = crop_image(image_path, aircraft['crop_params'])
+        st.image(three_view, caption=f"{selected_aircraft} 3-view")
+
+
+    # =============== CAD MODEL ===============
     model_ui()
 
     spacer()
