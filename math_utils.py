@@ -2,13 +2,13 @@
 import streamlit as st
 import pandas as pd
 
-def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
-    fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
-    matrix_properties = pd.DataFrame.from_dict(matrices[matrix_key], orient='index', columns=[matrix_key]).transpose()
-    st.write("Selected Fiber Material Properties:")
-    st.dataframe(fiber_properties)
-    st.write("Selected Matrix Material Properties:")
-    st.dataframe(matrix_properties)
+# def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
+#     fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
+#     matrix_properties = pd.DataFrame.from_dict(matrices[matrix_key], orient='index', columns=[matrix_key]).transpose()
+#     st.write("Selected Fiber Material Properties:")
+#     st.dataframe(fiber_properties)
+#     st.write("Selected Matrix Material Properties:")
+#     st.dataframe(matrix_properties)
 
 def calculate_property(formula, fiber_material, matrix_material, Vf, Vm, Vvoid=0):
     if "Vvoid" in formula.__code__.co_varnames:
