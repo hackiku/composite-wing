@@ -12,6 +12,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
     results = {}
     latex_results = {}
     math_results = {} if show_math else None
+    theories_map = {}
 
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
@@ -19,6 +20,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
     for property_name, theories in category.items():
         results[property_name] = []
         latex_results[property_name] = {}
+        theories_map[property_name] = [theory_name for theory_name in theories if theory_name != "unit"]
 
         for theory_name, theory_details in theories.items():
             if theory_name == "unit":
@@ -28,12 +30,10 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
             latex_formula = theory_details["latex"]
 
             try:
-
                 if "Vvoid" in formula.__code__.co_varnames:
                     result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid)
                 else:
                     result = formula(fiber_material, matrix_material, Vf, Vm)
-
             except TypeError as e:
                 st.error(f"Error calculating {property_name} with {theory_name}: {e}")
                 continue
@@ -41,108 +41,59 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
             results[property_name].append(result)
             latex_results[property_name][theory_name] = latex_formula
             if show_math:
-                math_results[property_name] = {theory_name: result}
+                if property_name not in math_results:
+                    math_results[property_name] = {}
+                math_results[property_name][theory_name] = result
 
-    return results, latex_results, math_results
-
-def calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=True):
-    results = {}
-    latex_results = {}
-    math_results = {} if show_math else None
-
-    fiber_material = fibers[fiber_material_key]
-    matrix_material = matrices[matrix_material_key]
-
-    for property_name, theories in failure_criteria.items():
-        results[property_name] = []
-        latex_results[property_name] = {}
-
-        for theory_name, theory_details in theories.items():
-            if theory_name == "unit":
-                continue
-
-            formula = theory_details["formula"]
-            latex_formula = theory_details["latex"]
-
-            F = {
-                'F1': fiber_material.get('F1ft', 0),
-                'F2': matrix_material.get('FmT', 0),
-                'F6': matrix_material.get('FmS', 0),
-                'F1t': fiber_material.get('F1ft', 0),
-                'F2t': matrix_material.get('FmT', 0),
-                'F1c': fiber_material.get('F1fc', 0),
-                'F2c': matrix_material.get('FmC', 0),
-                'F11': 1,  # Example value
-                'F22': 1,  # Example value
-                'F12': 1,  # Example value
-                'F66': 1,  # Example value
-            }
-
-            try:
-                # Debugging output
-                st.write(f"Calculating {property_name} with {theory_name}")
-                st.write(f"Fiber Material: {fiber_material}")
-                st.write(f"Matrix Material: {matrix_material}")
-                st.write(f"Sigma: {sigma}")
-
-                result = formula(fiber_material, matrix_material, sigma, F)
-
-                # More debugging output
-                st.write(f"Result: {result}")
-
-            except TypeError as e:
-                st.error(f"Error calculating {property_name} with {theory_name}: {e}")
-                continue
-
-            results[property_name].append(result)
-            latex_results[property_name][theory_name] = latex_formula
-            if show_math:
-                math_results[property_name] = {theory_name: result}
-
-    return results, latex_results, math_results
+    return results, latex_results, math_results, theories_map
 
 
-def plot_properties(results, properties):
-    results_df = pd.DataFrame(results).transpose()
-    # results_df = results_df.set_index("Property").transpose()
+def plot_properties(results, properties, units, theories):
+    flattened_data = {}
+    for property_name in properties:
+        if property_name in theories:
+            for idx, theory_name in enumerate(theories[property_name]):
+                flattened_data[f"{property_name} ({theory_name}, {units[properties.index(property_name)]})"] = results[property_name][idx]
 
-    results_df.columns = [f"{prop} ({unit})" for prop, unit in zip(properties, results_df.columns)]
+    results_df = pd.DataFrame([flattened_data])
     
-    fig, ax = plt.subplots(figsize=(12, 8))
+    if results_df.empty:
+        st.write("No data to display.")
+        return results_df
     
-    # Different properties might need different axes
-    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
+    fig, ax1 = plt.subplots(figsize=(12, 8))
     
-    for idx, property_name in enumerate(results_df.columns):
-        color = colors[idx % len(colors)]
-        ax.plot(results_df.index, results_df[property_name], marker='o', color=color, label=property_name)
+    color_map = plt.get_cmap("tab10")
+    color_idx = 0
     
-    ax.set_title('Composite properties compared by theory', color='white')
-    ax.set_xlabel('Property', color='white')
-    ax.set_ylabel('Value', color='white')
-    ax.legend()
-    ax.grid(True, color='gray')
-    ax.tick_params(colors='white')
+    for property_name in properties:
+        if property_name in theories:
+            for idx, theory_name in enumerate(theories[property_name]):
+                label = f"{property_name} ({theory_name}, {units[properties.index(property_name)]})"
+                if "GPa" in label or "MPa" in label:
+                    ax1.plot(results_df.index, results_df[label], marker='o', linestyle='-', color=color_map(color_idx), label=label)
+                elif "-" in label:  # Assuming dimensionless values for poisson_ratio
+                    ax2 = ax1.twinx()
+                    ax2.plot(results_df.index, results_df[label], marker='x', linestyle='--', color=color_map(color_idx), label=label)
+                    ax2.set_ylabel('Dimensionless', color='white')
+                color_idx += 1
+
+    ax1.set_title('Composite properties compared by theory', color='white')
+    ax1.set_xlabel('Property', color='white')
+    ax1.set_ylabel('MPa / GPa', color='white')
+    ax1.grid(True, color='gray')
+    ax1.tick_params(colors='white')
+
+    fig.legend()
     st.pyplot(fig)
     
     return results_df
 
 def get_property_units(properties):
-    unit_map = {
-        "E1_modulus": "GPa",
-        "E2_modulus": "GPa",
-        "shear_modulus": "GPa",
-        "poisson_ratio": "-",
-        "tensile_strength": "MPa",
-        "compressive_strength": "MPa",
-        "transverse_tensile_strength": "MPa",
-        "transverse_compressive_strength": "MPa",
-        "in_plane_shear_strength": "MPa"
-    }
-    return [unit_map.get(prop, '') for prop in properties]
+    unit_map = {**micromech_properties, **strength_properties, **failure_criteria}
+    return [unit_map[prop].get("unit", '') for prop in properties]
 
 def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, show_math=False):
-    # set_mpl_style(theme_mode)
     theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
     theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
 
@@ -151,12 +102,8 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
         st.subheader(property_name.replace('_', ' ').title())
     with col2:
         spacer()
-        # st.write(f'{fiber_material_key}')
-        # st.json(fiber_material, expanded=False)
     with col3:
         spacer()
-        # st.write(f'{matrix_material_key}')
-        # st.json(matrix_material, expanded=False)
 
     if len(theory_names) > 1:
         selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
@@ -177,7 +124,6 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
 
     formula_code = inspect.getsource(theory_details["formula"])
     st.code(formula_code, language='python')
-
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)

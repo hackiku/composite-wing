@@ -1,12 +1,13 @@
+# app.py
+
 import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
 from utils import spacer, set_mpl_style
 from onshape_cad.model_ui import model_ui
 from wing_load_calculator import calculate_wing_load
-from material_math.properties import calculate_properties, calculate_failure, plot_properties, display_theories, get_property_units
+from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
-
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -86,14 +87,17 @@ def main():
 
     sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values, adjust as needed
 
-    micromechanics_results, micromechanics_latex, micromechanics_math = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
-    strength_results, strength_latex, strength_math = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
+    micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
+    strength_results, strength_latex, strength_math, strength_theories = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     # failure_results, failure_latex, failure_math = calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=show_math)
     
-    st.dataframe(micromechanics_results)
-    
-    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
+    # st.dataframe(micromechanics_results)
+    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength"]
+    # properties = ["E1_modulus", "E2_modulus", "shear_modulus"]
     units = get_property_units(properties)
+    
+    st.write(units)
+    
     
     
     # ------ MICROMECH ------
@@ -101,7 +105,7 @@ def main():
     
     col1, col2 = st.columns([3,2])
     with col1: 
-        micromechanics_df = plot_properties(micromechanics_results, properties)
+        micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
     with col2:
         st.dataframe(micromechanics_df)
 
@@ -116,11 +120,10 @@ def main():
     st.header("Strength properties")
     col1, col2 = st.columns([3,2])
     with col1: 
-        strength_df = plot_properties(strength_results, properties)
+        strength_df = plot_properties(strength_results, properties, units, strength_theories)
     with col2:
         st.dataframe(strength_df)
         
-
     st.markdown("***")
 
     for property_name in properties:
