@@ -37,12 +37,20 @@ def display_all_materials():
     st.dataframe(all_matrices)
 
 # Sidebar setup
-st.sidebar.markdown('### Choose wing material')
-fiber_material_key = st.sidebar.selectbox('Fiber Material', list(fibers.keys()), index=0, help="Choose the type of fiber material")
-matrix_material_key = st.sidebar.selectbox('Matrix Material', list(matrices.keys()), index=0, help="Choose the type of matrix material")
-Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
+# st.sidebar.markdown('### Wing material')
+aircraft = st.sidebar.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
+# mmax = st.sidebar.slider(f'Aircraft mass $$(m_{{max}})$$ [Kg]', 0.0, 10000.0, 5579.18, 0.01, format="%d", help="Adjust void ratio in the composite (between 0 and 1)")
+
+
+fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=0, help="Choose the type of fiber material")
+matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=0, help="Choose the type of matrix material")
+# matrix_material_key = st.sidebar.selectbox('$$m$$ Matrix material', list(matrices.keys()), index=0, help="Choose the type of matrix material")
+Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
 Vm = 1 - Vf
-Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
+Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
+
+# st.sidebar.markdown(r'$$_{Options}$$')
+st.sidebar.markdown(r'$$Options$$')
 
 theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
@@ -63,6 +71,7 @@ def main():
     st.header("Wing load")
     col1, col2, col3 = st.columns(3)
     with col1:
+        # mass = st.slider(f'Aircraft mass $$(m_{{max}})$$ [Kg]', 0.0, 10000.0, 5579.18, 0.01, format="%d", help="Adjust void ratio in the composite (between 0 and 1)")
         mass = st.number_input('Mass of aircraft (kg)', value=11300, step=100)
         load_factor = st.number_input('Load Factor', value=6, help="The load factor represents the ratio of the maximum load the wing can support to the aircraft's weight. A higher load factor indicates greater structural stress.")
         
@@ -128,6 +137,11 @@ def main():
     for property_name in properties:
         if property_name in strength_properties:
             display_theories(property_name, strength_results, strength_latex, strength_math, strength_coefficients, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
+
+    # for property_name in properties:
+    #     micromechanics.display_theories(property_name, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs, theme_mode, latex_results, math_results, show_math)
+    #     st.markdown('***')
+
 
     st.header("Failure criteria")
 

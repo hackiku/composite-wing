@@ -79,7 +79,7 @@ micromech_properties = {
                 (eta_f * Vf / f['E2f']) + (eta_m * Vm / m['Em'])
             ),
             "latex": r"E_2 = \frac{1}{\frac{\eta_f V_f}{E_{2f}} + \frac{\eta_m V_m}{E_m}}",
-            "math": lambda f, m, Vf, Vm, eta_f, eta_m: f"E_2 = \\frac{{1}}{{\\frac{{{eta_f} \\cdot {Vf:.3f}}}{{{f['E2f']}}} + \\frac{{{eta_m} \\cdot {Vm:.3f}}}{{{m['Em']}}}}}",
+            "math": lambda f, m, Vf, Vm, eta_f, eta_m: f"E_2 = \\frac{{1}}{{\\frac{{{eta_f:.3f} \\cdot {Vf:.3f}}}{{{f['E2f']}}} + \\frac{{{eta_m:.3f} \\cdot {Vm:.3f}}}{{{m['Em']}}}}}",
             "coefficients": {
                 "eta_f": {
                     "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + ((1 - f['ni12f'] * f['ni21f']) * m['Em'] + m['nim'] * f['ni21f'] * f['E1f']) * Vm) / (f['E1f'] * Vf + m['Em'] * Vm),
