@@ -1,60 +1,59 @@
-# material_math/calculate_properties.py
-
-import streamlit as st
 import numpy as np
 import pandas as pd
+import streamlit as st
 import matplotlib.pyplot as plt
-# from composite_math.theories import micromechanics_theories, strength_theories, failure_theories
+import inspect
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 from utils import set_mpl_style
-# from math_utils import compute_results
-import inspect
 
+def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
+    results = {}
+    latex_results = {}
+    math_results = {} if show_math else None
 
-theories = {
-    "E1_modulus": micromech_properties["E1_modulus"],
-    "E2_modulus": micromech_properties["E2_modulus"],
-    "shear_modulus": micromech_properties["shear_modulus"],
-    "poisson_ratio": micromech_properties["poisson_ratio"],
-    "tensile_strength": strength_properties["tensile_strength"],
-    "compressive_strength": strength_properties["compressive_strength"],
-    "transverse_tensile_strength": strength_properties["transverse_tensile_strength"],
-}
+    fiber_material = fibers[fiber_material_key]
+    matrix_material = matrices[matrix_material_key]
 
-def calculate_properties(theory_dict, properties, fiber_material, matrix_material, Vf, Vm, Vvoid=0, show_math=True):
-    results = {property_name: [] for property_name in properties}
-    latex_results = {property_name: {} for property_name in properties}
-    math_results = {property_name: {} for property_name in properties} if show_math else None
+    for property_name, theories in category.items():
+        results[property_name] = []
+        latex_results[property_name] = {}
 
-    for property_name in properties:
-        if property_name in theory_dict:
-            for theory_name, theory_details in theory_dict[property_name].items():
-                if theory_name == "unit":
-                    continue
+        for theory_name, theory_details in theories.items():
+            if theory_name == "unit":
+                continue
 
-                formula = theory_details["formula"]
-                latex_formula = theory_details["latex"]
+            formula = theory_details["formula"]
+            latex_formula = theory_details["latex"]
 
-                try:
-                    if "Vvoid" in formula.__code__.co_varnames:
-                        result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid)
-                    else:
-                        result = formula(fiber_material, matrix_material, Vf, Vm)
-                except TypeError as e:
-                    st.error(f"Error calculating {property_name} with {theory_name}: {e}")
-                    continue
+            try:
+                # Debugging output
+                st.write(f"Calculating {property_name} with {theory_name}")
+                st.write(f"Fiber Material: {fiber_material}")
+                st.write(f"Matrix Material: {matrix_material}")
+                st.write(f"Vf: {Vf}, Vm: {Vm}, Vvoid: {Vvoid}")
 
-                results[property_name].append(result)
-                latex_results[property_name][theory_name] = latex_formula
-                if math_results is not None:
-                    math_results[property_name][theory_name] = result
+                if "Vvoid" in formula.__code__.co_varnames:
+                    result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid)
+                else:
+                    result = formula(fiber_material, matrix_material, Vf, Vm)
+
+                # More debugging output
+                st.write(f"Result: {result}")
+
+            except TypeError as e:
+                st.error(f"Error calculating {property_name} with {theory_name}: {e}")
+                continue
+
+            results[property_name].append(result)
+            latex_results[property_name][theory_name] = latex_formula
+            if show_math:
+                math_results[property_name] = {theory_name: result}
 
     return results, latex_results, math_results
 
-
-def plot_properties(results_df, theme_mode):
+def plot_properties(results, theme_mode):
     set_mpl_style(theme_mode)
-    results_df = results_df.set_index("Property").transpose()
+    results_df = pd.DataFrame(results).transpose()
     fig, ax = plt.subplots(figsize=(12, 8))
     for property_name in results_df.columns:
         ax.scatter(results_df.index, results_df[property_name], label=property_name)
@@ -66,10 +65,9 @@ def plot_properties(results_df, theme_mode):
     ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
     st.pyplot(fig)
 
-# material_math/calculate_properties.py
-
-def display_theories(property_name, theory_dict, results, latex_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, show_individual_graphs=False, theme_mode='default', show_math=False):
+def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, show_individual_graphs=False, theme_mode='default', show_math=False):
     set_mpl_style(theme_mode)
+    theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
     theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
 
     col1, col2, col3 = st.columns([4, 2, 2])
@@ -91,8 +89,6 @@ def display_theories(property_name, theory_dict, results, latex_results, fiber_m
     latex = latex_results[property_name][selected_theory]
     unit = theory_dict[property_name].get('unit', '')
 
-    st.write("Results structure:", results)  # Debug statement
-
     if show_math:
         st.latex(f"{latex}")
         result = results[property_name][theory_names.index(selected_theory)]
@@ -100,9 +96,8 @@ def display_theories(property_name, theory_dict, results, latex_results, fiber_m
     else:
         st.latex(f"{latex} = {results[property_name][theory_names.index(selected_theory)]:.3f} \\ [{unit}]")
 
-    formula_code = inspect.getsource(formula)
+    formula_code = inspect.getsource(theory_details["formula"])
     st.code(formula_code, language='python')
-
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)
