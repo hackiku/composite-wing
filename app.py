@@ -7,6 +7,7 @@ from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, calculate_failure, plot_properties, display_theories
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 
+
 st.set_page_config(
     page_title="Composite Wing",
     page_icon="🪃",
@@ -42,7 +43,7 @@ Vf = st.sidebar.slider('Fiber Volume Fraction `Vf`', 0.0, 1.0, 0.6, 0.01, help="
 Vm = 1 - Vf
 Vvoid = st.sidebar.slider('Volume of void space `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
 
-theme_mode = st.sidebar.selectbox("Graphs", options=["Dark", "Light"], index=0).lower()
+theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
 
@@ -90,12 +91,22 @@ def main():
     # failure_results, failure_latex, failure_math = calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=show_math)
     
     st.header("Micromechanical properties")
-    plot_properties(micromechanics_results, theme_mode)
+    
+    col1, col2 = st.columns([3,2])
+    with col1: 
+        plot_properties(micromechanics_results)
+    with col2:
+        st.dataframe(micromechanics_results)
 
+    st.markdown("***")
+    
     properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
     for property_name in properties:
         if property_name in micromech_properties:
             display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, theme_mode, show_math)
+            st.markdown("***")
+
+    
     
     
     st.header("Strength properties")

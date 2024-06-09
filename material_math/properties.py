@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-import inspect
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
-from utils import set_mpl_style
+from utils import spacer, set_mpl_style
+import inspect
 
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
@@ -99,18 +99,18 @@ def calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key,
 
     return results, latex_results, math_results
 
-def plot_properties(results, theme_mode):
-    set_mpl_style(theme_mode)
+def plot_properties(results):
+    # set_mpl_style(theme_mode)
     results_df = pd.DataFrame(results).transpose()
     fig, ax = plt.subplots(figsize=(12, 8))
     for property_name in results_df.columns:
         ax.scatter(results_df.index, results_df[property_name], label=property_name)
-    ax.set_title('Comparison of Composite Properties by Theory', color='white' if theme_mode == 'dark' else 'black')
-    ax.set_xlabel('Theory', color='white' if theme_mode == 'dark' else 'black')
-    ax.set_ylabel('Value', color='white' if theme_mode == 'dark' else 'black')
+    ax.set_title('Comparison of Composite Properties by Theory', color='white')
+    ax.set_xlabel('Theory', color='white')
+    ax.set_ylabel('Value', color='white')
     ax.legend()
     ax.grid(True, color='gray')
-    ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
+    ax.tick_params(colors='white')
     st.pyplot(fig)
 
 def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, theme_mode='default', show_math=False):
@@ -122,11 +122,13 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
     with col1:
         st.subheader(property_name.replace('_', ' ').title())
     with col2:
-        st.write(f'{fiber_material_key}')
-        st.json(fiber_material, expanded=False)
+        spacer()
+        # st.write(f'{fiber_material_key}')
+        # st.json(fiber_material, expanded=False)
     with col3:
-        st.write(f'{matrix_material_key}')
-        st.json(matrix_material, expanded=False)
+        spacer()
+        # st.write(f'{matrix_material_key}')
+        # st.json(matrix_material, expanded=False)
 
     if len(theory_names) > 1:
         selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
@@ -147,6 +149,7 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
 
     formula_code = inspect.getsource(theory_details["formula"])
     st.code(formula_code, language='python')
+
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)
