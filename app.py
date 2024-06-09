@@ -90,30 +90,33 @@ def main():
     strength_results, strength_latex, strength_math = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     # failure_results, failure_latex, failure_math = calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=show_math)
     
+    
+    
+    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
+    
     st.header("Micromechanical properties")
     
     col1, col2 = st.columns([3,2])
     with col1: 
-        plot_properties(micromechanics_results)
+        micromechanics_df = plot_properties(micromechanics_results)
+
+        # plot_properties(micromechanics_results)
     with col2:
-        st.dataframe(micromechanics_results)
+        st.dataframe(micromechanics_df)
 
     st.markdown("***")
     
-    properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
     for property_name in properties:
         if property_name in micromech_properties:
-            display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, theme_mode, show_math)
+            display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
             st.markdown("***")
 
     
-    
-    
     st.header("Strength properties")
-    plot_properties(strength_results, theme_mode)
+    plot_properties(strength_results)
     for property_name in properties:
         if property_name in strength_properties:
-            display_theories(property_name, strength_results, strength_latex, strength_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, theme_mode, show_math)
+            display_theories(property_name, strength_results, strength_latex, strength_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
 
     st.header("Failure criteria")
     # plot_properties(failure_results, theme_mode)

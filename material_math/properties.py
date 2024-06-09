@@ -100,21 +100,22 @@ def calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key,
     return results, latex_results, math_results
 
 def plot_properties(results):
-    # set_mpl_style(theme_mode)
     results_df = pd.DataFrame(results).transpose()
+    results_df.columns = [f"Theory {i+1}" for i in range(results_df.shape[1])]
     fig, ax = plt.subplots(figsize=(12, 8))
     for property_name in results_df.columns:
         ax.scatter(results_df.index, results_df[property_name], label=property_name)
-    ax.set_title('Comparison of Composite Properties by Theory', color='white')
+    ax.set_title('Composite properties compared by theory', color='white')
     ax.set_xlabel('Theory', color='white')
     ax.set_ylabel('Value', color='white')
     ax.legend()
     ax.grid(True, color='gray')
     ax.tick_params(colors='white')
     st.pyplot(fig)
+    return results_df
 
-def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, theme_mode='default', show_math=False):
-    set_mpl_style(theme_mode)
+def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, show_math=False):
+    # set_mpl_style(theme_mode)
     theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
     theory_names = [name for name in theory_dict[property_name].keys() if name != "unit"]
 
@@ -173,10 +174,10 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
         for theory, values in all_values.items():
             ax.plot(vfs, values, label=theory)
         ax.axvline(Vf, color='red', linestyle='--', alpha=0.5, label=f'Current Vf = {Vf}')
-        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction', color='white' if theme_mode == 'dark' else 'black')
-        ax.set_xlabel('Fiber Volume Fraction (Vf)', color='white' if theme_mode == 'dark' else 'black')
-        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})', color='white' if theme_mode == 'dark' else 'black')
+        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction', color='white')
+        ax.set_xlabel('Fiber Volume Fraction (Vf)', color='white')
+        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})', color='white')
         ax.legend()
         ax.grid(True, color='gray')
-        ax.tick_params(colors='white' if theme_mode == 'dark' else 'black')
+        ax.tick_params(colors='white')
         st.pyplot(fig)
