@@ -4,7 +4,7 @@ from materials import fibers, matrices
 from utils import spacer, set_mpl_style
 from onshape_cad.model_ui import model_ui
 from wing_load_calculator import calculate_wing_load
-from material_math.properties import calculate_properties, calculate_failure, plot_properties, display_theories
+from material_math.properties import calculate_properties, calculate_failure, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 
 
@@ -90,17 +90,18 @@ def main():
     strength_results, strength_latex, strength_math = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     # failure_results, failure_latex, failure_math = calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key, sigma, show_math=show_math)
     
-    
+    st.dataframe(micromechanics_results)
     
     properties = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio", "tensile_strength", "compressive_strength", "transverse_tensile_strength", "transverse_compressive_strength", "in_plane_shear_strength"]
+    units = get_property_units(properties)
     
+    
+    # ------ MICROMECH ------
     st.header("Micromechanical properties")
     
     col1, col2 = st.columns([3,2])
     with col1: 
-        micromechanics_df = plot_properties(micromechanics_results)
-
-        # plot_properties(micromechanics_results)
+        micromechanics_df = plot_properties(micromechanics_results, properties)
     with col2:
         st.dataframe(micromechanics_df)
 
@@ -111,20 +112,23 @@ def main():
             display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
             st.markdown("***")
 
-    
+    # ------ STRENGTH ------
     st.header("Strength properties")
-    plot_properties(strength_results)
+    col1, col2 = st.columns([3,2])
+    with col1: 
+        strength_df = plot_properties(strength_results, properties)
+    with col2:
+        st.dataframe(strength_df)
+        
+
+    st.markdown("***")
+
     for property_name in properties:
         if property_name in strength_properties:
             display_theories(property_name, strength_results, strength_latex, strength_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
 
     st.header("Failure criteria")
-    # plot_properties(failure_results, theme_mode)
 
-        # elif property_name in strength_properties:
-        #     display_theories(property_name, strength_results, strength_latex, strength_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, theme_mode, show_math)
-        # elif property_name in failure_criteria:
-        #     display_theories(property_name, failure_results, failure_latex, failure_math, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, theme_mode, show_math)
     st.markdown('***')
 
 if __name__ == "__main__":

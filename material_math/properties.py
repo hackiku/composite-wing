@@ -1,3 +1,5 @@
+# material_math/properties.py
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -99,20 +101,45 @@ def calculate_failure(fibers, matrices, fiber_material_key, matrix_material_key,
 
     return results, latex_results, math_results
 
-def plot_properties(results):
+
+def plot_properties(results, properties):
     results_df = pd.DataFrame(results).transpose()
-    results_df.columns = [f"Theory {i+1}" for i in range(results_df.shape[1])]
+    # results_df = results_df.set_index("Property").transpose()
+
+    results_df.columns = [f"{prop} ({unit})" for prop, unit in zip(properties, results_df.columns)]
+    
     fig, ax = plt.subplots(figsize=(12, 8))
-    for property_name in results_df.columns:
-        ax.scatter(results_df.index, results_df[property_name], label=property_name)
+    
+    # Different properties might need different axes
+    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
+    
+    for idx, property_name in enumerate(results_df.columns):
+        color = colors[idx % len(colors)]
+        ax.plot(results_df.index, results_df[property_name], marker='o', color=color, label=property_name)
+    
     ax.set_title('Composite properties compared by theory', color='white')
-    ax.set_xlabel('Theory', color='white')
+    ax.set_xlabel('Property', color='white')
     ax.set_ylabel('Value', color='white')
     ax.legend()
     ax.grid(True, color='gray')
     ax.tick_params(colors='white')
     st.pyplot(fig)
+    
     return results_df
+
+def get_property_units(properties):
+    unit_map = {
+        "E1_modulus": "GPa",
+        "E2_modulus": "GPa",
+        "shear_modulus": "GPa",
+        "poisson_ratio": "-",
+        "tensile_strength": "MPa",
+        "compressive_strength": "MPa",
+        "transverse_tensile_strength": "MPa",
+        "transverse_compressive_strength": "MPa",
+        "in_plane_shear_strength": "MPa"
+    }
+    return [unit_map.get(prop, '') for prop in properties]
 
 def display_theories(property_name, results, latex_results, math_results, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma, show_individual_graphs=False, show_math=False):
     # set_mpl_style(theme_mode)
@@ -181,3 +208,4 @@ def display_theories(property_name, results, latex_results, math_results, fiber_
         ax.grid(True, color='gray')
         ax.tick_params(colors='white')
         st.pyplot(fig)
+    return theory_names
