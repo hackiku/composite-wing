@@ -150,17 +150,20 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         st.caption(f"""{fiber_material_key}
                    \n {matrix_material_key}""")
 
+    unit = theory_dict[property_name].get('unit', '')
+
+    
     if len(theory_names) > 1:
-        selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
+        # selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
+        selected_theory = st.radio(f'Select theory for {property_name} ', theory_names, horizontal=True, label_visibility="collapsed")
     else:
         selected_theory = theory_names[0]
 
     theory_details = theory_dict[property_name][selected_theory]
     formula = theory_details["formula"]
     latex = latex_results[property_name][selected_theory]
-    unit = theory_dict[property_name].get('unit', '')
-
     result = results[property_name][theory_names.index(selected_theory)]
+    
     
     if selected_theory in coefficients_latex[property_name]:
         for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():

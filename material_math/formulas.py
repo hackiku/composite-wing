@@ -26,26 +26,39 @@ micromech_properties = {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
             "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
             "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {m['Em']} / {Vf:.3f} \cdot {m['Em']} + {Vm:.3f} \cdot {f['E1f']}"
+        },
+        "Hashin-Rosen": {
+            "formula": lambda f, m, Vf, Vm, Kf, Km, Gm: (
+                f['E1f'] * Vf + m['Em'] * Vm +
+                (4 * Kf * Km * Gm * Vf * Vm * (m['vm'] - f['v12f'])**2) /
+                (Kf * Km + Gm * (Vf * Kf + Vm * Km))
+            ),
+            "latex": r"E_1 = E_{f1}V_f + E_mV_m + \frac{4K_f K_m G_m V_f V_m (\nu_m - \nu_{f12})^2}{K_f K_m + G_m (V_f K_f + V_m K_m)}",
+            "math": lambda f, m, Vf, Vm, Kf, Km, Gm: f"E_1 = {f['E1f']} \\cdot {Vf:.3f} + {m['Em']} \\cdot {Vm:.3f} + \\frac{{4 \\cdot {Kf} \\cdot {Km:.3f} \\cdot {Gm} \\cdot {Vf:.3f} \\cdot {Vm:.3f} \\cdot ({m['vm']} - {f['v12f']})^2}}{{{Kf:.3f} \\cdot {Km:.3f} + {Gm:.3f} \\cdot ({Vf:.3f} \\cdot {Kf:.3f} + {Vm:.3f} \\cdot {Km:.3f})}}",
+            "coefficients": {
+                "Kf": {
+                    "formula": lambda f, m: f['E1f'] / (2 * (1 - 2 * f['v12f']) * (1 + f['v12f'])),
+                    "latex": r"K_f = \frac{E_{f1}}{2(1 - 2\nu_{f12})(1 + \nu_{f12})}"
+                },
+                "Km": {
+                    "formula": lambda f, m: m['Em'] / (2 * (1 - 2 * m['vm']) * (1 + m['vm'])),
+                    "latex": r"K_m = \frac{E_m}{2(1 - 2\nu_m)(1 + \nu_m)}"
+                },
+                "Gm": {
+                    "formula": lambda f, m: m['Gm'],
+                    "latex": r"G_m = G_m"
+                }
+            }
         }
     },
     "E2": {
         "name": "Young's transverse modulus",
         "help": "Measures the stiffness of the composite perpendicular to the fiber direction",
         "unit": "GPa",
-        "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_2 = {f['E2f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
-        },
-        "Voigt Model": {
-            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_2 = {f['E2f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
-        },
-        "Inverse Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E2f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}",
-            "math": lambda f, m, Vf, Vm: f"E_2 = \\frac{{1}}{{\\frac{{{Vf:.3f}}}{f['E2f']} + \\frac{{{Vm:.3f}}}{m['Em']}}}"
+        "Inverse ROM": {
+            "formula": lambda f, m, Vf, Vm: (f['E2f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E2f']),
+            "latex": r"E_2 = \frac{E_{2f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{2f}}",
+            "math": lambda f, m, Vf, Vm: f"E_2 = \\frac{{{f['E2f']} \\cdot {m['Em']}}}{{{Vf:.3f} \\cdot {m['Em']} + {Vm:.3f} \\cdot {f['E2f']}}}"
         },
         "Chamis": {
             "formula": lambda f, m, Vf, Vm: m['Em'] / (1 - np.sqrt(Vf) * (1 - m['Em'] / f['E2f'])),
@@ -57,13 +70,25 @@ micromech_properties = {
             "latex": r"E_2 = E_m \left( \frac{(1 + V_f)E_{2f} + V_m E_m}{V_m E_{2f} + (1 + V_f)E_m} \right)",
             "math": lambda f, m, Vf, Vm: f"E_2 = {m['Em']} \\left( \\frac{{(1 + {Vf:.3f}){f['E2f']} + {Vm:.3f} {m['Em']}}}{{{Vm:.3f} {f['E2f']} + (1 + {Vf:.3f}) {m['Em']}}} \\right)"
         },
+        "name": "Young's transverse modulus",
+        "help": "Measures the stiffness of the composite perpendicular to the fiber direction",
+        "unit": "GPa",
         "Modified IROM": {
-            "formula": lambda f, m, Vf, Vm: 1 / (
-                (f['E1f'] * Vf + (1 - m['vm'] * f['v12f']) * m['Em'] + m['vm'] * f['v12f'] * f['E1f']) / (f['E1f'] * Vf + m['Em'] * Vm) * (Vf / f['E2f']) +
-                ((1 - m['vm']**2) * f['E1f'] - (1 - m['vm'] * f['v12f']) * m['Em'] + m['vm'] * f['v12f'] * f['E1f']) / (f['E1f'] * Vf + m['Em'] * Vm) * (Vm / m['Em'])
+            "formula": lambda f, m, Vf, Vm, eta_f, eta_m: 1 / (
+                (eta_f * Vf / f['E2f']) + (eta_m * Vm / m['Em'])
             ),
             "latex": r"E_2 = \frac{1}{\frac{\eta_f V_f}{E_{2f}} + \frac{\eta_m V_m}{E_m}}",
-            "math": lambda f, m, Vf, Vm: f"E_2 = \\frac{{1}}{{\\frac{{{f['E1f'] * Vf + (1 - m['vm'] * f['v12f']) * m['Em'] + m['vm'] * f['v12f'] * f['E1f']}}}{{{f['E1f'] * Vf + m['Em'] * Vm}}} \\frac{{{Vf:.3f}}}{{{f['E2f']}}} + \\frac{{(1 - {m['vm']}^2) {f['E1f']} - (1 - {m['vm']} {f['v12f']}) {m['Em']} + {m['vm']} {f['v12f']} {f['E1f']}}}{{{f['E1f']} {Vf:.3f} + {m['Em']} {Vm:.3f}}} \\frac{{{Vm:.3f}}}{{{m['Em']}}}}}"
+            "math": lambda f, m, Vf, Vm, eta_f, eta_m: f"E_2 = \\frac{{1}}{{\\frac{{{eta_f} \\cdot {Vf:.3f}}}{{{f['E2f']}}} + \\frac{{{eta_m} \\cdot {Vm:.3f}}}{{{m['Em']}}}}}",
+            "coefficients": {
+                "eta_f": {
+                    "formula": lambda f, m, Vf, Vm: (f['E1f'] * Vf + ((1 - f['ni12f'] * f['ni21f']) * m['Em'] + m['nim'] * f['ni21f'] * f['E1f']) * Vm) / (f['E1f'] * Vf + m['Em'] * Vm),
+                    "latex": r"\eta_f = \frac{E_{f1} V_f + ((1 - \nu_{12f} \nu_{21f}) E_m + \nu_m \nu_{21f} E_{f1}) V_m}{E_{f1} V_f + E_m V_m}"
+                },
+                "eta_m": {
+                    "formula": lambda f, m, Vf, Vm: ((1 - m['nim']**2) * f['E1f'] - (1 - m['nim'] * f['ni12f']) * m['Em'] * Vf + m['Em'] * Vm) / (f['E1f'] * Vf + m['Em'] * Vm),
+                    "latex": r"\eta_m = \frac{(1 - \nu_m^2) E_{f1} - (1 - \nu_m \nu_{12f}) E_m V_f + E_m V_m}{E_{f1} V_f + E_m V_m}"
+                }
+            }
         }
     },
 
