@@ -129,7 +129,7 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
 
     col1, col2, col3 = st.columns([4, 2, 2])
     with col1:
-        st.subheader(f"{theory_dict[property_name]['name']} ({property_name.replace('_', ' ').title()})")
+        st.subheader(f"{theory_dict[property_name]['name']} `{property_name.title()}`")
         st.write(theory_dict[property_name]['help'])
     with col2:
         st.write()
