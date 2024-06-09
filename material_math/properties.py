@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 import inspect
 
+
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
     latex_results = {}
@@ -37,7 +38,11 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                     coefficients_latex[property_name][theory_name] = {}
                     for coeff_name, coeff_details in theory_details['coefficients'].items():
                         if 'formula' in coeff_details:
-                            coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
+                            num_args = coeff_details['formula'].__code__.co_argcount
+                            if num_args == 2:
+                                coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
+                            elif num_args == 4:
+                                coefficients[coeff_name] = coeff_details['formula'](fiber_material, matrix_material, Vf, Vm)
                             coefficients_latex[property_name][theory_name][coeff_name] = f"{coeff_details['latex']} = {coefficients[coeff_name]:.3f}"
                         else:
                             coefficients[coeff_name] = coeff_details['default']
@@ -60,14 +65,6 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
 
             results[property_name].append(result)
             latex_results[property_name][theory_name] = latex_formula
-
-            # if callable(latex_formula):
-            #     latex_results[property_name][theory_name] = latex_formula(fiber_material, matrix_material, Vf, Vm)
-            # else:
-            #     latex_results[property_name][theory_name] = latex_formula
-
-            
-
 
             if show_math:
                 if property_name not in math_results:
@@ -152,9 +149,7 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
 
     unit = theory_dict[property_name].get('unit', '')
 
-    
     if len(theory_names) > 1:
-        # selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
         selected_theory = st.radio(f'Select theory for {property_name} ', theory_names, horizontal=True, label_visibility="collapsed")
     else:
         selected_theory = theory_names[0]
@@ -163,7 +158,6 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
     formula = theory_details["formula"]
     latex = latex_results[property_name][selected_theory]
     result = results[property_name][theory_names.index(selected_theory)]
-    
     
     if selected_theory in coefficients_latex[property_name]:
         for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():
@@ -188,8 +182,14 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
                 formula = theory_dict[property_name][theory]["formula"]
                 coeffs = {}
                 if 'coefficients' in theory_dict[property_name][theory]:
-                    coeffs = {coeff_name: coeff_details['formula'](fiber_material, matrix_material) if 'formula' in coeff_details else coeff_details['default']
-                              for coeff_name, coeff_details in theory_dict[property_name][theory]['coefficients'].items()}
+                    for coeff_name, coeff_details in theory_dict[property_name][theory]['coefficients'].items():
+                        num_args = coeff_details['formula'].__code__.co_argcount
+                        if num_args == 2:
+                            coeffs[coeff_name] = coeff_details['formula'](fiber_material, matrix_material)
+                        elif num_args == 4:
+                            coeffs[coeff_name] = coeff_details['formula'](fiber_material, matrix_material, vf, vm)
+                        else:
+                            coeffs[coeff_name] = coeff_details['default']
                 if "Vvoid" in formula.__code__.co_varnames:
                     value = formula(fiber_material, matrix_material, vf, vm, Vvoid, **coeffs)
                 else:
@@ -207,4 +207,3 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         ax.grid(True, color='gray')
         ax.tick_params(colors='white')
         st.pyplot(fig)
-

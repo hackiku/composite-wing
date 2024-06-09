@@ -27,29 +27,30 @@ micromech_properties = {
             "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
             "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {m['Em']} / {Vf:.3f} \cdot {m['Em']} + {Vm:.3f} \cdot {f['E1f']}"
         },
-        "Hashin-Rosen": {
-            "formula": lambda f, m, Vf, Vm, Kf, Km, Gm: (
-                f['E1f'] * Vf + m['Em'] * Vm +
-                (4 * Kf * Km * Gm * Vf * Vm * (m['vm'] - f['v12f'])**2) /
-                (Kf * Km + Gm * (Vf * Kf + Vm * Km))
-            ),
-            "latex": r"E_1 = E_{f1}V_f + E_mV_m + \frac{4K_f K_m G_m V_f V_m (\nu_m - \nu_{f12})^2}{K_f K_m + G_m (V_f K_f + V_m K_m)}",
-            "math": lambda f, m, Vf, Vm, Kf, Km, Gm: f"E_1 = {f['E1f']} \\cdot {Vf:.3f} + {m['Em']} \\cdot {Vm:.3f} + \\frac{{4 \\cdot {Kf} \\cdot {Km:.3f} \\cdot {Gm} \\cdot {Vf:.3f} \\cdot {Vm:.3f} \\cdot ({m['vm']} - {f['v12f']})^2}}{{{Kf:.3f} \\cdot {Km:.3f} + {Gm:.3f} \\cdot ({Vf:.3f} \\cdot {Kf:.3f} + {Vm:.3f} \\cdot {Km:.3f})}}",
-            "coefficients": {
-                "Kf": {
-                    "formula": lambda f, m: f['E1f'] / (2 * (1 - 2 * f['v12f']) * (1 + f['v12f'])),
-                    "latex": r"K_f = \frac{E_{f1}}{2(1 - 2\nu_{f12})(1 + \nu_{f12})}"
-                },
-                "Km": {
-                    "formula": lambda f, m: m['Em'] / (2 * (1 - 2 * m['vm']) * (1 + m['vm'])),
-                    "latex": r"K_m = \frac{E_m}{2(1 - 2\nu_m)(1 + \nu_m)}"
-                },
-                "Gm": {
-                    "formula": lambda f, m: m['Gm'],
-                    "latex": r"G_m = G_m"
-                }
+    "Hashin-Rosen": {
+        "formula": lambda f, m, Vf, Vm, Kf, Km, Gm: (
+            f['E1f'] * Vf + m['Em'] * Vm +
+            (4 * Kf * Km * Gm * Vf * Vm * (m['nim'] - f['ni12f'])**2) /
+            (Kf * Km + Gm * (Vf * Kf + Vm * Km))
+        ),
+        "latex": r"E_1 = E_{f1}V_f + E_mV_m + \frac{4K_f K_m G_m V_f V_m (\nu_m - \nu_{f12})^2}{K_f K_m + G_m (V_f K_f + V_m K_m)}",
+        "math": lambda f, m, Vf, Vm, Kf, Km, Gm: f"E_1 = {f['E1f']} \\cdot {Vf:.3f} + {m['Em']} \\cdot {Vm:.3f} + \\frac{{4 \\cdot {Kf} \\cdot {Km:.3f} \\cdot {Gm} \\cdot {Vf:.3f} \\cdot {Vm:.3f} \\cdot ({m['nim']} - {f['ni12f']})^2}}{{{Kf:.3f} \\cdot {Km:.3f} + {Gm:.3f} \\cdot ({Vf:.3f} \\cdot {Kf:.3f} + {Vm:.3f} \\cdot {Km:.3f})}}",
+        "coefficients": {
+            "Kf": {
+                "formula": lambda f, m, Vf, Vm: f['E1f'] / (2 * (1 - 2 * f['ni12f']) * (1 + f['ni12f'])),
+                "latex": r"K_f = \frac{E_{f1}}{2(1 - 2\nu_{f12})(1 + \nu_{f12})}"
+            },
+            "Km": {
+                "formula": lambda f, m, Vf, Vm: m['Em'] / (2 * (1 - 2 * m['nim']) * (1 + m['nim'])),
+                "latex": r"K_m = \frac{E_m}{2(1 - 2\nu_m)(1 + \nu_m)}"
+            },
+            "Gm": {
+                "formula": lambda f, m: m['Gm'],
+                "latex": r"G_m = G_m"
             }
         }
+    },
+
     },
     "E2": {
         "name": "Young's transverse modulus",
@@ -126,15 +127,15 @@ micromech_properties = {
         "help": "Ratio of transverse strain to axial strain",
         "unit": "-",
         "Chamis": {
-            "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
+            "formula": lambda f, m, Vf, Vm: f['ni12f'] * Vf + m['nim'] * Vm,
             "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
         },
         "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
+            "formula": lambda f, m, Vf, Vm: f['ni12f'] * Vf + m['nim'] * Vm,
             "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
         },
         "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm: (f['v12f'] * m['vm']) / (Vf * m['vm'] + Vm * f['v12f']),
+            "formula": lambda f, m, Vf, Vm: (f['ni12f'] * m['nim']) / (Vf * m['nim'] + Vm * f['ni12f']),
             "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}"
         }
     }
@@ -167,7 +168,7 @@ strength_properties = {
             "latex": r"F_{1C} = 2V_f \sqrt{\frac{V_f E_{1f} E_m}{3(1 - V_f)}}"
         },
         "Agarwal-Broutman": {
-            "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['v12f'] * Vf + m['vm'] * Vm),
+            "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['ni12f'] * Vf + m['nim'] * Vm),
             "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}"
         },
         "Modified ROM": {
