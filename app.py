@@ -23,9 +23,11 @@ st.set_page_config(
 
 aircraft_presets = {
     "P-51 Mustang": {
-        "mass": 5579.18,
-        "wingspan": 11.285537,
-        "sweep_angle": 12,
+        "mass": 5489,
+        "wingspan": 11.286, # 5.643 m b/2
+        "tip": 1.297,
+        "root": 2.752,
+        "sweep_angle": 10.388,
         "3_view": "data/North_American_P-51B_Mustang_3-view_line_drawing.png",
         "crop_params": [100.2, 200, 200, 200],
         "load_factor": 10
