@@ -61,10 +61,24 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
             results[property_name].append(result)
             latex_results[property_name][theory_name] = latex_formula
 
+            # if callable(latex_formula):
+            #     latex_results[property_name][theory_name] = latex_formula(fiber_material, matrix_material, Vf, Vm)
+            # else:
+            #     latex_results[property_name][theory_name] = latex_formula
+
+            
+
+
             if show_math:
                 if property_name not in math_results:
                     math_results[property_name] = {}
                 math_results[property_name][theory_name] = interpolated_math
+
+    # Ensure all lists are the same length
+    max_length = max(len(results[prop]) for prop in results)
+    for prop in results:
+        while len(results[prop]) < max_length:
+            results[prop].append(None)
 
     return results, latex_results, math_results, coefficients_latex, theories_map
 
@@ -123,18 +137,18 @@ def get_property_units(properties):
 
 
 
+
 def display_theories(property_name, results, latex_results, math_results, coefficients_latex, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma=None, show_individual_graphs=False, show_math=False):
     theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
     theory_names = [name for name in theory_dict[property_name].keys() if name not in ["unit", "name", "help"]]
 
-    col1, col2, col3 = st.columns([4, 2, 2])
+    col1, col2 = st.columns([3, 1])
     with col1:
         st.subheader(f"{theory_dict[property_name]['name']} `{property_name.title()}`")
         st.write(theory_dict[property_name]['help'])
     with col2:
-        st.write()
-    with col3:
-        st.write()
+        st.caption(f"""{fiber_material_key}
+                   \n {matrix_material_key}""")
 
     if len(theory_names) > 1:
         selected_theory = st.radio(f'Select theory for {property_name.replace("_", " ").title()}', theory_names, horizontal=True, label_visibility="collapsed")
@@ -191,4 +205,3 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         ax.tick_params(colors='white')
         st.pyplot(fig)
 
-    return theory_names

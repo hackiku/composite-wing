@@ -6,102 +6,6 @@ def calculate_density(rhof, rhom, Vf, Vm):
     rho = rhof * Vf + rhom * Vm
     return rho
 
-micromech_properties = {
-    "E1": {
-        "name": "Young's longitudinal modulus",
-        "help": "Measures the stiffness of the composite in the fiber direction",
-        "unit": "GPa",
-        "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E1f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_1 = E_{1f}V_f + E_mV_m",
-            # "math": lambda f, m, Vf, Vm: f"E_1 = {{f['E1f']}} \cdot {{Vf:.3f}} + {{m['Em']}} \cdot {{Vm:.3f}}"
-        },
-        "Inverse ROM": {
-            "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}",
-            "math": lambda f, m, Vf, Vm: f"E_1 = {{f['E1f']}} \cdot {{Vf:.3f}} + {{m['Em']}} \cdot {{Vm:.3f}}"
-            # "math": lambda f, m, Vf, Vm: f"\frac{{1}}{{E_1}} = \frac{{{{Vf:.3f}}}}{{f['E1f']}} + \frac{{{{Vm:.3f}}}}{{m['Em']}}"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
-            "math": lambda f, m, Vf, Vm: f"E_1 = \frac{{{{f['E1f']}} \cdot {{m['Em']}}}}{{{{Vf}} \cdot {{m['Em']}} + {{Vm}} \cdot {{f['E1f']}}}}"
-        }
-    },
-    "E2": {
-        "name": "Young's transverse modulus",
-        "help": "Measures the stiffness of the composite perpendicular to the fiber direction",
-        "unit": "GPa",
-        "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_2 = {{f['E2f']}} \cdot {{Vf:.3f}} + {{m['Em']}} \cdot {{Vm:.3f}}"
-        },
-        "Voigt Model": {
-            "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
-            "math": lambda f, m, Vf, Vm: f"E_2 = {{f['E2f']}} \cdot {{Vf:.3f}} + {{m['Em']}} \cdot {{Vm:.3f}}"
-        },
-        "Inverse Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E2f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}",
-            "math": lambda f, m, Vf, Vm: f"\frac{{1}}{{E_2}} = \frac{{{Vf}}}{{{f['E2f']}}} + \frac{{{Vm}}}{{{m['Em']}}}"
-        }
-    },
-    "G12": {
-        "name": "Shear modulus",
-        "help": "Measures the shear stiffness of the composite",
-        "unit": "GPa",
-        "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['G12f'] * Vf + m['Gm'] * Vm,
-            "latex": r"G_{12} = G_{12f}V_f + G_mV_m",
-            "math": lambda f, m, Vf, Vm: f"G_{{12}} = {{f['G12f']}} \cdot {{Vf:.3f}} + {{m['Gm']}} \cdot {{Vm:.3f}}"
-        },
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f'])),
-            "latex": r"G_{12} = \frac{G_m}{1 - \sqrt{V_f} \left( 1 - \frac{G_m}{G_{12f}} \right)}",
-            # "math": lambda f, m, Vf, Vm: f"G_{{12}} = \frac{{m['Gm']}}{{1 - np.sqrt({{Vf:.3f}}) \cdot \left( 1 - \frac{{m['Gm']}}{f['G12f']}} \right)}}"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm, xi: m['Gm'] * ((1 + 2 * xi * Vf) / (1 - xi * Vf)),
-            "latex": r"G_{12} = G_m \left( \frac{1 + 2 \cdot \xi \cdot V_f}{1 - \xi \cdot V_f} \right)",
-            # "math": lambda f, m, Vf, Vm, xi: f"G_{{12}} = {{m['Gm']}} \left( \frac{{1 + 2 \cdot {{xi}} \cdot {{Vf:.3f}}}}{1 - {{xi}} \cdot {{Vf:.3f}}} \right)",
-            "coefficients": {
-                "xi": {
-                    "formula": lambda f, m: (f['G12f'] / m['Gm'] - 1) / (f['G12f'] / m['Gm'] + 2),
-                    "latex": r"\xi = \frac{\frac{G_{12f}}{G_m} - 1}{\frac{G_{12f}}{G_m} + 2}",
-                    # "math": lambda f, m: f"\xi = \frac{{\frac{{f['G12f']}}{m['Gm']}}} - 1{{\frac{{f['G12f']}}{m['Gm']}}} + 2}}",
-                    "default": 0.5
-                }
-            }
-        },
-        "Modified Rule of Mixtures (MROM)": {
-            "formula": lambda f, m, Vf, Vm: 1 / ((Vf / f['G12f']) + (100 * Vm / m['Gm'])),
-            "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}",
-            # "math": lambda f, m, Vf, Vm: f"\frac{{1}}{{G_{{12}}}} = \frac{{Vf:.3f}}{G_{{12f}}} + \frac{{\eta' Vm:.3f}}{G_m}}"
-        }
-    },
-    "nu12": {
-        "name": "Poisson's ratio",
-        "help": "Ratio of transverse strain to axial strain",
-        "unit": "-",
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
-            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m",
-            "math": lambda f, m, Vf, Vm: f"\nu_{{12}} = {{f['v12f']}} \cdot {{Vf:.3f}} + {{m['vm']}} \cdot {{Vm:.3f}}"
-        },
-        "Rule of Mixtures": {
-            "formula": lambda f, m, Vf, Vm: f['v12f'] * Vf + m['vm'] * Vm,
-            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m",
-            "math": lambda f, m, Vf, Vm: f"\nu_{{12}} = {{f['v12f']}} \cdot {{Vf:.3f}} + {{m['vm']}} \cdot {{Vm:.3f}}"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm: (f['v12f'] * m['vm']) / (Vf * m['vm'] + Vm * f['v12f']),
-            "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}",
-            # "math": lambda f, m, Vf, Vm: f"\nu_{{12}} = \frac{{f['v12f']}} \cdot {{m['vm']}}}{Vf \cdot {m['vm']}} + {Vm \cdot {f['v12f']}}}"
-        }
-    }
-}
 
 micromech_properties = {
     "E1": {
@@ -115,11 +19,13 @@ micromech_properties = {
         },
         "Inverse ROM": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E1f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}"
+            "latex": r"\frac{1}{E_1} = \frac{V_f}{E_{1f}} + \frac{V_m}{E_m}",
+            "math": lambda f, m, Vf, Vm: f"E_1 = \\frac{{1}}{{\\frac{{{Vf:.3f}}}{f['E1f']} + \\frac{{{Vm:.3f}}}{m['Em']}}}"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['E1f'] * m['Em']) / (Vf * m['Em'] + Vm * f['E1f']),
-            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}"
+            "latex": r"E_1 = \frac{E_{1f} \cdot E_m}{V_f \cdot E_m + V_m \cdot E_{1f}}",
+            "math": lambda f, m, Vf, Vm: f"E_1 = {f['E1f']} \cdot {m['Em']} / {Vf:.3f} \cdot {m['Em']} + {Vm:.3f} \cdot {f['E1f']}"
         }
     },
     "E2": {
@@ -128,17 +34,40 @@ micromech_properties = {
         "unit": "GPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m"
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_2 = {f['E2f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
         "Voigt Model": {
             "formula": lambda f, m, Vf, Vm: f['E2f'] * Vf + m['Em'] * Vm,
-            "latex": r"E_2 = E_{2f}V_f + E_mV_m"
+            "latex": r"E_2 = E_{2f}V_f + E_mV_m",
+            "math": lambda f, m, Vf, Vm: f"E_2 = {f['E2f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}"
         },
         "Inverse Rule of Mixtures": {
             "formula": lambda f, m, Vf, Vm: 1 / (Vf / f['E2f'] + Vm / m['Em']),
-            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}"
+            "latex": r"\frac{1}{E_2} = \frac{V_f}{E_{2f}} + \frac{V_m}{E_m}",
+            "math": lambda f, m, Vf, Vm: f"E_2 = \\frac{{1}}{{\\frac{{{Vf:.3f}}}{f['E2f']} + \\frac{{{Vm:.3f}}}{m['Em']}}}"
+        },
+        "Chamis": {
+            "formula": lambda f, m, Vf, Vm: m['Em'] / (1 - np.sqrt(Vf) * (1 - m['Em'] / f['E2f'])),
+            "latex": r"E_2 = \frac{E_m}{1 - \sqrt{V_f} \left( 1 - \frac{E_m}{E_{2f}} \right)}",
+            "math": lambda f, m, Vf, Vm: f"E_2 = \\frac{{{m['Em']}}}{{1 - \\sqrt{{{Vf:.3f}}} \\left( 1 - \\frac{{{m['Em']}}}{{{f['E2f']}}} \\right)}}"
+        },
+        "Halpin-Tsai": {
+            "formula": lambda f, m, Vf, Vm: m['Em'] * ((1 + Vf) * f['E2f'] + Vm * m['Em']) / (Vm * f['E2f'] + (1 + Vf) * m['Em']),
+            "latex": r"E_2 = E_m \left( \frac{(1 + V_f)E_{2f} + V_m E_m}{V_m E_{2f} + (1 + V_f)E_m} \right)",
+            "math": lambda f, m, Vf, Vm: f"E_2 = {m['Em']} \\left( \\frac{{(1 + {Vf:.3f}){f['E2f']} + {Vm:.3f} {m['Em']}}}{{{Vm:.3f} {f['E2f']} + (1 + {Vf:.3f}) {m['Em']}}} \\right)"
+        },
+        "Modified IROM": {
+            "formula": lambda f, m, Vf, Vm: 1 / (
+                (f['E1f'] * Vf + (1 - m['vm'] * f['v12f']) * m['Em'] + m['vm'] * f['v12f'] * f['E1f']) / (f['E1f'] * Vf + m['Em'] * Vm) * (Vf / f['E2f']) +
+                ((1 - m['vm']**2) * f['E1f'] - (1 - m['vm'] * f['v12f']) * m['Em'] + m['vm'] * f['v12f'] * f['E1f']) / (f['E1f'] * Vf + m['Em'] * Vm) * (Vm / m['Em'])
+            ),
+            "latex": r"E_2 = \frac{1}{\frac{\eta_f V_f}{E_{2f}} + \frac{\eta_m V_m}{E_m}}",
+            "math": lambda f, m, Vf, Vm: f"E_2 = \\frac{{1}}{{\\frac{{{f['E1f'] * Vf + (1 - m['vm'] * f['v12f']) * m['Em'] + m['vm'] * f['v12f'] * f['E1f']}}}{{{f['E1f'] * Vf + m['Em'] * Vm}}} \\frac{{{Vf:.3f}}}{{{f['E2f']}}} + \\frac{{(1 - {m['vm']}^2) {f['E1f']} - (1 - {m['vm']} {f['v12f']}) {m['Em']} + {m['vm']} {f['v12f']} {f['E1f']}}}{{{f['E1f']} {Vf:.3f} + {m['Em']} {Vm:.3f}}} \\frac{{{Vm:.3f}}}{{{m['Em']}}}}}"
         }
     },
+
+
     "G12": {
         "name": "Shear modulus",
         "help": "Measures the shear stiffness of the composite",
