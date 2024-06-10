@@ -7,7 +7,7 @@ import streamlit as st
 def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes):
     g = 9.81
     total_force = mass * g * load_factor / 2
-    total_nodes = nodes_between_ribs * num_ribs - (num_ribs - 2)
+    total_nodes = int(nodes_between_ribs * num_ribs - (num_ribs - 2))  # Ensure total_nodes is an integer
     y_positions = np.linspace(0, wing_length, total_nodes)
     dy_position = y_positions[1] - y_positions[0]
     p = round(wing_length / (dy_position * num_nodes))
@@ -53,5 +53,4 @@ def calculate_wing_load(mass, load_factor, nodes_between_ribs, num_ribs, wing_le
     st.latex(fr"""
     \sum F_l = \frac{{R_z}}{{2}} = \frac{{m_{{max}} \cdot g \cdot n}}{{2}} = \frac{{{mass} \cdot {g} \cdot {load_factor}}}{{2}} = {total_force / 1000:.2f} \, \text{{kN}}
     """)
-
 

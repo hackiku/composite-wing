@@ -23,20 +23,22 @@ st.set_page_config(
 
 aircraft_presets = {
     "P-51 Mustang": {
-        "mass": 5489,
-        "wingspan": 11.286, # 5.643 m b/2
+        "mass": 5489.00,
+        "wingspan": 5.643, # 11.286 / 2 [m]
         "tip": 1.297,
         "root": 2.752,
         "sweep_angle": 10.388,
         "3_view": "data/North_American_P-51B_Mustang_3-view_line_drawing.png",
-        "crop_params": [100.2, 200, 200, 200],
+        "crop_params": [100, 200, 200, 200],
         "load_factor": 10
     },
-    "Orao": {
+    "J-22 Orao": {
         "mass": 11300.00,
         "wingspan": 9.262,
-        "sweep_angle": 12,
-        "3_view": "ssdata/North_American_P-51B_Mustang_3-view_line_drawing.png",
+        "tip": 1.297,
+        "root": 2.752,
+        "sweep_angle": 12.0,
+        "3_view": "",
         "crop_params": [400, 200, 200, 200],
         "load_factor": 10
     }
@@ -76,7 +78,9 @@ st.sidebar.markdown(r'$$Options$$')
 theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
+st.sidebar.button("Download STEP 💾")
 
+# ---------------------------------
 def main():
     st.title("Composite Wingy 🪃")
     st.write("Design a wing with composite materials")
@@ -85,41 +89,45 @@ def main():
     st.markdown("***")
 
 
+    # TODO convert to dataframe
     if selected_aircraft:
         aircraft = aircraft_presets[selected_aircraft]
-        mass = aircraft['mass']
+        mmax = aircraft['mass']
         wingspan = aircraft['wingspan']
         sweep_angle = aircraft['sweep_angle']
         image_path = aircraft['3_view']
 
         # Display the selected aircraft's details
         st.write(f"### Aircraft: {selected_aircraft}")
-        st.write(f"**Mass**: {mass} kg")
+        st.write(f"**Mass**: {mmax} kg")
         st.write(f"**Wingspan**: {wingspan} m")
         st.write(f"**Sweep Angle**: {sweep_angle} degrees")
-        
-
 
         three_view = crop_image(image_path, aircraft['crop_params'])
         st.image(three_view, caption=f"{selected_aircraft} 3-view")
-
+    else:
+        mmax = 999.0
 
     # =============== CAD MODEL ===============
     model_ui()
 
     spacer()
 
+    # =============== WING LOAD ===============
+
     st.markdown("***")
     st.header("Wing load")
+    st.write("")
     col1, col2, col3 = st.columns(3)
     with col1:
         # mass = st.slider(f'Aircraft mass $$(m_{{max}})$$ [Kg]', 0.0, 10000.0, 5579.18, 0.01, format="%d", help="Adjust void ratio in the composite (between 0 and 1)")
-        mass = st.number_input('Mass of aircraft (kg)', value=11300, step=100)
+        selected_mass = st.number_input('Mass of aircraft (kg)', value=mmax, step=100.0)
+        mass = selected_mass
         load_factor = st.number_input('Load Factor', value=6, help="The load factor represents the ratio of the maximum load the wing can support to the aircraft's weight. A higher load factor indicates greater structural stress.")
         
     with col2:
         nodes_between_ribs = st.number_input('Nodes between Ribs', value=15)
-        num_ribs = st.number_input('Number of Ribs', value=st.session_state.variables.get('rib_num_total', {}).get('value', 12))
+        num_ribs = st.number_input('Number of Ribs', value=st.session_state.variables.get('rib_num_total', {}).get('value', 12.0))
     with col3:
         wing_length = st.number_input('Wing Length (mm)', value=st.session_state.variables.get('span', {}).get('value', 1200))
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20)
