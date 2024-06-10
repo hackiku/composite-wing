@@ -107,21 +107,15 @@ def plot_properties(results, properties, units, theories):
     fig, ax1 = plt.subplots(figsize=(12, 8))
     ax2 = ax1.twinx()
 
-    try:
-        colors = plt.cm.get_cmap('tab10', len(properties))
-    except TypeError:
-        colors = plt.cm.get_cmap('tab10')
-
     # Plot properties based on units
     for idx, property_name in enumerate(properties):
         unit = units[idx]
         for theory_name in theories[property_name]:
             column = f"{property_name} ({theory_name}, {unit})"
-            color = colors(idx) if len(properties) <= 10 else None
             if unit in ['GPa', 'MPa']:
-                ax1.plot(results_df.columns, results_df.loc[column], marker='o', linestyle='-', color=color, label=column)
+                ax1.plot(results_df.columns, results_df.loc[column], marker='o', linestyle='-', label=column)
             else:
-                ax2.plot(results_df.columns, results_df.loc[column], marker='x', linestyle='--', color=color, label=column)
+                ax2.plot(results_df.columns, results_df.loc[column], marker='x', linestyle='--', label=column)
 
     ax1.set_xlabel('Theory')
     ax1.set_ylabel('MPa / GPa')
