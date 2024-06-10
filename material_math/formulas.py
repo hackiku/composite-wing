@@ -50,7 +50,6 @@ micromech_properties = {
             }
         }
     },
-
     },
     "E2": {
         "name": "Young's transverse modulus",
@@ -92,23 +91,34 @@ micromech_properties = {
             }
         }
     },
-
-
     "G12": {
         "name": "Shear modulus",
         "help": "Measures the shear stiffness of the composite",
         "unit": "GPa",
         "ROM": {
-            "formula": lambda f, m, Vf, Vm: f['G12f'] * Vf + m['Gm'] * Vm,
-            "latex": r"G_{12} = G_{12f}V_f + G_mV_m"
+            "formula": lambda f, m, Vf, Vm: (f['G12f'] * m['Gm']) / (Vf * m['Gm'] + Vm * f['G12f']),
+            "latex": r"G_{12} = \frac{G_{12f} G_m}{V_f G_m + V_m G_{12f}}",
+            "math": lambda f, m, Vf, Vm: f"G_{{12}} = \\frac{{{f['G12f']} \\cdot {m['Gm']}}}{{{Vf:.3f} \\cdot {m['Gm']} + {Vm:.3f} \\cdot {f['G12f']}}}"
         },
         "Chamis": {
             "formula": lambda f, m, Vf, Vm: m['Gm'] / (1 - np.sqrt(Vf) * (1 - m['Gm'] / f['G12f'])),
-            "latex": r"G_{12} = \frac{G_m}{1 - \sqrt{V_f} \left( 1 - \frac{G_m}{G_{12f}} \right)}"
+            "latex": r"G_{12} = \frac{G_m}{1 - \sqrt{V_f} \left( 1 - \frac{G_m}{G_{12f}} \right)}",
+            "math": lambda f, m, Vf, Vm: f"G_{{12}} = \\frac{{{m['Gm']}}}{{1 - \\sqrt{{{Vf:.3f}}} \\left( 1 - \\frac{{{m['Gm']}}}{{{f['G12f']}}} \\right)}}"
+        },
+        "Hashin-Rosen": {
+            "formula": lambda f, m, Vf, Vm: m['Gm'] * ((f['G12f'] * (1 + Vf) + m['Gm'] * Vm) / (f['G12f'] * Vm + m['Gm'] * (1 + Vf))),
+            "latex": r"G_{12} = G_m \frac{G_{12f}(1 + V_f) + G_m V_m}{G_{12f} V_m + G_m (1 + V_f)}",
+            "math": lambda f, m, Vf, Vm: f"G_{{12}} = {m['Gm']} \\frac{{{f['G12f']} (1 + {Vf:.3f}) + {m['Gm']} \\cdot {Vm:.3f}}}{{{f['G12f']} \\cdot {Vm:.3f} + {m['Gm']} (1 + {Vf:.3f})}}"
+        },
+        "Elasticity": {
+            "formula": lambda f, m, Vf, Vm: m['Gm'] * (((m['Gm'] + f['G12f']) - Vf * (m['Gm'] - f['G12f'])) / ((m['Gm'] + f['G12f']) + Vf * (m['Gm'] - f['G12f']))),
+            "latex": r"G_{12} = G_m \left( \frac{(G_m + G_{12f}) - V_f (G_m - G_{12f})}{(G_m + G_{12f}) + V_f (G_m - G_{12f})} \right)",
+            "math": lambda f, m, Vf, Vm: f"G_{{12}} = {m['Gm']} \\left( \\frac{{({m['Gm']} + {f['G12f']}) - {Vf:.3f} ({m['Gm']} - {f['G12f']})}}{{({m['Gm']} + {f['G12f']}) + {Vf:.3f} ({m['Gm']} - {f['G12f']})}} \\right)"
         },
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm, xi: m['Gm'] * ((1 + 2 * xi * Vf) / (1 - xi * Vf)),
             "latex": r"G_{12} = G_m \left( \frac{1 + 2 \cdot \xi \cdot V_f}{1 - \xi \cdot V_f} \right)",
+            "math": lambda f, m, Vf, Vm, xi: f"G_{{12}} = {m['Gm']} \\left( \\frac{{1 + 2 \\cdot {xi:.3f} \\cdot {Vf:.3f}}}{{1 - {xi:.3f} \\cdot {Vf:.3f}}} \\right)",
             "coefficients": {
                 "xi": {
                     "formula": lambda f, m: (f['G12f'] / m['Gm'] - 1) / (f['G12f'] / m['Gm'] + 2),
@@ -117,9 +127,16 @@ micromech_properties = {
                 }
             }
         },
-        "Modified Rule of Mixtures (MROM)": {
-            "formula": lambda f, m, Vf, Vm: 1 / ((Vf / f['G12f']) + (100 * Vm / m['Gm'])),
-            "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}"
+        "MROM": {
+            "formula": lambda f, m, Vf, Vm, eta_prime: 1 / ((Vf / f['G12f']) + (eta_prime * Vm / m['Gm'])),
+            "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}",
+            "math": lambda f, m, Vf, Vm, eta_prime: f"\\frac{{1}}{{G_{{12}}}} = \\frac{{{Vf:.3f}}}{{{f['G12f']}}} + \\frac{{{eta_prime:.3f} \\cdot {Vm:.3f}}}{{{m['Gm']}}}",
+            "coefficients": {
+                "eta_prime": {
+                    "formula": lambda f, m: 0.6,
+                    "latex": r"\eta' = 0.6"
+                }
+            }
         }
     },
     "nu12": {
@@ -142,55 +159,84 @@ micromech_properties = {
 }
 
 strength_properties = {
-    "tensile_strength": {
-        "name": "Tensile strength",
-        "help": "Maximum stress the composite can withstand while being stretched",
+    "F1T": {
+        "name": "Tensile strength in the fiber direction",
+        "help": "Maximum stress the composite can withstand while being stretched in the fiber direction",
         "unit": "MPa",
         "ROM": {
             "formula": lambda f, m, Vf, Vm, Vvoid: f['F1ft'] * Vf + m['FmT'] * Vm * (1 - Vvoid),
-            "latex": r"F_{1T} = F_{1ft}V_f + F_mTV_m(1 - V_{void})"
+            "latex": r"F_{1T} = F_{1ft}V_f + F_mTV_m(1 - V_{void})",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1T}} = {f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f} \cdot (1 - {Vvoid:.3f})"
         },
         "Modified ROM": {
             "formula": lambda f, m, Vf, Vm, Vvoid: f['F1ft'] * Vf * 0.9 + m['FmT'] * Vm * (1 - Vvoid),
-            "latex": r"F_{1T} = 0.9 (F_{1ft}V_f + F_mTV_m(1 - V_{void}))"
+            "latex": r"F_{1T} = 0.9 (F_{1ft}V_f + F_mTV_m(1 - V_{void}))",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1T}} = 0.9 \\cdot ({f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f} \cdot (1 - {Vvoid:.3f}))"
         },
         "Nielsen": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (1 - Vvoid**(1/3)) * f['F1ft'] * Vf + m['FmT'] * Vm,
-            "latex": r"F_{1T} = (1 - V_{void}^{1/3}) F_{1ft}V_f + F_mTV_m"
+            "latex": r"F_{1T} = (1 - V_{void}^{1/3}) F_{1ft}V_f + F_mTV_m",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1T}} = (1 - {Vvoid:.3f}^{{1/3}}) \cdot {f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f}"
         }
     },
-    "compressive_strength": {
-        "name": "Compressive strength",
-        "help": "Maximum stress the composite can withstand while being compressed",
+    "F1C": {
+        "name": "Compressive strength in the fiber direction",
+        "help": "Maximum stress the composite can withstand while being compressed in the fiber direction",
         "unit": "MPa",
         "Timoshenko-Gere": {
             "formula": lambda f, m, Vf, Vm: 2 * Vf * np.sqrt((Vf * f['E1f'] * m['Em']) / (3 * (1 - Vf))),
-            "latex": r"F_{1C} = 2V_f \sqrt{\frac{V_f E_{1f} E_m}{3(1 - V_f)}}"
+            "latex": r"F_{1C} = 2V_f \sqrt{\frac{V_f E_{1f} E_m}{3(1 - V_f)}}",
+            "math": lambda f, m, Vf, Vm: f"F_{{1C}} = 2 \cdot {Vf:.3f} \\sqrt{{\\frac{{{Vf:.3f} \cdot {f['E1f']} \cdot {m['Em']}}}{{3 \cdot (1 - {Vf:.3f})}}}}"
         },
         "Agarwal-Broutman": {
             "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['ni12f'] * Vf + m['nim'] * Vm),
-            "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}"
+            "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}",
+            "math": lambda f, m, Vf, Vm: f"F_{{1C}} = \\frac{{({f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}) \cdot (1 - {Vf:.3f}^{{1/3}}) \cdot {m['epsilon_mT']}}}{{{f['ni12f']} \cdot {Vf:.3f} + {m['nim']} \cdot {Vm:.3f}}}"
         },
         "Modified ROM": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmC'] * Vm) * (1 - Vvoid),
-            "latex": r"F_{1C} = (F_{1ft}V_f + F_mCV_m)(1 - V_{void})"
+            "latex": r"F_{1C} = (F_{1ft}V_f + F_mCV_m)(1 - V_{void})",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1C}} = ({f['F1ft']} \cdot {Vf:.3f} + {m['FmC']} \cdot {Vm:.3f}) \cdot (1 - {Vvoid:.3f})"
         }
     },
-    "transverse_tensile_strength": {
+    "F2T": {
         "name": "Transverse tensile strength",
         "help": "Maximum stress the composite can withstand while being stretched perpendicular to the fiber direction",
         "unit": "MPa",
         "Nielsen": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (1 - Vvoid**(1/3)) * (f['E2f'] * m['FmT']) / m['Em'],
-            "latex": r"F_{2T} = \left( 1 - V_{void}^{1/3} \right) \frac{E_{2f} F_{mT}}{E_m}"
+            "latex": r"F_{2T} = \left( 1 - V_{void}^{1/3} \right) \frac{E_{2f} F_{mT}}{E_m}",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2T}} = \\left( 1 - {Vvoid:.3f}^{{1/3}} \\right) \\frac{{{f['E2f']} \cdot {m['FmT']}}}{{{m['Em']}}}"
         },
         "Barbero": {
             "formula": lambda f, m, Vf, Vm, Vvoid: m['FmT'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Em'] / f['E2f'])),
-            "latex": r"F_{2T} = F_{mT} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)"
+            "latex": r"F_{2T} = F_{mT} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2T}} = {m['FmT']} \\left( 1 - \\sqrt{{\\frac{{4 \cdot {Vvoid:.3f}}}{{\\pi \cdot {Vm:.3f}}}}} \\right) \\left( 1 + \\left( {Vf:.3f} - \\sqrt{{{Vf:.3f}}} \\right) \\left( 1 - \\frac{{{m['Em']}}}{{{f['E2f']}}} \\right) \\right)"
         },
         "Modified ROM": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmT'] * Vm) * (1 - Vvoid),
-            "latex": r"F_{2T} = (F_{1ft}V_f + F_mTV_m)(1 - V_{void})"
+            "latex": r"F_{2T} = (F_{1ft}V_f + F_mTV_m)(1 - V_{void})",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2T}} = ({f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f}) \cdot (1 - {Vvoid:.3f})"
+        }
+    },
+    "F2C": {
+        "name": "Transverse compressive strength",
+        "help": "Maximum stress the composite can withstand while being compressed perpendicular to the fiber direction",
+        "unit": "MPa",
+        "Weeton": {
+            "formula": lambda f, m, Vf, Vm, Vvoid: m['FmC'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Em'] / f['E2f'])),
+            "latex": r"F_{2C} = F_{mC} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2C}} = {m['FmC']} \\left( 1 - \\sqrt{{\\frac{{4 \cdot {Vvoid:.3f}}}{{\\pi \cdot {Vm:.3f}}}}} \\right) \\left( 1 + \\left( {Vf:.3f} - \\sqrt{{{Vf:.3f}}} \\right) \\left( 1 - \\frac{{{m['Em']}}}{{{f['E2f']}}} \\right) \\right)"
+        }
+    },
+    "F6": {
+        "name": "Shear strength",
+        "help": "Maximum stress the composite can withstand in shear",
+        "unit": "MPa",
+        "Stellbrink": {
+            "formula": lambda f, m, Vf, Vm, Vvoid: m['FmS'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Gm'] / f['G12f'])),
+            "latex": r"F_{6} = F_{mS} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{G_m}{G_{12f}} \right) \right)",
+            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{6}} = {m['FmS']} \\left( 1 - \\sqrt{{\\frac{{4 \cdot {Vvoid:.3f}}}{{\\pi \cdot {Vm:.3f}}}}} \\right) \\left( 1 + \\left( {Vf:.3f} - \\sqrt{{{Vf:.3f}}} \\right) \\left( 1 - \\frac{{{m['Gm']}}}{{{f['G12f']}}} \\right) \\right)"
         }
     }
 }

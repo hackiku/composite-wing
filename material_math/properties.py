@@ -54,7 +54,10 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                     result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
                 
                 if math_formula:
-                    interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
+                    if 'Vvoid' in math_formula.__code__.co_varnames:
+                        interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, Vvoid, **coefficients)
+                    else:
+                        interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
                 else:
                     interpolated_math = None
 
@@ -78,6 +81,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
             results[prop].append(None)
 
     return results, latex_results, math_results, coefficients_latex, theories_map
+
 
 
 def plot_properties(results, properties, units, theories):

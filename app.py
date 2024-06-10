@@ -165,7 +165,7 @@ def main():
 
     # ------ STRENGTH ------
     st.header("Strength properties")
-    properties = ["tensile_strength", "compressive_strength", "transverse_tensile_strength"]
+    properties = ["F1T", "F1C", "F2T", "F2C", "F6"]
     units = get_property_units(properties)
 
     col1, col2 = st.columns([3, 2])
