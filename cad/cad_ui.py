@@ -7,14 +7,13 @@ from cad.display_stl import load_stl
 from cad.onshape_variables import fetch_onshape_variables
 # from onshape_cad import push_variables_or_something
 
-def model_ui():
+def cad_ui():
     if 'stl_model' not in st.session_state:
         st.session_state.stl_model = None
         st.session_state.selected_preset = "None"
         st.session_state.variables = {}
 
-    st.header('1️⃣ Wing design')
-
+    # st.color_picker('Select Color', value='#ff0000', key='color')
     selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
     if selected_preset != "None" and st.session_state.selected_preset != selected_preset:
         st.session_state.selected_preset = selected_preset
