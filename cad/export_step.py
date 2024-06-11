@@ -3,6 +3,7 @@
 import os
 import requests
 import base64
+import time
 from dotenv import load_dotenv
 from cad.onshape_presets import PRESETS
 
@@ -33,9 +34,18 @@ def initiate_step_export(did, wv, wvid, eid):
     }
     response = requests.post(url, json=data, headers=headers)
     if response.status_code == 200:
-        return response.json()['href']
+        return response.json()['id']
     else:
         raise Exception(f"Failed to initiate STEP export: {response.status_code} {response.reason}")
+
+def check_translation_status(translation_id):
+    url = f"{ONSHAPE_BASE_URL}/api/v6/translations/{translation_id}"
+    headers = get_basic_auth_headers()
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to check translation status: {response.status_code} {response.reason}")
 
 def download_step_model(redirect_url):
     headers = get_basic_auth_headers()
@@ -46,25 +56,32 @@ def download_step_model(redirect_url):
         raise Exception(f"Failed to download STEP model: {response.status_code} {response.reason}")
 
 def export_step_from_preset(preset_name, part_type, output_directory='femap/'):
-    """
-    Export a STEP file using a preset name and part type.
-    
-    :param preset_name: Name of the preset.
-    :param part_type: Part type (e.g., BOX, FULL_WING).
-    :param output_directory: Directory to save the exported STEP file.
-    :return: Path to the exported STEP file.
-    """
     preset = PRESETS.get(preset_name)
     if not preset:
         raise ValueError(f"Preset {preset_name} not found.")
     
     document_id = preset['did']
     workspace_id = preset['wv']
+    version_id = preset['wvid']
     element_id = preset['eid'].get(part_type)
     if not element_id:
         raise ValueError(f"Part type {part_type} not found in preset {preset_name}.")
     
-    redirect_url = initiate_step_export(document_id, workspace_id, preset['wvid'], element_id)
+    translation_id = initiate_step_export(document_id, workspace_id, version_id, element_id)
+
+    # Poll for the translation status
+    while True:
+        status = check_translation_status(translation_id)
+        if status['requestState'] == 'DONE':
+            if 'resultExternalDataIds' in status and status['resultExternalDataIds']:
+                redirect_url = status['resultExternalDataIds'][0]['href']
+                break
+            else:
+                raise Exception("Translation completed but no external data URL found.")
+        elif status['requestState'] == 'FAILED':
+            raise Exception("STEP export failed.")
+        time.sleep(5)  # Wait for 5 seconds before checking again
+
     step_content = download_step_model(redirect_url)
     
     step_file_path = os.path.join(output_directory, f"{element_id}.step")
@@ -74,7 +91,7 @@ def export_step_from_preset(preset_name, part_type, output_directory='femap/'):
 
 if __name__ == "__main__":
     preset_name = "composite_wing"  # Example preset name
-    part_type = "BOX"  # Example part type
+    part_type = "Torsion box"  # Example part type
     output_directory = "femap/"
     exported_file = export_step_from_preset(preset_name, part_type, output_directory)
     print(f"Exported STEP file: {exported_file}")

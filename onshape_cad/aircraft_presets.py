@@ -1,6 +1,5 @@
 # cad/aircraft_presets.py
 
-
 aircraft_presets = {
     "P-51 Mustang": {
         "specs": {
@@ -10,7 +9,7 @@ aircraft_presets = {
             "crop_params": [100, 200, 200, 200],
         },        
         "onshape" : {
-            "wingspan": 5.641, # 11.286 / 2 [m]
+            "wingspan": 5.643, # 11.286 / 2 [m]
             "tip": 1.297,
             "root": 2.752,
             "sweep_angle": 10.388,

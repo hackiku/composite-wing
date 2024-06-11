@@ -27,26 +27,25 @@ st.set_page_config(
 aircraft_presets = {
     "P-51 Mustang": {
         "mass": 5489.00,
+        "load_factor": 10,
         "wingspan": 5.643, # 11.286 / 2 [m]
         "tip": 1.297,
         "root": 2.752,
         "sweep_angle": 10.388,
         "3_view": "data/North_American_P-51B_Mustang_3-view_line_drawing.png",
-        "crop_params": [100, 200, 200, 200],
-        "load_factor": 10
+        "crop_params": [100, 200, 200, 200]
     },
     "J-22 Orao": {
         "mass": 11300.00,
+        "load_factor": 10,
         "wingspan": 9.262,
         "tip": 1.297,
         "root": 2.752,
         "sweep_angle": 12.0,
         "3_view": "",
-        "crop_params": [400, 200, 200, 200],
-        "load_factor": 10
+        "crop_params": [400, 200, 200, 200]
     }
 }
-
 
 def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
@@ -64,30 +63,39 @@ def display_all_materials():
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
 
+def compose_onshape_url(presets, selected_preset, part_type):
+    did = presets[selected_preset]['did']
+    wv = presets[selected_preset]['wv']
+    wvid = presets[selected_preset]['wvid']
+    eid = presets[selected_preset]['eid'][part_type]
+    return f"https://cad.onshape.com/documents/{did}/w/{wv}/{wvid}/e/{eid}"
+
 # ================= SIDEBAR ====================
 selected_aircraft = st.sidebar.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
 st.sidebar.markdown('')
 
 fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=0, help="Choose the type of fiber material")
 matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=0, help="Choose the type of matrix material")
-# matrix_material_key = st.sidebar.selectbox('$$m$$ Matrix material', list(matrices.keys()), index=0, help="Choose the type of matrix material")
 Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
 Vm = 1 - Vf
 Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
 
-preset_name = "composite_wing"
-part_type = st.sidebar.selectbox("Select Part Type", options=list(PRESETS[preset_name]['eid'].keys()))
+selected_preset = "composite_wing"
+part_type = st.sidebar.selectbox("Select Part Type", options=list(PRESETS[selected_preset]['eid'].keys()))
 
-if st.sidebar.button(f"Download {part_type} STEP 💾"):
+if st.sidebar.button(f"💾 {part_type} STEP"):
     try:
         output_directory = 'femap/'
-        exported_file = export_step_from_preset(preset_name, part_type, output_directory)
+        exported_file = export_step_from_preset(selected_preset, part_type, output_directory)
         st.sidebar.success(f"Exported STEP file: {exported_file}")
     except Exception as e:
         st.sidebar.error(f"Failed to export STEP file: {e}")
 
+# Display the Onshape URL for the selected part
+part_url = compose_onshape_url(PRESETS, selected_preset, part_type)
+st.sidebar.markdown(f"[Onshape URL →]({part_url})")
+
 st.sidebar.markdown('---')
-# st.sidebar.markdown(r'$$_{Options}$$')
 
 theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)

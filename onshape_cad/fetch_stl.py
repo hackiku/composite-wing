@@ -2,6 +2,7 @@ import os
 import requests
 import base64
 from dotenv import load_dotenv
+from cad.onshape_presets import PRESETS
 
 # Load environment variables
 load_dotenv()
@@ -9,30 +10,6 @@ load_dotenv()
 ONSHAPE_ACCESS_KEY = os.getenv("ONSHAPE_ACCESS_KEY")
 ONSHAPE_SECRET_KEY = os.getenv("ONSHAPE_SECRET_KEY")
 ONSHAPE_BASE_URL = os.getenv("ONSHAPE_BASE_URL")
-
-PRESETS = {
-    "Torsion box": {
-        "did": "f6ac5c0b25ce21ecd85991db",
-        "wv": "w",
-        "wvid": "2f1903d2edb515536def7421",
-        "eid": "1746a09d07c6f27e71172a7f",
-        "url": "https://cad.onshape.com/documents/cae4cba9e2f625664baf1122/w/ba81e6382142c773cd7b78ba/e/640a7618098c9be6fe97b244?renderMode=0&uiState=6654e4567ce53e2d5ac81735"
-    },
-    "Full wing (old)": {
-        "did": "f6ac5c0b25ce21ecd85991db",
-        "wvid": "2f1903d2edb515536def7421",
-        "wv": "w",
-        "eid": "b879915fba35863ee60116c6",
-        "url": ""
-    },
-    "Parametric Wing": {
-        "did": "308d36ae2431fbf4b9b96a48",
-        "wvid": "4dfbfac17da94e7168ec10cd",
-        "wv": "w",
-        "eid": "1c23a328748cc03fde2f37f5",
-        "url": "https://cad.onshape.com/documents/308d36ae2431fbf4b9b96a48/w/4dfbfac17da94e7168ec10cd/e/1c23a328748cc03fde2f37f5"
-    },
-}
 
 def get_basic_auth_headers():
     credentials = f"{ONSHAPE_ACCESS_KEY}:{ONSHAPE_SECRET_KEY}"
