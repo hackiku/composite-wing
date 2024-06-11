@@ -10,10 +10,7 @@ from material_math.formulas import micromech_properties, strength_properties, fa
 # cad
 from cad.presets import aircraft_presets, onshape_projects
 from cad.export_step import export_step_from_preset
-from cad.onshape_presets import PRESETS
 from cad.cad_ui import cad_ui
-# from onshape_cad.model_ui import model_ui
-
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -25,6 +22,16 @@ st.set_page_config(
         'Get Help': 'https://jzro.co'
     }
 )
+
+def initialize_session_state():
+    if "current_preset" not in st.session_state:
+        st.session_state.current_preset = "P-51"
+    if "aircraft_df" not in st.session_state:
+        st.session_state.aircraft_df = pd.DataFrame([aircraft_presets[st.session_state.current_preset]])
+    if "custom_preset" not in st.session_state:
+        st.session_state.custom_preset = False
+
+initialize_session_state()
 
 def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
@@ -48,74 +55,71 @@ def compose_onshape_url(presets, selected_preset, part_type, eid):
     wvid = presets[selected_preset]['wvid']
     return f"https://cad.onshape.com/documents/{did}/{wv}/{wvid}/e/{eid}"
 
+def on_change_aircraft():
+    st.session_state.current_preset = st.session_state.selected_aircraft
+    st.session_state.aircraft_df = pd.DataFrame([aircraft_presets[st.session_state.current_preset]])
+    st.session_state.custom_preset = False
+
+def on_change_custom():
+    st.session_state.custom_preset = True
+
 # Sidebar configuration
-fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=0, help="Choose the type of fiber material")
-matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=0, help="Choose the type of matrix material")
-Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
+st.sidebar.selectbox('Aircraft', options=list(aircraft_presets.keys()), index=0, key='selected_aircraft', on_change=on_change_aircraft)
+st.sidebar.write('')
+fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=aircraft_presets[st.session_state.current_preset]["materials"]["fiber"], help="Choose the type of fiber material")
+matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=aircraft_presets[st.session_state.current_preset]["materials"]["matrix"], help="Choose the type of matrix material")
+Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, aircraft_presets[st.session_state.current_preset]["materials"]["Vf"], 0.01, help="Adjust the fiber volume fraction (between 0 and 1)", on_change=on_change_custom)
 Vm = 1 - Vf
-Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
+Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, aircraft_presets[st.session_state.current_preset]["materials"]["Vvoid"], 0.01, help="Adjust void ratio in the composite (between 0 and 1)", on_change=on_change_custom)
 
-selected_preset = st.sidebar.selectbox("Select Preset", options=["None"] + list(onshape_projects.keys()))
-if selected_preset != "None":
-    part_type = st.sidebar.selectbox("Select Part Type", options=list(onshape_projects[selected_preset]['eid'].keys()))
-    eid = onshape_projects[selected_preset]['eid'][part_type]
+dark_graphs = st.sidebar.checkbox(f"Dark mode", value=True, key='dark_graphs')
+graph_style = "dark" if dark_graphs else "light"
 
-    if st.sidebar.button(f"💾 {part_type} STEP"):
-        try:
-            output_directory = 'femap/'
-            did = onshape_projects[selected_preset]['did']
-            wv = onshape_projects[selected_preset]['wv']
-            wvid = onshape_projects[selected_preset]['wvid']
-            exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
-            st.sidebar.success(f"Exported STEP file: {exported_file}")
-        except Exception as e:
-            st.sidebar.error(f"Failed to export STEP file: {e}")
-
-    # Display the Onshape URL for the selected part
-    part_url = compose_onshape_url(onshape_projects, selected_preset, part_type, eid)
-    st.sidebar.markdown(f"[Onshape URL →]({part_url})")
-
-st.sidebar.markdown('---')
-
-theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
-show_individual_graphs = st.sidebar.checkbox("Show graphs", value=False)
+theme_mode = set_mpl_style(graph_style)
+show_individual_graphs = st.sidebar.checkbox(f"Show graphs", value=False)
 show_math = st.sidebar.checkbox("Full math", value=False)
 
-# Main Function
+# ===============================
 def main():
     st.title("Composite Wingy 🪃")
     st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
-
     st.markdown("***")
 
     # ========== AIRCRAFT ==========
     st.header('Aircraft & Wing Specifications')
 
-    col1, col2 = st.columns(2)
-    with col1:
-        selected_aircraft = st.selectbox('Select Aircraft', options=list(aircraft_presets.keys()), index=0)
-    with col2:
-        st.selectbox('Select Wing Type', options=["Box", "Wing"], index=0)
-        st.select_slider('Max Mach Number', options=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0], value=0.8, key='mmax', help="The maximum Mach number the aircraft can reach")   
-    if selected_aircraft:
-        aircraft = aircraft_presets[selected_aircraft]
-        specs_df = pd.DataFrame([aircraft["specs"]])
-        wing_df = pd.DataFrame([aircraft["wing"]])
-        
-        st.color_picker('Select Color', value='#ff0000', key='color')
-        
-        st.write(f"### Aircraft: {selected_aircraft}")
-        st.write("**Specifications**")
-        st.dataframe(specs_df)
-        st.write("**Wing Geometry**")
-        st.dataframe(wing_df)
+    aircraft_df = st.session_state.aircraft_df
+    st.write(f"### Aircraft: {aircraft_df['specs'][0]['name']}")
+    st.write("**Specifications**")
+    st.dataframe(pd.DataFrame([aircraft_df['specs'][0]]))
+    st.write("**Wing Geometry**")
+    st.dataframe(pd.DataFrame([aircraft_df['wing'][0]]))
 
-        image_path = aircraft['specs']['3_view']
-        three_view = crop_image(image_path, aircraft['specs']['crop_params'])
-        st.image(three_view, caption=f"{selected_aircraft} 3-view")
-    else:
-        mmax = 999.0
+    image_path = aircraft_df['specs'][0]['3_view']
+    three_view = crop_image(image_path, aircraft_df['specs'][0]['crop_params'])
+    st.image(three_view, caption=f"{aircraft_df['specs'][0]['name']} 3-view")
 
+    selected_preset = st.selectbox("Select Preset", options=["None"] + list(onshape_projects.keys()))
+    
+    if selected_preset != "None":
+        part_type = st.selectbox("Select Part Type", options=list(onshape_projects[selected_preset]['eid'].keys()))
+        eid = onshape_projects[selected_preset]['eid'][part_type]
+
+        if st.button(f"💾 {part_type} STEP"):
+            try:
+                output_directory = 'femap/'
+                did = onshape_projects[selected_preset]['did']
+                wv = onshape_projects[selected_preset]['wv']
+                wvid = onshape_projects[selected_preset]['wvid']
+                exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
+                st.success(f"Exported STEP file: {exported_file}")
+            except Exception as e:
+                st.error(f"Failed to export STEP file: {e}")
+
+        # Display the Onshape URL for the selected part
+        part_url = compose_onshape_url(onshape_projects, selected_preset, part_type, eid)
+        st.markdown(f"[Onshape URL →]({part_url})")
+        
     # =============== CAD MODEL ===============
     cad_ui()
 
@@ -128,14 +132,14 @@ def main():
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        selected_mass = st.number_input('Mass of aircraft (kg)', value=aircraft['specs']['mass'], step=100.0)
-        load_factor = st.number_input('Load Factor', value=aircraft['specs']['load_factor'], help="The load factor represents the ratio of the maximum load the wing can support to the aircraft's weight. A higher load factor indicates greater structural stress.")
+        selected_mass = st.number_input('Mass of aircraft (kg)', value=aircraft_df['specs'][0]['mass'], step=100.0, on_change=on_change_custom)
+        load_factor = st.number_input('Load Factor', value=aircraft_df['specs'][0]['load_factor'], help="The load factor represents the ratio of the maximum load the wing can support to the aircraft's weight. A higher load factor indicates greater structural stress.", on_change=on_change_custom)
     with col2:
-        nodes_between_ribs = st.number_input('Nodes between Ribs', value=15)
-        num_ribs = st.number_input('Number of Ribs', value=12)
+        nodes_between_ribs = st.number_input('Nodes between Ribs', value=15, on_change=on_change_custom)
+        num_ribs = st.number_input('Number of Ribs', value=12, on_change=on_change_custom)
     with col3:
-        wing_length = st.number_input('Wing Length (mm)', value=aircraft['wing']['span_wet'] * 1000)
-        num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20)
+        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'][0]['span_wet'] * 1000, on_change=on_change_custom)
+        num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
     
     calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
