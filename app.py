@@ -4,13 +4,15 @@ import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
 from utils import spacer, set_mpl_style, crop_image
-from onshape_cad.model_ui import model_ui
 from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
+# cad
+
 from cad.export_step import export_step_from_preset
 from cad.onshape_presets import PRESETS
-
+from cad.cad_ui import model_ui
+# from onshape_cad.model_ui import model_ui
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -22,13 +24,12 @@ st.set_page_config(
         'Get Help': 'https://jzro.co'
     }
 )
-# data/North_American_P-51B_Mustang_3-view_line_drawing.png
 
 aircraft_presets = {
     "P-51 Mustang": {
         "mass": 5489.00,
         "load_factor": 10,
-        "wingspan": 5.643, # 11.286 / 2 [m]
+        "wingspan": 5.643,
         "tip": 1.297,
         "root": 2.752,
         "sweep_angle": 10.388,
@@ -63,17 +64,13 @@ def display_all_materials():
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
 
-def compose_onshape_url(presets, selected_preset, part_type):
+def compose_onshape_url(presets, selected_preset, part_type, eid):
     did = presets[selected_preset]['did']
     wv = presets[selected_preset]['wv']
     wvid = presets[selected_preset]['wvid']
-    eid = presets[selected_preset]['eid'][part_type]
-    return f"https://cad.onshape.com/documents/{did}/w/{wv}/{wvid}/e/{eid}"
+    return f"https://cad.onshape.com/documents/{did}/{wv}/{wvid}/e/{eid}"
 
-# ================= SIDEBAR ====================
-selected_aircraft = st.sidebar.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
-st.sidebar.markdown('')
-
+# Sidebar configuration
 fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=0, help="Choose the type of fiber material")
 matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=0, help="Choose the type of matrix material")
 Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, 0.6, 0.01, help="Adjust the fiber volume fraction (between 0 and 1)")
@@ -82,35 +79,44 @@ Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, 0.3, 
 
 selected_preset = "composite_wing"
 part_type = st.sidebar.selectbox("Select Part Type", options=list(PRESETS[selected_preset]['eid'].keys()))
+eid = PRESETS[selected_preset]['eid'][part_type]
 
 if st.sidebar.button(f"💾 {part_type} STEP"):
     try:
         output_directory = 'femap/'
-        exported_file = export_step_from_preset(selected_preset, part_type, output_directory)
+        did = PRESETS[selected_preset]['did']
+        wv = PRESETS[selected_preset]['wv']
+        wvid = PRESETS[selected_preset]['wvid']
+        print(f"Exporting STEP file for did: {did}, wv: {wv}, wvid: {wvid}, eid: {eid}")  # Debug print
+        exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
         st.sidebar.success(f"Exported STEP file: {exported_file}")
     except Exception as e:
         st.sidebar.error(f"Failed to export STEP file: {e}")
 
 # Display the Onshape URL for the selected part
-part_url = compose_onshape_url(PRESETS, selected_preset, part_type)
+part_url = compose_onshape_url(PRESETS, selected_preset, part_type, eid)
 st.sidebar.markdown(f"[Onshape URL →]({part_url})")
 
 st.sidebar.markdown('---')
 
 theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
-show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
-show_math = st.sidebar.checkbox("Show Math", value=False)
-
-
+show_individual_graphs = st.sidebar.checkbox("Show graphs", value=False)
+show_math = st.sidebar.checkbox("Full math", value=False)
 
 # ---------------------------------
 def main():
+    
+    st.write(part_url)
+    
     st.title("Composite Wingy 🪃")
-    st.write("Design a wing with composite materials")
-    st.write("Visualize and edit a live CAD in Onshape, combine fibers and matrices, export config to Femap with NASTRAN solver.")
+    st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
 
     st.markdown("***")
 
+    # ========== AIRCRAFT ==========
+    st.header('Aircraft')
+
+    selected_aircraft = st.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
 
     # TODO convert to dataframe
     if selected_aircraft:

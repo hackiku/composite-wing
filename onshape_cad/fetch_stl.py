@@ -20,6 +20,7 @@ def get_basic_auth_headers():
     }
     return headers
 
+# UNITS 
 def initiate_stl_export(did, wv, wvid, eid):
     url = f"{ONSHAPE_BASE_URL}/api/v6/partstudios/d/{did}/{wv}/{wvid}/e/{eid}/stl?mode=text&grouping=true&scale=1&units=inch"
     headers = get_basic_auth_headers()

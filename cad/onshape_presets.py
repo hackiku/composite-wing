@@ -4,7 +4,7 @@ PRESETS = {
         "wv": "w",
         "wvid": "2f1903d2edb515536def7421",
         "eid": {
-            "Torsion box": "0f38721b826a5669e2acf9d0",
+            "BOX": "0f38721b826a5669e2acf9d0",
             "FULL_WING": "5f4c32c21a91aecefb2f3c0e",
             "WING-p51-2spline": "535ea5121f0dc13c398cec23"
         },
