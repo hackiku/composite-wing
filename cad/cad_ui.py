@@ -5,6 +5,7 @@ from cad.onshape_presets import PRESETS
 from cad.fetch_stl import fetch_stl
 from cad.display_stl import load_stl
 from cad.onshape_variables import fetch_onshape_variables
+# from onshape_cad import push_variables_or_something
 
 def cad_ui():
     if 'stl_model' not in st.session_state:

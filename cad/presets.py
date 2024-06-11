@@ -5,11 +5,11 @@ aircraft_presets = {
         "specs": { 
             "name": "P-51 Mustang",
             "manufacturer": "North American Aviation",
-            "mass": 11.286,
+            "mass": 5489.00,
             "load_factor": 10,
             "wingspan": 11.286,
             "3_view": "cad/imgs/P-51_3-view.png",
-            "crop_params": [100, 200, 200, 200],
+            "crop_params": [0, 1103, 1693, 1100],
         },        
         "wing": {
             "span_wet": 5.643, # 11.286 / 2 [m]

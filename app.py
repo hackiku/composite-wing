@@ -3,7 +3,7 @@
 import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
-from utils import spacer, set_mpl_style, crop_image
+from utils import spacer, set_mpl_style, crop_image, invert_colors
 from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
@@ -86,20 +86,39 @@ def main():
     st.markdown("***")
 
     # ========== AIRCRAFT ==========
-    st.header('Aircraft & Wing Specifications')
+    st.header('1️⃣ Aircraft & Wing')
 
     aircraft_df = st.session_state.aircraft_df
-    st.write(f"### Aircraft: {aircraft_df['specs'][0]['name']}")
-    st.write("**Specifications**")
-    st.dataframe(pd.DataFrame([aircraft_df['specs'][0]]))
-    st.write("**Wing Geometry**")
-    st.dataframe(pd.DataFrame([aircraft_df['wing'][0]]))
+    
+    mass = aircraft_df['specs'][0]['mass']
+    wingspan = aircraft_df['specs'][0]['wingspan']
+    
+    spacer()
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.markdown(f"##### {aircraft_df['specs'][0]['manufacturer']}")
+        st.markdown(f"#### **{aircraft_df['specs'][0]['name']}**")
+        st.metric(label="Mass [kg]", value=mass)
+        st.metric(label="Span [m]", value=wingspan)
+    with col2:
+        image_path = aircraft_df['specs'][0]['3_view']
+        three_view = crop_image(image_path, aircraft_df['specs'][0]['crop_params'])
+        if dark_graphs == True:
+            three_view = invert_colors(three_view)
+        st.image(three_view, caption=f"{aircraft_df['specs'][0]['name']} 3-view", use_column_width=True)
+        
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.markdown(f"###### {aircraft_df['specs'][0]['manufacturer']} **{aircraft_df['specs'][0]['name']}**")
+        st.metric(label="Mass [kg]", value=mass)
+        st.metric(label="Span [m]", value=wingspan)
+    with col2:
+        st.data_editor(pd.DataFrame([aircraft_df['wing'][0]]).transpose(), hide_index=True)
 
-    image_path = aircraft_df['specs'][0]['3_view']
-    three_view = crop_image(image_path, aircraft_df['specs'][0]['crop_params'])
-    st.image(three_view, caption=f"{aircraft_df['specs'][0]['name']} 3-view")
 
-    selected_preset = st.selectbox("Select Preset", options=["None"] + list(onshape_projects.keys()))
+    selected_preset = st.selectbox("Projects", options=["None"] + list(onshape_projects.keys()))
     
     if selected_preset != "None":
         part_type = st.selectbox("Select Part Type", options=list(onshape_projects[selected_preset]['eid'].keys()))
