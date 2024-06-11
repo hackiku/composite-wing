@@ -7,7 +7,6 @@ from utils import spacer, set_mpl_style, crop_image, invert_colors
 from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
-# cad
 from cad.presets import aircraft_presets, onshape_projects
 from cad.export_step import export_step_from_preset
 from cad.cad_ui import cad_ui
@@ -79,7 +78,7 @@ theme_mode = set_mpl_style(graph_style)
 show_individual_graphs = st.sidebar.checkbox(f"Show graphs", value=False)
 show_math = st.sidebar.checkbox("Full math", value=False)
 
-# ===============================
+# Main function
 def main():
     st.title("Composite Wingy 🪃")
     st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
@@ -115,8 +114,7 @@ def main():
         st.metric(label="Mass [kg]", value=mass)
         st.metric(label="Span [m]", value=wingspan)
     with col2:
-        st.data_editor(pd.DataFrame([aircraft_df['wing'][0]]).transpose(), hide_index=True)
-
+        st.data_editor(pd.DataFrame([aircraft_df['wing']]).transpose(), hide_index=True)
 
     selected_preset = st.selectbox("Projects", options=["None"] + list(onshape_projects.keys()))
     
@@ -138,7 +136,7 @@ def main():
         # Display the Onshape URL for the selected part
         part_url = compose_onshape_url(onshape_projects, selected_preset, part_type, eid)
         st.markdown(f"[Onshape URL →]({part_url})")
-        
+
     # =============== CAD MODEL ===============
     cad_ui()
 
@@ -157,7 +155,7 @@ def main():
         nodes_between_ribs = st.number_input('Nodes between Ribs', value=15, on_change=on_change_custom)
         num_ribs = st.number_input('Number of Ribs', value=12, on_change=on_change_custom)
     with col3:
-        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'][0]['span_wet'] * 1000, on_change=on_change_custom)
+        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing']['span_wet'] * 1000, on_change=on_change_custom)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
     
     calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)

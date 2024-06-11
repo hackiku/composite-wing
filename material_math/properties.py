@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 import inspect
 
-
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
     latex_results = {}
@@ -168,11 +167,11 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
     if show_math and math_results[property_name][selected_theory]:
         st.latex(f"{latex}")
         st.latex(f"{math_results[property_name][selected_theory]} = {result:.3f} \\ [{unit}]")
+        formula_code = inspect.getsource(theory_details["formula"])
+        st.code(formula_code, language='python')
     else:
         st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
 
-    formula_code = inspect.getsource(theory_details["formula"])
-    st.code(formula_code, language='python')
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)

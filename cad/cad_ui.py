@@ -1,4 +1,4 @@
-# onshape_cad/model_ui.py
+# cad/cad_ui.py
 
 import streamlit as st
 from cad.onshape_presets import PRESETS

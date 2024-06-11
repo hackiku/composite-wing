@@ -43,7 +43,7 @@ aircraft_presets = {
             "load_factor": 6,
             "wingspan": 15.000,
             "3_view": "cad/imgs/placeholder.png",
-            "crop_params": [100, 10, 100, 200],
+            "crop_params": [0, 0, 200, 100],
         },
         "wing": {
             "span_wet": 7.500, # 15.000 / 2 [m]
