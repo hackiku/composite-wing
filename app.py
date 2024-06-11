@@ -8,6 +8,9 @@ from onshape_cad.model_ui import model_ui
 from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
+from cad.export_step import export_step_from_preset
+from cad.onshape_presets import PRESETS
+
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -61,9 +64,9 @@ def display_all_materials():
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
 
-# Sidebar setup
-# st.sidebar.markdown('### Wing material')
+# ================= SIDEBAR ====================
 selected_aircraft = st.sidebar.selectbox('$$Aircraft$$', options=["P-51 Mustang", "Coming soon..."], index=0)
+st.sidebar.markdown('')
 
 fiber_material_key = st.sidebar.selectbox('Fiber material $$(f)$$', list(fibers.keys()), index=0, help="Choose the type of fiber material")
 matrix_material_key = st.sidebar.selectbox('Matrix material $$(m)$$', list(matrices.keys()), index=0, help="Choose the type of matrix material")
@@ -72,13 +75,25 @@ Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, 0.6
 Vm = 1 - Vf
 Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, 0.3, 0.01, help="Adjust void ratio in the composite (between 0 and 1)")
 
+preset_name = "composite_wing"
+part_type = st.sidebar.selectbox("Select Part Type", options=list(PRESETS[preset_name]['eid'].keys()))
+
+if st.sidebar.button(f"Download {part_type} STEP 💾"):
+    try:
+        output_directory = 'femap/'
+        exported_file = export_step_from_preset(preset_name, part_type, output_directory)
+        st.sidebar.success(f"Exported STEP file: {exported_file}")
+    except Exception as e:
+        st.sidebar.error(f"Failed to export STEP file: {e}")
+
+st.sidebar.markdown('---')
 # st.sidebar.markdown(r'$$_{Options}$$')
-st.sidebar.markdown(r'$$Options$$')
 
 theme_mode = set_mpl_style(st.sidebar.selectbox("Graph theme", options=["Dark", "Light"], index=0).lower())
 show_individual_graphs = st.sidebar.checkbox("Show Graphs", value=False)
 show_math = st.sidebar.checkbox("Show Math", value=False)
-st.sidebar.button("Download STEP 💾")
+
+
 
 # ---------------------------------
 def main():

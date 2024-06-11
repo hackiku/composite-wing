@@ -15,6 +15,7 @@ def model_ui():
     st.header('1️⃣ Wing design')
 
     selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
+    
     if selected_preset != "None" and st.session_state.selected_preset != selected_preset:
         st.session_state.selected_preset = selected_preset
         with st.spinner('Fetching STL model and variables...'):
