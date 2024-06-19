@@ -1,7 +1,8 @@
 # cad/cad_ui.py
+# URL: [Insert URL here]
 
 import streamlit as st
-from cad.onshape_presets import PRESETS
+from cad.presets import aircraft_presets, onshape_projects
 from cad.fetch_stl import fetch_stl
 from cad.display_stl import load_stl
 from cad.onshape_variables import fetch_onshape_variables
@@ -9,24 +10,28 @@ from cad.onshape_variables import fetch_onshape_variables
 def cad_ui():
     if 'stl_model' not in st.session_state:
         st.session_state.stl_model = None
-        st.session_state.selected_preset = "None"
+        st.session_state.selected_wing_model = "None"
         st.session_state.variables = {}
 
-    # st.color_picker('Select Color', value='#ff0000', key='color')
-    selected_preset = st.selectbox("Onshape Presets", ["None"] + list(PRESETS.keys()))
-    if selected_preset != "None" and st.session_state.selected_preset != selected_preset:
-        st.session_state.selected_preset = selected_preset
+    selected_aircraft = st.session_state.current_preset
+    selected_wing_model = st.selectbox("Wing Model", options=["None"] + list(aircraft_presets[selected_aircraft]['model'].keys()))
+    
+    if selected_wing_model != "None" and st.session_state.selected_wing_model != selected_wing_model:
+        st.session_state.selected_wing_model = selected_wing_model
         with st.spinner('Fetching STL model and variables...'):
             try:
-                stl_content = fetch_stl(selected_preset)
-                stl_path = f"/tmp/{selected_preset}_model.stl"
+                project = aircraft_presets[selected_aircraft]['model']['project']
+                eid = aircraft_presets[selected_aircraft]['model'][selected_wing_model]
+                did = onshape_projects[project]['did']
+                wv = onshape_projects[project]['wv']
+                wvid = onshape_projects[project]['wvid']
+
+                stl_content = fetch_stl(did, wv, wvid, eid)
+                stl_path = f"/tmp/{selected_aircraft}_{selected_wing_model}_model.stl"
                 with open(stl_path, 'wb') as f:
                     f.write(stl_content)
                 st.session_state.stl_model = load_stl(stl_path)
-                preset = PRESETS[selected_preset]
-                st.session_state.variables = fetch_onshape_variables.fetch_custom_variables(
-                    preset["did"], preset["wv"], preset["wvid"], preset["eid"]
-                )
+                st.session_state.variables = fetch_onshape_variables.fetch_custom_variables(did, wv, wvid, eid)
             except Exception as e:
                 st.error(f"Error: {e}")
 
@@ -40,8 +45,7 @@ def cad_ui():
         st.write(f"Number of ribs = `{int(st.session_state.variables.get('rib_num_total', {}).get('value', 12))}`")
 
         if st.button("Update STL model", type="primary"):
-            if st.session_state.selected_preset != "None":
-                preset = PRESETS[st.session_state.selected_preset]
+            if st.session_state.selected_wing_model != "None":
                 updated_variables = {
                     "span": st.session_state.span,
                     "root": st.session_state.root,
@@ -51,14 +55,12 @@ def cad_ui():
                     "rib_num_total": int(st.session_state.variables.get('rib_num_total', {}).get('value', 12)),
                 }
                 try:
-                    fetch_onshape_variables.update_custom_variables(
-                        preset["did"], preset["wv"], preset["wvid"], preset["eid"], updated_variables
-                    )
+                    fetch_onshape_variables.update_custom_variables(did, wv, wvid, eid, updated_variables)
                     st.success("Parameters applied and model updated.")
                 except Exception as e:
                     st.error(f"Error: {e}")
             else:
-                st.warning("No Onshape preset selected.")
+                st.warning("No Wing Model selected.")
 
     with col2:
         if st.session_state.stl_model:

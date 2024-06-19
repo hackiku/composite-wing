@@ -1,4 +1,5 @@
 # app.py
+# URL: [Insert URL here]
 
 import streamlit as st
 import pandas as pd
@@ -8,8 +9,8 @@ from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 from cad.presets import aircraft_presets, onshape_projects
-from cad.export_step import export_step_from_preset
 from cad.cad_ui import cad_ui
+from cad.export_step import export_step_from_preset
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -29,6 +30,8 @@ def initialize_session_state():
         st.session_state.aircraft_df = pd.DataFrame([aircraft_presets[st.session_state.current_preset]])
     if "custom_preset" not in st.session_state:
         st.session_state.custom_preset = False
+    if "selected_wing_model" not in st.session_state:
+        st.session_state.selected_wing_model = "None"
 
 initialize_session_state()
 
@@ -48,10 +51,10 @@ def display_all_materials():
     st.write("All Matrix Materials:")
     st.dataframe(all_matrices)
 
-def compose_onshape_url(presets, selected_preset, part_type, eid):
-    did = presets[selected_preset]['did']
-    wv = presets[selected_preset]['wv']
-    wvid = presets[selected_preset]['wvid']
+def compose_onshape_url(project, part_type, eid):
+    did = onshape_projects[project]['did']
+    wv = onshape_projects[project]['wv']
+    wvid = onshape_projects[project]['wvid']
     return f"https://cad.onshape.com/documents/{did}/{wv}/{wvid}/e/{eid}"
 
 def on_change_aircraft():
@@ -103,36 +106,36 @@ def main():
     with col2:
         image_path = aircraft_df['specs'][0]['3_view']
         three_view = crop_image(image_path, aircraft_df['specs'][0]['crop_params'])
-        if dark_graphs == True:
+        if dark_graphs:
             three_view = invert_colors(three_view)
         st.image(three_view, caption=f"{aircraft_df['specs'][0]['name']} 3-view", use_column_width=True)
         
     st.data_editor(pd.DataFrame([aircraft_df['wing']]).transpose(), hide_index=True)
-    
 
-    selected_preset = st.selectbox("Projects", options=["None"] + list(onshape_projects.keys()))
-    
-    if selected_preset != "None":
-        # part_type = st.selectbox("Select Part Type", options=list(onshape_projects[selected_preset]['eid'].keys()))
-        eid = onshape_projects[selected_preset]['eid'][part_type]
+    # =============== CAD MODEL ===============
+    cad_ui()
 
-        if st.button(f"💾 {part_type} STEP"):
+    # =============== STEP DOWNLOAD ===============
+    selected_aircraft = st.session_state.current_preset
+    selected_wing_model = st.session_state.selected_wing_model
+
+    if selected_wing_model != "None":
+        if st.button(f"💾 Download {selected_wing_model} STEP"):
             try:
                 output_directory = 'femap/'
-                did = onshape_projects[selected_preset]['did']
-                wv = onshape_projects[selected_preset]['wv']
-                wvid = onshape_projects[selected_preset]['wvid']
+                project = aircraft_presets[selected_aircraft]['model']['project']
+                eid = aircraft_presets[selected_aircraft]['model'][selected_wing_model]
+                did = onshape_projects[project]['did']
+                wv = onshape_projects[project]['wv']
+                wvid = onshape_projects[project]['wvid']
                 exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
                 st.success(f"Exported STEP file: {exported_file}")
             except Exception as e:
                 st.error(f"Failed to export STEP file: {e}")
 
         # Display the Onshape URL for the selected part
-        part_url = compose_onshape_url(onshape_projects, selected_preset, part_type, eid)
+        part_url = compose_onshape_url(project, selected_wing_model, eid)
         st.markdown(f"[Onshape URL →]({part_url})")
-
-    # =============== CAD MODEL ===============
-    cad_ui()
 
     spacer()
 
@@ -140,7 +143,7 @@ def main():
     st.markdown("***")
     st.header("Wing Load Calculation")
     st.write("")
-    
+
     col1, col2, col3 = st.columns(3)
     with col1:
         selected_mass = st.number_input('Mass of aircraft (kg)', value=aircraft_df['specs'][0]['mass'], step=100.0, on_change=on_change_custom)
@@ -149,10 +152,9 @@ def main():
         nodes_between_ribs = st.number_input('Nodes between Ribs', value=15, on_change=on_change_custom)
         num_ribs = st.number_input('Number of Ribs', value=12, on_change=on_change_custom)
     with col3:
-        wing_length = 3000
-        # wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing']['span_wet'] * 1000, on_change=on_change_custom)
+        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'].get('span_wet', 0) * 1000, on_change=on_change_custom)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
-    
+
     calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
     st.markdown("***")
