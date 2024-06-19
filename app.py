@@ -1,5 +1,4 @@
 # app.py
-# URL: [Insert URL here]
 
 import streamlit as st
 import pandas as pd
@@ -130,12 +129,12 @@ def main():
                 wvid = onshape_projects[project]['wvid']
                 exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
                 st.success(f"Exported STEP file: {exported_file}")
+                
+                # Display the Onshape URL for the selected part
+                part_url = compose_onshape_url(project, selected_wing_model, eid)
+                st.markdown(f"[Onshape URL →]({part_url})")
             except Exception as e:
                 st.error(f"Failed to export STEP file: {e}")
-
-        # Display the Onshape URL for the selected part
-        part_url = compose_onshape_url(project, selected_wing_model, eid)
-        st.markdown(f"[Onshape URL →]({part_url})")
 
     spacer()
 
@@ -152,7 +151,7 @@ def main():
         nodes_between_ribs = st.number_input('Nodes between Ribs', value=15, on_change=on_change_custom)
         num_ribs = st.number_input('Number of Ribs', value=12, on_change=on_change_custom)
     with col3:
-        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'].get('span_wet', 0) * 1000, on_change=on_change_custom)
+        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'].get('span_wet', 1) * 1000, on_change=on_change_custom)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
 
     calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
