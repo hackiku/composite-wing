@@ -31,7 +31,9 @@ def initialize_session_state():
     if "custom_preset" not in st.session_state:
         st.session_state.custom_preset = False
     if "selected_wing_model" not in st.session_state:
-        st.session_state.selected_wing_model = "None"
+        st.session_state.selected_wing_model = [key for key in aircraft_presets["P-51"]['model'].keys() if key != "project"][0]
+    # if "selected_wing_model" not in st.session_state:
+        # st.session_state.selected_wing_model = "None"
 
 initialize_session_state()
 

@@ -10,7 +10,15 @@ def cad_ui():
         st.session_state.stl_model = None
         st.session_state.variables = {}
 
-    selected_wing_model = st.selectbox("Wing Model", options=list(aircraft_presets[st.session_state.current_preset]['model'].keys()))
+
+    # selected_wing_model = st.selectbox(
+    #     "Wing Model", 
+    #     options=[key for key in st.session_state.aircraft_df['model'].keys() if key != "project"],
+    #     index=[key for key in st.session_state.aircraft_df['model'].keys() if key != "project"].index(st.session_state.selected_wing_model),
+    #     key='selected_wing_model'
+    # )
+
+    selected_wing_model = st.selectbox("Wing Model", options=list(aircraft_presets[st.session_state.current_preset]['model'].keys()), index=0)
 
     if selected_wing_model:
         project = aircraft_presets[st.session_state.current_preset]['model']['project']
