@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 import inspect
 
+
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
     latex_results = {}

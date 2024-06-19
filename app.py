@@ -96,8 +96,8 @@ def main():
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.markdown(f"##### {aircraft_df['specs'][0]['manufacturer']}")
         st.markdown(f"#### **{aircraft_df['specs'][0]['name']}**")
+        st.markdown(f"###### {aircraft_df['specs'][0]['manufacturer']}")
         st.metric(label="Mass [kg]", value=mass)
         st.metric(label="Span [m]", value=wingspan)
     with col2:
@@ -107,19 +107,13 @@ def main():
             three_view = invert_colors(three_view)
         st.image(three_view, caption=f"{aircraft_df['specs'][0]['name']} 3-view", use_column_width=True)
         
+    st.data_editor(pd.DataFrame([aircraft_df['wing']]).transpose(), hide_index=True)
     
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.markdown(f"###### {aircraft_df['specs'][0]['manufacturer']} **{aircraft_df['specs'][0]['name']}**")
-        st.metric(label="Mass [kg]", value=mass)
-        st.metric(label="Span [m]", value=wingspan)
-    with col2:
-        st.data_editor(pd.DataFrame([aircraft_df['wing']]).transpose(), hide_index=True)
 
     selected_preset = st.selectbox("Projects", options=["None"] + list(onshape_projects.keys()))
     
     if selected_preset != "None":
-        part_type = st.selectbox("Select Part Type", options=list(onshape_projects[selected_preset]['eid'].keys()))
+        # part_type = st.selectbox("Select Part Type", options=list(onshape_projects[selected_preset]['eid'].keys()))
         eid = onshape_projects[selected_preset]['eid'][part_type]
 
         if st.button(f"💾 {part_type} STEP"):
@@ -155,7 +149,8 @@ def main():
         nodes_between_ribs = st.number_input('Nodes between Ribs', value=15, on_change=on_change_custom)
         num_ribs = st.number_input('Number of Ribs', value=12, on_change=on_change_custom)
     with col3:
-        wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing']['span_wet'] * 1000, on_change=on_change_custom)
+        wing_length = 3000
+        # wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing']['span_wet'] * 1000, on_change=on_change_custom)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
     
     calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
