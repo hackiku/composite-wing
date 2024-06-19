@@ -1,4 +1,5 @@
 # app.py
+# URL: [Insert URL here]
 
 import streamlit as st
 import pandas as pd
@@ -129,12 +130,12 @@ def main():
                 wvid = onshape_projects[project]['wvid']
                 exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
                 st.success(f"Exported STEP file: {exported_file}")
-                
-                # Display the Onshape URL for the selected part
-                part_url = compose_onshape_url(project, selected_wing_model, eid)
-                st.markdown(f"[Onshape URL →]({part_url})")
             except Exception as e:
                 st.error(f"Failed to export STEP file: {e}")
+
+        # Display the Onshape URL for the selected part
+        # part_url = compose_onshape_url(project, selected_wing_model, eid)
+        # st.markdown(f"[Onshape URL →]({part_url})")
 
     spacer()
 
