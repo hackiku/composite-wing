@@ -39,18 +39,29 @@ def initiate_step_export(did, wid, eid):
     headers = get_basic_auth_headers()
     data = {
         "formatName": "STEP",
-        "flattenAssemblies": True,
         "yAxisIsUp": True,
-        "includeExportIds": True,
-        "storeInDocument": False,
+        "flattenAssemblies": True,
+        "allowFaultyParts": True,
+        "angularTolerance": 0.1,
+        "formatName": "STEP",
+        "storeInDocument": True,
         "resolution": "fine",
-        "stepParasolidPreprocessingOption": "NO_PRE_PROCESSING",
         "stepVersionString": "AP203",
     }
-    response = requests.post(url, json=data, headers=headers)
-    response.raise_for_status()
-    print(f"Initiate Export Response: {response.json()}")  # Debug print
-    return response.json()['id']
+
+    # data = {
+    #     "formatName": "STEP",
+    #     "flattenAssemblies": True,
+    #     "yAxisIsUp": True,
+    #     "includeExportIds": True,
+    #     "storeInDocument": False,
+    #     "resolution": "fine",
+    #     "stepParasolidPreprocessingOption": "NO_PRE_PROCESSING",
+    # }
+    # response = requests.post(url, json=data, headers=headers)
+    # response.raise_for_status()
+    # print(f"Initiate Export Response: {response.json()}")  # Debug print
+    # return response.json()['id']
 
 def check_translation_status(tid):
     url = f"{ONSHAPE_BASE_URL}/api/v6/translations/{tid}"
