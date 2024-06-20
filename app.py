@@ -9,8 +9,8 @@ from material_math.properties import calculate_properties, plot_properties, disp
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 from cad.presets import aircraft_presets, onshape_projects
 from cad.cad_ui import cad_ui
-from cad.step_dl import export_step
-from cad.assembly_step import export_step_from_assembly
+# from cad.step_dl import export_step
+# from cad.assembly_step import export_step_from_assembly
 
 st.set_page_config(
     page_title="Composite Wing",

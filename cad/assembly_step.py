@@ -41,7 +41,7 @@ def initiate_step_export(did, wid, eid):
         "allowFaultyParts": True,
         "angularTolerance": 0.001,
         "formatName": "STEP",
-        "storeInDocument": True
+        "storeInDocument": False
     }
     response = requests.post(url, json=data, headers=headers)
     response.raise_for_status()
