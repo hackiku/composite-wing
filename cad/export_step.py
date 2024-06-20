@@ -33,8 +33,9 @@ def validate_step_format():
             return True
     return False
 
-def initiate_step_export(did, wv, wvid, eid):
-    url = f"{ONSHAPE_BASE_URL}/api/v6/partstudios/d/{did}/{wv}/{wvid}/e/{eid}/translations"
+def initiate_step_export(did, wid, eid):
+    url = f"{ONSHAPE_BASE_URL}/api/v6/assemblies/d/{did}/w/{wid}/e/{eid}/translations"
+
     headers = get_basic_auth_headers()
     data = {
         "formatName": "STEP",

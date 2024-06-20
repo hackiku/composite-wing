@@ -1,10 +1,11 @@
 # cad/cad_ui.py
+
 import streamlit as st
 from cad.presets import aircraft_presets, onshape_projects
 from cad.fetch_stl import fetch_stl
 from cad.display_stl import load_stl
 from cad.onshape_variables import fetch_onshape_variables
-from cad.export_step import export_step_from_preset
+from cad.assembly_step import export_step_from_assembly  # Import the new function
 
 def compose_onshape_url(project, part_type, eid):
     did = onshape_projects[project]['did']
@@ -76,7 +77,10 @@ def cad_ui():
     if st.button(f"💾 Download {selected_wing_model} STEP"):
         try:
             output_directory = f'cad/step/{st.session_state.current_preset}'
-            exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
+            exported_file = export_step_from_assembly(did, wvid, eid, output_directory)
             st.success(f"Exported STEP file: {exported_file}")
         except Exception as e:
             st.error(f"Failed to export STEP file: {e}")
+
+if __name__ == "__main__":
+    cad_ui()
