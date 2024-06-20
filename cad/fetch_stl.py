@@ -4,7 +4,6 @@ import os
 import requests
 import base64
 from dotenv import load_dotenv
-# from cad.onshape_presets import PRESETS
 
 # Load environment variables
 load_dotenv()

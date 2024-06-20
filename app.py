@@ -9,6 +9,7 @@ from material_math.properties import calculate_properties, plot_properties, disp
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 from cad.presets import aircraft_presets, onshape_projects
 from cad.cad_ui import cad_ui
+from cad.assembly_step import export_step_from_assembly
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -74,6 +75,7 @@ show_individual_graphs = st.sidebar.checkbox(f"Show graphs", value=False)
 show_math = st.sidebar.checkbox("Full math", value=False)
 
 # Main function
+# Main function
 def main():
     st.title("Composite Wingy 🪃")
     st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
@@ -106,6 +108,19 @@ def main():
     cad_ui()
 
     spacer()
+
+    # Example assembly details
+    did = "f6ac5c0b25ce21ecd85991db"
+    wid = "2f1903d2edb515536def7421"
+    # eid = "00d134be28febc6d8fb0e925" # Assembly 1
+    eid = "0f38721b826a5669e2acf9d0" 
+
+    if st.button("Export Assembly to STEP"):
+        try:
+            exported_file = export_step_from_assembly(did, wid, eid)
+            st.success(f"Exported STEP file: {exported_file}")
+        except Exception as e:
+            st.error(f"Failed to export STEP file: {e}")
 
     # =============== WING LOAD ===============
     st.markdown("***")
@@ -177,6 +192,7 @@ def main():
 
     st.header("Failure Criteria")
     st.markdown('***')
+
 
 if __name__ == "__main__":
     main()

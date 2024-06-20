@@ -80,4 +80,3 @@ def cad_ui():
             st.success(f"Exported STEP file: {exported_file}")
         except Exception as e:
             st.error(f"Failed to export STEP file: {e}")
-
