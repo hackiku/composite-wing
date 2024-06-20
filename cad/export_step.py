@@ -1,5 +1,4 @@
-# cad/export_step.py
-
+# import streamlit as st
 import os
 import requests
 import base64
@@ -40,7 +39,7 @@ def initiate_step_export(did, wv, wvid, eid):
     headers = get_basic_auth_headers()
     data = {
         "formatName": "STEP",
-        "flattenAssemblies": False,
+        "flattenAssemblies": True,
         "yAxisIsUp": True,
         "includeExportIds": True,
         "storeInDocument": False,
@@ -53,8 +52,8 @@ def initiate_step_export(did, wv, wvid, eid):
     print(f"Initiate Export Response: {response.json()}")  # Debug print
     return response.json()['id']
 
-def check_translation_status(translation_id):
-    url = f"{ONSHAPE_BASE_URL}/api/v6/translations/{translation_id}"
+def check_translation_status(tid):
+    url = f"{ONSHAPE_BASE_URL}/api/v6/translations/{tid}"
     headers = get_basic_auth_headers()
     response = requests.get(url, headers=headers)
     response.raise_for_status()
@@ -65,9 +64,12 @@ def check_translation_status(translation_id):
 def download_step_model(document_id, result_external_data_id):
     url = f"{ONSHAPE_BASE_URL}/documents/d/{document_id}/externaldata/{result_external_data_id}"
     headers = get_basic_auth_headers()
+    # st.code(f"Download URL: {url}")  
+    print(f"Download URL: {url}")  # Debug print
     response = requests.get(url, headers=headers, allow_redirects=True)
     
     if response.headers.get('Content-Type') == 'text/html':
+        print(f"HTML Response Content: {response.text}")  # Debug print
         raise Exception("Received HTML instead of the STEP file. Check the URL or authentication.")
     
     response.raise_for_status()
@@ -78,12 +80,12 @@ def export_step_from_preset(did, wv, wvid, eid, output_directory='cad/step/'):
     if not validate_step_format():
         raise Exception("STEP format not supported.")
     
-    translation_id = initiate_step_export(did, wv, wvid, eid)
-    print(f"Translation ID: {translation_id}")  # Debug print
+    tid = initiate_step_export(did, wv, wvid, eid)
+    print(f"Translation ID: {tid}")  # Debug print
 
     # Poll for the translation status
     while True:
-        status = check_translation_status(translation_id)
+        status = check_translation_status(tid)
         if status['requestState'] == 'DONE':
             if 'resultExternalDataIds' in status and status['resultExternalDataIds']:
                 result_external_data_id = status['resultExternalDataIds'][0]

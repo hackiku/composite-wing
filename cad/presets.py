@@ -37,38 +37,38 @@ aircraft_presets = {
         },
 
         "330-LT": {
-        "specs": {
-            "name": "Extra 330 LT",
-            "manufacturer": "Extra Aircraft",
-            "mass": 950.00,
-            "load_factor": 10,
-            "wingspan": 7.50,
-            "3_view": "cad/imgs/placeholder.png",
-            "crop_params": [0, 0, 200, 100],
-        },
-        "wing": {
-            "span_wet": 3.75, # 7.50 / 2 [m]
-            "fwd_spar": 0.30,
-            "aft_spar": 0.20,
-            "tip": 1.20,
-            "root": 1.80,
-            "sweep_angle": 5.0,
-            "dihedral_angle": 1.5,
-            "airfoil_root": "NACA-0018",
-            "airfoil_tip": "NACA-0012",
-        },
-        "materials": {
-            "fiber": 4,
-            "matrix": 6,
-            "Vf": 0.58,
-            "Vvoid": 0.25
-        },
-        "model": {
-            "project": "Extra 330 LT",
-            "box": "d7774b5d778de27ba31db2e5",
-            "wing": "a6c4f6c9d83beca3762a25ea",
-            # "cutouts": "86ba0a1ee3dec8669f4c7d4e",
-        }
+            "specs": {
+                "name": "Extra 330 LT",
+                "manufacturer": "Extra Aircraft",
+                "mass": 950.00,
+                "load_factor": 10,
+                "wingspan": 7.50,
+                "3_view": "cad/imgs/placeholder.png",
+                "crop_params": [0, 0, 200, 100],
+            },
+            "wing": {
+                "span_wet": 3.75, # 7.50 / 2 [m]
+                "fwd_spar": 0.30,
+                "aft_spar": 0.20,
+                "tip": 1.20,
+                "root": 1.80,
+                "sweep_angle": 5.0,
+                "dihedral_angle": 1.5,
+                "airfoil_root": "NACA-0018",
+                "airfoil_tip": "NACA-0012",
+            },
+            "materials": {
+                "fiber": 4,
+                "matrix": 6,
+                "Vf": 0.58,
+                "Vvoid": 0.25
+            },
+            "model": {
+                "project": "Extra 330 LT",
+                "box": "d7774b5d778de27ba31db2e5",
+                "wing": "a6c4f6c9d83beca3762a25ea",
+                # "cutouts": "86ba0a1ee3dec8669f4c7d4e",
+            }
     },
     "Glider": {
         "specs": {
@@ -98,10 +98,10 @@ aircraft_presets = {
             "Vvoid": 0.25
         },
         "model": {
-            "project": "glider_project",
-            "box": "1a2b3c4d5e6f7g8h9i0j",
-            "wing": "1k2l3m4n5o6p7q8r9s0t",
-            "cutouts": "9z8y7x6w5v4u3t2s1r0p",
+            "project": "Parametric Wing",
+            "ribs full": "1c23a328748cc03fde2f37f5",
+            "wing": "1119299cf6041bec872e5894",
+            # "cutouts": "9z8y7x6w5v4u3t2s1r0p",
         }
     },
 }
