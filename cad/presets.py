@@ -1,6 +1,40 @@
 # cad/presets.py
 
 aircraft_presets = {
+        "330-LT": {
+        "specs": {
+            "name": "Extra 330 LT",
+            "manufacturer": "Extra Aircraft",
+            "mass": 950.00,
+            "load_factor": 10,
+            "wingspan": 7.50,
+            "3_view": "cad/imgs/placeholder.png",
+            "crop_params": [0, 0, 200, 100],
+        },
+        "wing": {
+            "span_wet": 3.75, # 7.50 / 2 [m]
+            "fwd_spar": 0.30,
+            "aft_spar": 0.20,
+            "tip": 1.20,
+            "root": 1.80,
+            "sweep_angle": 5.0,
+            "dihedral_angle": 1.5,
+            "airfoil_root": "NACA-0018",
+            "airfoil_tip": "NACA-0012",
+        },
+        "materials": {
+            "fiber": 4,
+            "matrix": 6,
+            "Vf": 0.58,
+            "Vvoid": 0.25
+        },
+        "model": {
+            "project": "Extra 330 LT",
+            "box": "d7774b5d778de27ba31db2e5",
+            "wing": "a6c4f6c9d83beca3762a25ea",
+            # "cutouts": "86ba0a1ee3dec8669f4c7d4e",
+        }
+    },
     "P-51": { 
         "specs": { 
             "name": "P-51 Mustang",
@@ -76,6 +110,11 @@ onshape_projects = {
         "did": "f6ac5c0b25ce21ecd85991db",
         "wv": "w",
         "wvid": "2f1903d2edb515536def7421",
+    },
+    "Extra 330 LT": {
+        "did": "3b6bce5824912adfda10b52d",
+        "wv": "w",
+        "wvid": "91730fd668a615d074229f54",
     },
     "Torsion box": {
         "did": "f6ac5c0b25ce21ecd85991db",

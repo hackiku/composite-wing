@@ -124,7 +124,8 @@ def main():
     if selected_wing_model != "None":
         if st.button(f"💾 Download {selected_wing_model} STEP"):
             try:
-                output_directory = 'femap/'
+                # output_directory = 'cad/step/P-51'
+                output_directory = f'cad/step/{selected_aircraft}'
                 project = aircraft_presets[selected_aircraft]['model']['project']
                 eid = aircraft_presets[selected_aircraft]['model'][selected_wing_model]
                 did = onshape_projects[project]['did']

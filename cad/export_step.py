@@ -20,6 +20,7 @@ def get_basic_auth_headers():
         'Authorization': f'Basic {basic_auth}',
         'Content-Type': 'application/json'
     }
+    print(f"Auth Headers: {headers}")  # Debug print
     return headers
 
 def validate_step_format():
@@ -28,6 +29,7 @@ def validate_step_format():
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     formats = response.json()
+    print(f"Translation Formats: {formats}")  # Debug print
     for format in formats:
         if format["translatorName"].lower() == "step" and format["validDestinationFormat"]:
             return True
@@ -48,6 +50,7 @@ def initiate_step_export(did, wv, wvid, eid):
     }
     response = requests.post(url, json=data, headers=headers)
     response.raise_for_status()
+    print(f"Initiate Export Response: {response.json()}")  # Debug print
     return response.json()['id']
 
 def check_translation_status(translation_id):
@@ -55,7 +58,9 @@ def check_translation_status(translation_id):
     headers = get_basic_auth_headers()
     response = requests.get(url, headers=headers)
     response.raise_for_status()
-    return response.json()
+    status = response.json()
+    print(f"Translation Status: {status}")  # Debug print
+    return status
 
 def download_step_model(document_id, result_external_data_id):
     url = f"{ONSHAPE_BASE_URL}/documents/d/{document_id}/externaldata/{result_external_data_id}"
@@ -66,10 +71,10 @@ def download_step_model(document_id, result_external_data_id):
         raise Exception("Received HTML instead of the STEP file. Check the URL or authentication.")
     
     response.raise_for_status()
-    print(response)
+    print(f"Downloaded Content Type: {response.headers.get('Content-Type')}")  # Debug print
     return response.content
 
-def export_step_from_preset(did, wv, wvid, eid, output_directory='femap/'):
+def export_step_from_preset(did, wv, wvid, eid, output_directory='cad/step/'):
     if not validate_step_format():
         raise Exception("STEP format not supported.")
     
@@ -102,7 +107,7 @@ if __name__ == "__main__":
     wvid = "2f1903d2edb515536def7421"
     eid = "0f38721b826a5669e2acf9d0"
     
-    output_directory = "femap/"
+    output_directory = "cad/step/"
     try:
         exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
         print(f"Exported STEP file: {exported_file}")
