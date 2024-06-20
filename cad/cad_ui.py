@@ -4,19 +4,18 @@ from cad.presets import aircraft_presets, onshape_projects
 from cad.fetch_stl import fetch_stl
 from cad.display_stl import load_stl
 from cad.onshape_variables import fetch_onshape_variables
+from cad.export_step import export_step_from_preset
+
+def compose_onshape_url(project, part_type, eid):
+    did = onshape_projects[project]['did']
+    wv = onshape_projects[project]['wv']
+    wvid = onshape_projects[project]['wvid']
+    return f"https://cad.onshape.com/documents/{did}/{wv}/{wvid}/e/{eid}"
 
 def cad_ui():
     if 'stl_model' not in st.session_state:
         st.session_state.stl_model = None
         st.session_state.variables = {}
-
-
-    # selected_wing_model = st.selectbox(
-    #     "Wing Model", 
-    #     options=[key for key in st.session_state.aircraft_df['model'].keys() if key != "project"],
-    #     index=[key for key in st.session_state.aircraft_df['model'].keys() if key != "project"].index(st.session_state.selected_wing_model),
-    #     key='selected_wing_model'
-    # )
 
     selected_wing_model = st.selectbox("Wing Model", options=list(aircraft_presets[st.session_state.current_preset]['model'].keys()), index=0)
 
@@ -37,6 +36,10 @@ def cad_ui():
                 st.session_state.variables = fetch_onshape_variables(did, wv, wvid, eid)
             except Exception as e:
                 st.error(f"Error: {e}")
+
+        # Display the Onshape URL for the selected part
+        part_url = compose_onshape_url(project, selected_wing_model, eid)
+        st.markdown(f"[Onshape URL →]({part_url})")
 
     col1, col2 = st.columns([1, 4])
     with col1:
@@ -68,3 +71,13 @@ def cad_ui():
             st.plotly_chart(st.session_state.stl_model)
 
     st.json(st.session_state.variables, expanded=False)
+
+    # Add STEP file download section
+    if st.button(f"💾 Download {selected_wing_model} STEP"):
+        try:
+            output_directory = f'cad/step/{st.session_state.current_preset}'
+            exported_file = export_step_from_preset(did, wv, wvid, eid, output_directory)
+            st.success(f"Exported STEP file: {exported_file}")
+        except Exception as e:
+            st.error(f"Failed to export STEP file: {e}")
+

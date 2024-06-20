@@ -1,6 +1,41 @@
 # cad/presets.py
 
 aircraft_presets = {
+        "P-51": { 
+            "specs": { 
+                "name": "P-51 Mustang",
+                "manufacturer": "North American Aviation",
+                "mass": 5489.00,
+                "load_factor": 10,
+                "wingspan": 11.286,
+                "3_view": "cad/imgs/P-51_3-view.png",
+                "crop_params": [0, 1103, 1693, 1100],
+            },        
+            "wing": {
+                "span_wet": 5.643, # 11.286 / 2 [m]
+                "fwd_spar": 0.3,
+                "aft_spar": 0.2,
+                "tip": 1.297,
+                "root": 2.752,
+                "sweep_angle": 10.388,
+                "dihedral_angle": 5,
+                "airfoil_root": "NACA-2418",
+                "airfoil_tip": "NACA-2212",
+            },
+            "materials": {
+                "fiber": 3,
+                "matrix": 7,
+                "Vf": 0.60,
+                "Vvoid": 0.30
+            },
+            "model": {
+                "project": "composite_wing",
+                "box": "0f38721b826a5669e2acf9d0",
+                "wing": "b879915fba35863ee60116c6",
+                "cutouts": "593c35c15b6c45dc507e4af4",
+            }
+        },
+
         "330-LT": {
         "specs": {
             "name": "Extra 330 LT",
@@ -33,40 +68,6 @@ aircraft_presets = {
             "box": "d7774b5d778de27ba31db2e5",
             "wing": "a6c4f6c9d83beca3762a25ea",
             # "cutouts": "86ba0a1ee3dec8669f4c7d4e",
-        }
-    },
-    "P-51": { 
-        "specs": { 
-            "name": "P-51 Mustang",
-            "manufacturer": "North American Aviation",
-            "mass": 5489.00,
-            "load_factor": 10,
-            "wingspan": 11.286,
-            "3_view": "cad/imgs/P-51_3-view.png",
-            "crop_params": [0, 1103, 1693, 1100],
-        },        
-        "wing": {
-            "span_wet": 5.643, # 11.286 / 2 [m]
-            "fwd_spar": 0.3,
-            "aft_spar": 0.2,
-            "tip": 1.297,
-            "root": 2.752,
-            "sweep_angle": 10.388,
-            "dihedral_angle": 5,
-            "airfoil_root": "NACA-2418",
-            "airfoil_tip": "NACA-2212",
-        },
-        "materials": {
-            "fiber": 3,
-            "matrix": 7,
-            "Vf": 0.60,
-            "Vvoid": 0.30
-        },
-        "model": {
-            "project": "composite_wing",
-            "box": "0f38721b826a5669e2acf9d0",
-            "wing": "b879915fba35863ee60116c6",
-            "cutouts": "593c35c15b6c45dc507e4af4",
         }
     },
     "Glider": {

@@ -40,7 +40,7 @@ def initiate_step_export(did, wv, wvid, eid):
     headers = get_basic_auth_headers()
     data = {
         "formatName": "STEP",
-        "flattenAssemblies": True,
+        "flattenAssemblies": False,
         "yAxisIsUp": True,
         "includeExportIds": True,
         "storeInDocument": False,
@@ -79,6 +79,7 @@ def export_step_from_preset(did, wv, wvid, eid, output_directory='cad/step/'):
         raise Exception("STEP format not supported.")
     
     translation_id = initiate_step_export(did, wv, wvid, eid)
+    print(f"Translation ID: {translation_id}")  # Debug print
 
     # Poll for the translation status
     while True:
@@ -91,6 +92,7 @@ def export_step_from_preset(did, wv, wvid, eid, output_directory='cad/step/'):
                 raise Exception("Translation completed but no external data URL found.")
         elif status['requestState'] == 'FAILED':
             raise Exception("STEP export failed.")
+        print("Translation in progress...")  # Debug print
         time.sleep(5)  # Wait for 5 seconds before checking again
 
     step_content = download_step_model(did, result_external_data_id)
