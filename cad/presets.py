@@ -33,6 +33,7 @@ aircraft_presets = {
                 "box": "0f38721b826a5669e2acf9d0",
                 "wing": "a5d9af60f968f6a03308d6c5",
                 "wing_FULL": "b879915fba35863ee60116c6",
+                "WINGmanual": "b879915fba35863ee60116c6",
                 "cutouts": "593c35c15b6c45dc507e4af4",
             }
         },

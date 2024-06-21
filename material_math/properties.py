@@ -143,8 +143,7 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        st.subheader(f"{theory_dict[property_name]['name']} `{property_name.title()}`")
-        st.write(theory_dict[property_name]['help'])
+        st.subheader(f"`{property_name.title()}` {theory_dict[property_name]['name']}", help=theory_dict[property_name]['help'])
     with col2:
         st.caption(f"""{fiber_material_key}
                    \n {matrix_material_key}""")

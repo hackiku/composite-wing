@@ -38,10 +38,10 @@ initialize_session_state()
 def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
     matrix_properties = pd.DataFrame.from_dict(matrices[matrix_key], orient='index', columns=[matrix_key]).transpose()
-    st.write("Selected Fiber Material Properties:")
+    st.write("#### Fiber / matrix")
     st.dataframe(fiber_properties)
-    st.write("Selected Matrix Material Properties:")
     st.dataframe(matrix_properties)
+
 
 def display_all_materials():
     all_fibers = pd.DataFrame(fibers).transpose()
@@ -128,7 +128,7 @@ def main():
     calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
     st.markdown("***")
-    st.header('Composite Materials Selection')
+    st.header('2️⃣ Bake composite materials')
     st.write('Now it\'s time to choose the fiber and matrix materials. For faster processing, deselect the Show Graphs option.')
     st.info('Choose materials & options in the sidebar', icon="👈")
 
@@ -137,7 +137,7 @@ def main():
 
     materials_dataframe(fiber_material_key, matrix_material_key, fibers, matrices)
 
-    sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values, adjust as needed
+    sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values
 
     micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     strength_results, strength_latex, strength_math, strength_coefficients, strength_theories = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
