@@ -38,7 +38,7 @@ initialize_session_state()
 def materials_dataframe(fiber_key, matrix_key, fibers, matrices):
     fiber_properties = pd.DataFrame.from_dict(fibers[fiber_key], orient='index', columns=[fiber_key]).transpose()
     matrix_properties = pd.DataFrame.from_dict(matrices[matrix_key], orient='index', columns=[matrix_key]).transpose()
-    st.write("#### Fiber / matrix")
+    st.write("##### Fiber + Matrix:")
     st.dataframe(fiber_properties)
     st.dataframe(matrix_properties)
 
@@ -130,7 +130,9 @@ def main():
     st.markdown("***")
     st.header('2️⃣ Bake composite materials')
     st.write('Now it\'s time to choose the fiber and matrix materials. For faster processing, deselect the Show Graphs option.')
-    st.info('Choose materials & options in the sidebar', icon="👈")
+    col1, col2 = st.columns([3, 4])
+    with col1:
+        st.info('Choose materials & options in the sidebar', icon="👈")
 
     if st.button("Show all material properties", type="secondary"):
         display_all_materials()

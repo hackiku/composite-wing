@@ -1,3 +1,5 @@
+# cad/display_stl.py
+
 import os
 from stl import mesh
 import plotly.graph_objects as go
@@ -41,6 +43,14 @@ def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_
         mean_y = np.mean(y)
         mean_z = np.mean(z)
 
+        # Calculate y-axis range with additional negative area
+        min_y = np.min(y)
+        max_y = np.max(y)
+        y_range = max_y - min_y
+        extra_negative_y = y_range / 4  # Make negative y area 1/4 of the full y range
+        y_min = min_y - extra_negative_y
+        y_max = max_y
+
         fig.update_layout(
             scene=dict(
                 aspectmode='cube',
@@ -54,7 +64,7 @@ def load_stl(stl_path: str, scale_factor=1.0, translation_vector=None, rotation_
                     title="X"
                 ),
                 yaxis=dict(
-                    range=[mean_y - max_range / 2, mean_y + max_range / 2],
+                    range=[y_min, y_max],
                     visible=True,
                     backgroundcolor="rgba(0, 0, 0, 0)",
                     gridcolor="gray",
