@@ -18,29 +18,65 @@ def cad_ui():
         st.session_state.stl_model = None
         st.session_state.variables = {}
 
-    selected_wing_model = st.selectbox("Wing Model", options=list(aircraft_presets[st.session_state.current_preset]['model'].keys()), index=0)
+    col1, col2 = st.columns([5, 3])
+    with col1:
+        selected_wing_model = st.selectbox("Wing Model", options=list(aircraft_presets[st.session_state.current_preset]['model'].keys()), index=0)
 
-    if selected_wing_model:
-        project = aircraft_presets[st.session_state.current_preset]['model']['project']
-        did = onshape_projects[project]['did']
-        wv = onshape_projects[project]['wv']
-        wvid = onshape_projects[project]['wvid']
-        eid = aircraft_presets[st.session_state.current_preset]['model'][selected_wing_model]
+        if selected_wing_model:
+            project = aircraft_presets[st.session_state.current_preset]['model']['project']
+            did = onshape_projects[project]['did']
+            wv = onshape_projects[project]['wv']
+            wvid = onshape_projects[project]['wvid']
+            eid = aircraft_presets[st.session_state.current_preset]['model'][selected_wing_model]
 
-        with st.spinner('Fetching STL model and variables...'):
-            try:
-                stl_content = fetch_stl(did, wv, wvid, eid)
-                stl_path = f"/tmp/{selected_wing_model}_model.stl"
-                with open(stl_path, 'wb') as f:
-                    f.write(stl_content)
-                st.session_state.stl_model = load_stl(stl_path)
-                st.session_state.variables = fetch_onshape_variables(did, wv, wvid, eid)
-            except Exception as e:
-                st.error(f"Error: {e}")
+            with st.spinner('Fetching STL model and variables...'):
+                try:
+                    stl_content = fetch_stl(did, wv, wvid, eid)
+                    stl_path = f"/tmp/{selected_wing_model}_model.stl"
+                    with open(stl_path, 'wb') as f:
+                        f.write(stl_content)
+                    st.session_state.stl_model = load_stl(stl_path)
+                    st.session_state.variables = fetch_onshape_variables(did, wv, wvid, eid)
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
-        # Display the Onshape URL for the selected part
-        part_url = compose_onshape_url(project, selected_wing_model, eid)
-        st.markdown(f"[Onshape URL →]({part_url})")
+        # Onshape URL
+        with col2:
+            part_url = compose_onshape_url(project, selected_wing_model, eid)
+            st.markdown(f"""
+                <style>
+                    .onshape-button {{
+                        background-color: #4CAF50;
+                        color: white;
+                        border-radius: 1em;
+                        border: none;
+                        padding: 10px 20px;
+                        width: 100%;
+                        text-align: center;
+                        text-decoration: none;
+                        font-size: 0.9em;
+                        cursor: pointer;
+                    }}
+                    @media (max-width: 476px) {{
+                        .onshape-button {{
+                            margin-top: 0;
+                        }}
+                    }}
+                    @media (min-width: 577px) and (max-width: 768px) {{
+                        .onshape-button {{
+                            margin-top: 2em;
+                        }}
+                    }}
+                    @media (min-width: 769px) {{
+                        .onshape-button {{
+                            margin-top: 2em;
+                        }}
+                    }}
+                </style>
+                <a href="{part_url}" target="_blank">
+                    <button class="onshape-button">Open in Onshape</button>
+                </a>
+            """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 4])
     with col1:
