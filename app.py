@@ -158,7 +158,9 @@ def main():
 
     col1, col2 = st.columns([6, 1])
     with col1:
+        micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
         micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
+
     # with col2:
     st.write(micromechanics_df)
 

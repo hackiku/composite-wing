@@ -85,45 +85,51 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
 
 
 def plot_properties(results, properties, units, theories):
-    flattened_data = {}
-
-    # Flatten data structure
+    # Initialize a dictionary to hold the structured data
+    structured_data = {property_name: {} for property_name in properties}
+    
     for property_name in properties:
         for idx, theory_name in enumerate(theories[property_name]):
-            key = f"{property_name} ({theory_name}, {units[properties.index(property_name)]})"
-            if key not in flattened_data:
-                flattened_data[key] = []
-            flattened_data[key].append(results[property_name][idx])
+            key = f"{property_name} [{units[properties.index(property_name)]}]"
+            if theory_name not in structured_data[property_name]:
+                structured_data[property_name][theory_name] = results[property_name][idx]
 
-    # Create DataFrame
-    max_len = max(len(v) for v in flattened_data.values())
-    for k, v in flattened_data.items():
-        while len(v) < max_len:
-            v.append(None)
+    # Create DataFrame from the structured data
+    results_df = pd.DataFrame(structured_data).transpose()
 
-    index = [f"Theoryss {i+1}" for i in range(max_len)]
-    results_df = pd.DataFrame(flattened_data, index=index).transpose()
+    # Formatting the DataFrame
+    results_df = results_df.applymap(lambda x: f"{x:.3f}" if x is not None else "0.000")
 
-    fig, ax1 = plt.subplots(figsize=(12, 8))
-    ax2 = ax1.twinx()
+    # Plotting
+    fig, ax1 = plt.subplots(figsize=(14, 10))
+    ax2 = ax1.twiny()
 
-    # Plot properties based on units
-    for idx, property_name in enumerate(properties):
-        unit = units[idx]
+    color_map = plt.get_cmap('tab10')
+    color_idx = 0
+    color_dict = {}
+
+    for property_name in properties:
+        color_dict[property_name] = color_map(color_idx)
+        color_idx += 1
+
+    for property_name in properties:
+        unit = units[properties.index(property_name)]
+        y_pos = properties.index(property_name)
         for theory_name in theories[property_name]:
-            column = f"{property_name} ({theory_name}, {unit})"
-            if unit in ['GPa', 'MPa']:
-                ax1.plot(results_df.columns, results_df.loc[column], marker='o', linestyle='-', label=column)
-            else:
-                ax2.plot(results_df.columns, results_df.loc[column], marker='x', linestyle='--', label=column)
+            value = results[property_name][theories[property_name].index(theory_name)]
+            ax1.plot([value], [y_pos], 'o', label=theory_name, color=color_dict[property_name])
+            ax1.text(value, y_pos, f"{theory_name}", fontsize=9, ha='right' if value < 10 else 'left')
 
-    ax1.set_xlabel('Theory')
-    ax1.set_ylabel('MPa / GPa')
-    ax2.set_ylabel('Dimensionless')
-    ax1.set_title('Composite properties compared by theory', color='white')
-    ax1.grid(True, color='gray')
-    ax1.tick_params(colors='white')
-    ax2.tick_params(colors='white')
+    ax1.set_yticks(range(len(properties)))
+    ax1.set_yticklabels([f"{prop} [{unit}]" for prop, unit in zip(properties, units)])
+    ax1.set_xlabel('MPa / GPa')
+    ax1.set_title('Composite properties compared by theory')
+    ax1.grid(True)
+    
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xticks(ax1.get_xticks())
+    ax2.set_xticklabels([f"{x:.3f}" for x in ax1.get_xticks()])
+    ax2.set_xlabel('Dimensionless')
 
     fig.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0))
     st.pyplot(fig)
