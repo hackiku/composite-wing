@@ -101,7 +101,7 @@ def plot_properties(results, properties, units, theories):
         while len(v) < max_len:
             v.append(None)
 
-    index = [f"Theory {i+1}" for i in range(max_len)]
+    index = [f"Theoryss {i+1}" for i in range(max_len)]
     results_df = pd.DataFrame(flattened_data, index=index).transpose()
 
     fig, ax1 = plt.subplots(figsize=(12, 8))
@@ -133,7 +133,6 @@ def plot_properties(results, properties, units, theories):
 def get_property_units(properties):
     unit_map = {**micromech_properties, **strength_properties, **failure_criteria}
     return [unit_map[prop].get("unit", '') for prop in properties]
-
 
 
 

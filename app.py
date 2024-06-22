@@ -7,6 +7,7 @@ from utils import spacer, set_mpl_style, crop_image, invert_colors
 from wing_load_calculator import calculate_wing_load
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
+# from material_math.math_ui import *
 from cad.presets import aircraft_presets, onshape_projects
 from cad.cad_ui import cad_ui
 # from cad.step_dl import export_step
@@ -75,12 +76,13 @@ theme_mode = set_mpl_style(graph_style)
 show_individual_graphs = st.sidebar.checkbox(f"Show graphs", value=False)
 show_math = st.sidebar.checkbox("Full math", value=False)
 
+# math_ui()
+
 # Main function
 def main():
     st.title("Composite Wingy 🪃")
     st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
     st.markdown("***")
-
     # ========== AIRCRAFT ==========
     st.header('1️⃣ Aircraft & Wing')
 
@@ -137,6 +139,8 @@ def main():
     if st.button("Show all material properties", type="secondary"):
         display_all_materials()
 
+    spacer()
+    
     materials_dataframe(fiber_material_key, matrix_material_key, fibers, matrices)
 
     sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values
@@ -144,16 +148,19 @@ def main():
     micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
     strength_results, strength_latex, strength_math, strength_coefficients, strength_theories = calculate_properties(strength_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
 
+    st.markdown("***")
+
     # ------ MICROMECH ------
-    st.header("Micromechanical Properties")
+    
+    st.header("Micromechanical properties")
     properties = ["E1", "E2", "G12", "nu12"]
     units = get_property_units(properties)
 
-    col1, col2 = st.columns([3, 2])
+    col1, col2 = st.columns([6, 1])
     with col1:
         micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
-    with col2:
-        st.write(micromechanics_df)
+    # with col2:
+    st.write(micromechanics_df)
 
     st.markdown("***")
 
@@ -167,11 +174,10 @@ def main():
     properties = ["F1T", "F1C", "F2T", "F2C", "F6"]
     units = get_property_units(properties)
 
-    col1, col2 = st.columns([3, 2])
+    col1, col2 = st.columns([6, 1])
     with col1:
         strength_df = plot_properties(strength_results, properties, units, strength_theories)
-    with col2:
-        st.dataframe(strength_df)
+    st.dataframe(strength_df)
 
     st.markdown("***")
 
