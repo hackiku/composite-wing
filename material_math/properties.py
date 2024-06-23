@@ -97,42 +97,59 @@ def plot_properties(results, properties, units, theories):
     # Create DataFrame from the structured data
     results_df = pd.DataFrame(structured_data).transpose()
 
-    # Formatting the DataFrame
-    results_df = results_df.applymap(lambda x: f"{x:.3f}" if x is not None else "0.000")
+    # Formatting the DataFrame and adding the average column
+    def format_values(x):
+        return f"{x:.3f}" if pd.notnull(x) else ""
 
-    # Plotting
-    fig, ax1 = plt.subplots(figsize=(14, 10))
-    ax2 = ax1.twiny()
+    def calculate_average(row):
+        valid_numbers = [float(x) for x in row if pd.notnull(x)]
+        return sum(valid_numbers) / len(valid_numbers) if valid_numbers else None
+
+    results_df = results_df.applymap(lambda x: float(x) if pd.notnull(x) else None)
+    results_df['Average'] = results_df.apply(lambda row: calculate_average(row), axis=1)
+    results_df = results_df.applymap(format_values)
+
+    # Move Average column to the first position
+    cols = results_df.columns.tolist()
+    cols.insert(0, cols.pop(cols.index('Average')))
+    results_df = results_df[cols]
+
+    # Plotting horizontal bars
+    fig, ax = plt.subplots(figsize=(14, 10))
 
     color_map = plt.get_cmap('tab10')
-    color_idx = 0
-    color_dict = {}
+    color_dict = {theory: color_map(i) for i, theory in enumerate(set(theory for sublist in theories.values() for theory in sublist))}
 
-    for property_name in properties:
-        color_dict[property_name] = color_map(color_idx)
-        color_idx += 1
+    y_tick_positions = []
+    y_labels = []
+
+    y_pos = 0
+    bar_height = 0.4  # Reduced bar height for narrower columns
 
     for property_name in properties:
         unit = units[properties.index(property_name)]
-        y_pos = properties.index(property_name)
-        for theory_name in theories[property_name]:
+        y_labels.append(f"{property_name} [{unit}]")
+        y_tick_positions.append(y_pos + len(theories[property_name]) / 2.0)
+        
+        for idx, theory_name in enumerate(theories[property_name]):
             value = results[property_name][theories[property_name].index(theory_name)]
-            ax1.plot([value], [y_pos], 'o', label=theory_name, color=color_dict[property_name])
-            ax1.text(value, y_pos, f"{theory_name}", fontsize=9, ha='right' if value < 10 else 'left')
+            if pd.notnull(value):
+                bar_position = y_pos + idx
+                ax.barh(bar_position, float(value), color=color_dict[theory_name], edgecolor='black', height=bar_height)
+                ax.text(float(value), bar_position, f" {theory_name}", va='center', ha='left', color='white', fontsize=12)  # Increased fontsize
+                ax.text(float(value), bar_position, f" {float(value):.2f}", va='center', ha='right', color='white', fontsize=14, fontweight='bold')  # Larger font for values
+        y_pos += len(theories[property_name]) + 1  # Add space between properties
 
-    ax1.set_yticks(range(len(properties)))
-    ax1.set_yticklabels([f"{prop} [{unit}]" for prop, unit in zip(properties, units)])
-    ax1.set_xlabel('MPa / GPa')
-    ax1.set_title('Composite properties compared by theory')
-    ax1.grid(True)
-    
-    ax2.set_xlim(ax1.get_xlim())
-    ax2.set_xticks(ax1.get_xticks())
-    ax2.set_xticklabels([f"{x:.3f}" for x in ax1.get_xticks()])
-    ax2.set_xlabel('Dimensionless')
-
-    fig.legend(loc='upper right', bbox_to_anchor=(1.15, 1.0))
+    ax.set_yticks(y_tick_positions)
+    ax.set_yticklabels(y_labels)
+    ax.set_xlabel('MPa / GPa')
+    ax.set_title('Composite properties compared by theory')
+    ax.grid(True)
     st.pyplot(fig)
+
+    # Style the DataFrame
+    styled_df = results_df.style.applymap(lambda x: 'background-color: lightgray' if x == results_df['Average'].name else '', subset=['Average'])
+    st.dataframe(styled_df)
 
     return results_df
 

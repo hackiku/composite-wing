@@ -80,8 +80,20 @@ show_math = st.sidebar.checkbox("Full math", value=False)
 
 # Main function
 def main():
-    st.title("Composite Wingy 🪃")
-    st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
+    # st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.title("Composite Wingy 🪃")
+        st.markdown("""
+            Prototype an aircraft wing in composite materials. Will it snap or nope?
+            - Live CAD model in Onshape
+            - Juicy materials math
+            - Export STEP to Simcenter Femap and parse results
+            """)
+    with col2:
+        # st.image("data/logoUniMas.png", use_column_width=True)    
+        st.image("data/masinac.png", use_column_width=True)    
     st.markdown("***")
     # ========== AIRCRAFT ==========
     st.header('1️⃣ Aircraft & Wing')
