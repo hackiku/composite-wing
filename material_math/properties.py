@@ -96,6 +96,7 @@ def plot_properties(results, properties, units, theories):
 
     # Create DataFrame from the structured data
     results_df = pd.DataFrame(structured_data).transpose()
+    # results_df = pd.DataFrame(structured_data)
 
     # Formatting the DataFrame and adding the average column
     def format_values(x):
@@ -147,9 +148,7 @@ def plot_properties(results, properties, units, theories):
     ax.grid(True)
     st.pyplot(fig)
 
-    # Style the DataFrame
-    styled_df = results_df.style.applymap(lambda x: 'background-color: lightgray' if x == results_df['Average'].name else '', subset=['Average'])
-    st.dataframe(styled_df)
+    # styled_df = results_df.style.applymap(lambda x: 'background-color: lightgray' if x == results_df['Average'].name else '', subset=['Average'])
 
     return results_df
 

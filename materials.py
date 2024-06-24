@@ -1,6 +1,36 @@
 # materials.py
 
 fibers = {
+    "Graphene": {
+        "type": "Scify",
+        "E1f": 1130,            # [GPa]
+        "E2f": 1130,            # [GPa]
+        "G12f": 280,            # [GPa]
+        "G23f": 280,            # [GPa]
+        "ni12f": 0.165,         # [/]
+        "ni21f": 0.165,         # [/]
+        "F1ft": 130000,         # [MPa]
+        "F1fc": None,           # [MPa]
+        "epsilon1ft": 25,       # [%]
+        "epsilon1fc": None,     # [%]
+        "alpha1f": None,        # [1/°C]
+        "alpha2f": None,        # [1/°C]
+    },
+    "Carbon Nanotubes": {
+        "type": "Scify",
+        "E1f": 1000,            # [GPa] - approx
+        "E2f": 1000,            # [GPa]
+        "G12f": 500,            # [GPa] - approx
+        "G23f": 500,            # [GPa]
+        "ni12f": 0.2,           # [/]
+        "ni21f": 0.2,           # [/]
+        "F1ft": 63000,          # [MPa] - Tensile strength
+        "F1fc": None,           # [MPa]
+        "epsilon1ft": 10,       # [%] - Failure strain
+        "epsilon1fc": None,     # [%]
+        "alpha1f": -1.5e-6,     # [1/°C]
+        "alpha2f": -1.5e-6,     # [1/°C]
+    },
     "AS-4": {
         "type": "Carbon",
         "E1f": 225,             # [GPa]
@@ -155,15 +185,15 @@ matrices = {
         "type": "Epoxy",
         "rho": 1.27,            # [g/cm³]
         "Em": 4.2,              # [GPa]
-        "Gm": 1.57,             # [GPa]
+        "Gm": 1.567,            # [GPa]
         "nim": 0.34,            # [/]
         "FmT": 69,              # [MPa]
         "FmC": 250,             # [MPa]
         "FmS": 50,              # [MPa]
+        "epsilon_mT": 1.7,      # [%]
         "alpha_m": 45e-6,       # [1/°C]
         "Tg": 200,              # [°C]
         "Tmax": 150,            # [°C]
-        "epsilon_mT": 1.7,      # [%]
     },
     "BSL914C": {
         "type": "Epoxy",
