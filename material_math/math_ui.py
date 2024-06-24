@@ -1,3 +1,44 @@
+        # "Rosen": {
+        #     "formula": lambda f, m, Vf, Vm: (m['Gm'] / (1 - Vf)),
+        #     "latex": r"F_{1C} = \frac{G_m}{1 - V_f}",
+        #     "math": lambda f, m, Vf, Vm: f"F_{{1C}} = \\frac{{{m['Gm']}}}{{1 - {Vf:.3f}}}"
+        # },
+        # "Budiansky-Fleck ($V_f > 0.3$)": {
+        #     "formula": lambda f, m, Vf, Vm, vf_check: (
+        #         m['tau_ry'] / (m['phi'] + m['gamma_ry']) if vf_check else None
+        #     ),
+        #     "latex": r"F_{1C} = \frac{\tau_{ry}}{\phi + \gamma_{ry}}",
+        #     "math": lambda f, m, Vf, Vm, vf_check: (
+        #         f"F_{{1C}} = \\frac{{{m['tau_ry']}}}{{{m['phi']} + {m['gamma_ry']}}}" if vf_check else "N/A"
+        #     ),
+        #     "coefficients": {
+        #         "vf_check": {
+        #             "formula": lambda Vf: Vf > 0.3,
+        #             "latex": r"V_f > 0.3"
+        #         }
+        #     }
+        # },
+        # "Agarwal-Broutman": {
+        #     "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['ni12f'] * Vf + m['nim'] * Vm),
+        #     "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}",
+        #     "math": lambda f, m, Vf, Vm: f"F_{{1C}} = \\frac{{({f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}) \cdot (1 - {Vf:.3f}^{{1/3}}) \cdot {m['epsilon_mT']}}}{{{f['ni12f']} \cdot {Vf:.3f} + {m['nim']} \cdot {Vm:.3f}}}"
+        # },    
+    # },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # material_math/math_ui.py
 
 import streamlit as st

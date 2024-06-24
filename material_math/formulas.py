@@ -218,7 +218,7 @@ strength_properties = {
         "unit": "MPa",
         "Standard": {
             "formula": lambda f, m, Vf, Vm, eps_check: (
-                f['F1ft'] * (Vf + Vm * m['Em'] / f['E1f']) if eps_check else
+                f['F1ft'] * (Vf + Vm * m['Em'] / f['E1f']) if eps_check <= 0 else
                 m['FmT'] * (Vf * f['E1f'] / m['Em'] + Vm)
             ),
             "latex": r"""
@@ -230,31 +230,73 @@ strength_properties = {
             """,
             "coefficients": {
                 "eps_check": {
-                    "formula": lambda f, m: f['epsilon1ft'] <= m['epsilon_mT'],
-                    "latex": r"\epsilon_{1ft} \leq \epsilon_{mu}"
-                }
-            }
+                    "formula": lambda f, m: f['epsilon1ft'] - m['epsilon_mT'],
+                    "latex": r"\epsilon_{1ft} - \epsilon_{mu}"
+                },
+            },
+            "math": lambda f, m, Vf, Vm, eps_check: (
+                f"EPS_FT = {f['epsilon1ft']} \."
+                f"F_{{1T}} = {f['F1ft']} \\left( {Vf:.3f} + {Vm:.3f} \\frac{{{m['Em']}}}{{{f['E1f']}}} \\right)" if eps_check else
+                f"F_{{1T}} = {m['FmT']} \\left( {Vf:.3f} \\frac{{{f['E1f']}}}{{{m['Em']}}} + {Vm:.3f} \\right)"
+            )
         }
     },
+    
+    
+    
     "F1C": {
         "name": "Compressive strength in the fiber direction",
         "help": "Maximum stress the composite can withstand while being compressed in the fiber direction",
         "unit": "MPa",
-        "Timoshenko-Gere": {
-            "formula": lambda f, m, Vf, Vm: 2 * Vf * np.sqrt((Vf * f['E1f'] * m['Em']) / (3 * (1 - Vf))),
+        "Timoshenko-Gere ($V_f < 0.2$)": {
+            "formula": lambda f, m, Vf, Vm: (
+                2 * Vf * np.sqrt((Vf * f['E1f'] * m['Em']) / (3 * (1 - Vf)))
+            ),
             "latex": r"F_{1C} = 2V_f \sqrt{\frac{V_f E_{1f} E_m}{3(1 - V_f)}}",
-            "math": lambda f, m, Vf, Vm: f"F_{{1C}} = 2 \cdot {Vf:.3f} \\sqrt{{\\frac{{{Vf:.3f} \cdot {f['E1f']} \cdot {m['Em']}}}{{3 \cdot (1 - {Vf:.3f})}}}}"
+            "math": lambda f, m, Vf, Vm: (
+                f"F_{{1C}} = 2 \cdot {Vf:.3f} \\sqrt{{\\frac{{{Vf:.3f} \cdot {f['E1f']} \cdot {m['Em']}}}{{3 \cdot (1 - {Vf:.3f})}}}}" if Vf < 0.2 else "N/A"
+            ),
         },
+        "Rosen": {
+            "formula": lambda f, m, Vf, Vm: (
+                m['Gm'] / (1 - Vf)
+            ),
+            "latex": r"F_{1C} = \frac{G_m}{1 - V_f}",
+            "math": lambda f, m, Vf, Vm: (
+                f"F_{{1C}} = \\frac{{{m['Gm']}}}{{1 - {Vf:.3f}}}"
+            ),
+        },
+        # "Budiansky-Fleck ($V_f > 0.3$)": {
+        #     "formula": lambda f, m, Vf, Vm: (
+        #         m['tau_ry'] / (m['phi'] + m['gamma_ry']) if Vf > 0.3 else None
+        #     ),
+        #     "latex": r"F_{1C} = \frac{\tau_{ry}}{\phi + \gamma_{ry}}",
+        #     "math": lambda f, m, Vf, Vm: (
+        #         f"F_{{1C}} = \\frac{{{m['tau_ry']}}}{{{m['phi']} + {m['gamma_ry']}}}" if Vf > 0.3 else "N/A"
+        #     ),
+        # },
+        # "Daniel-Ishai": { # need F6f calculater
+        #     "formula": lambda f, m, Vf, Vm: (
+        #         2 * f['F6f'] * (Vf + (1 - Vf) * (m['Em'] / f['E1f']))
+        #     ),
+        #     "latex": r"F_{1C} = 2F_{6f} \left[ V_f + (1 - V_f) \frac{E_m}{E_{f}} \right]",
+        #     "math": lambda f, m, Vf, Vm: (
+        #         f"F_{{1C}} = 2 \\cdot {f['F6f']} \\left[ {Vf:.3f} + (1 - {Vf:.3f}) \\frac{{{m['Em']}}}{{{f['E1f']}}} \\right]"
+        #     ),
+        # },
+
         "Agarwal-Broutman": {
-            "formula": lambda f, m, Vf, Vm: ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['ni12f'] * Vf + m['nim'] * Vm),
+            "formula": lambda f, m, Vf, Vm: (
+                ((f['E1f'] * Vf + m['Em'] * Vm) * (1 - Vf**(1/3)) * m['epsilon_mT']) / (f['ni12f'] * Vf + m['nim'] * Vm)
+            ),
             "latex": r"F_{1C} = \frac{(E_{1f} V_f + E_m V_m) (1 - V_f^{1/3}) \varepsilon_{mu}}{\nu_{12f} V_f + \nu_m V_m}",
-            "math": lambda f, m, Vf, Vm: f"F_{{1C}} = \\frac{{({f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}) \cdot (1 - {Vf:.3f}^{{1/3}}) \cdot {m['epsilon_mT']}}}{{{f['ni12f']} \cdot {Vf:.3f} + {m['nim']} \cdot {Vm:.3f}}}"
+            "math": lambda f, m, Vf, Vm: (
+                f"F_{{1C}} = \\frac{{({f['E1f']} \cdot {Vf:.3f} + {m['Em']} \cdot {Vm:.3f}) \cdot (1 - {Vf:.3f}^{{1/3}}) \cdot {m['epsilon_mT']}}}{{{f['ni12f']} \cdot {Vf:.3f} + {m['nim']} \cdot {Vm:.3f}}}"
+            ),
         },
-        "Modified ROM": {
-            "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmC'] * Vm) * (1 - Vvoid),
-            "latex": r"F_{1C} = (F_{1ft}V_f + F_mCV_m)(1 - V_{void})",
-            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1C}} = ({f['F1ft']} \cdot {Vf:.3f} + {m['FmC']} \cdot {Vm:.3f}) \cdot (1 - {Vvoid:.3f})"
-        }
+
+
+    
     },
     "F2T": {
         "name": "Transverse tensile strength",

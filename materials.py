@@ -11,7 +11,7 @@ fibers = {
         "ni21f": 0.165,         # [/]
         "F1ft": 130000,         # [MPa]
         "F1fc": None,           # [MPa]
-        "epsilon1ft": 25,       # [%]
+        "epsilon1ft": 0.25,       # [%]
         "epsilon1fc": None,     # [%]
         "alpha1f": None,        # [1/°C]
         "alpha2f": None,        # [1/°C]
@@ -26,7 +26,7 @@ fibers = {
         "ni21f": 0.2,           # [/]
         "F1ft": 63000,          # [MPa] - Tensile strength
         "F1fc": None,           # [MPa]
-        "epsilon1ft": 10,       # [%] - Failure strain
+        "epsilon1ft": 0.10,       # [%] - Failure strain
         "epsilon1fc": None,     # [%]
         "alpha1f": -1.5e-6,     # [1/°C]
         "alpha2f": -1.5e-6,     # [1/°C]
@@ -41,8 +41,8 @@ fibers = {
         "ni21f": 0.2,           # [/]
         "F1ft": 3350,           # [MPa]
         "F1fc": 2500,           # [MPa]
-        "epsilon1ft": 1.488,    # [%]
-        "epsilon1fc": 1.111,    # [%]
+        "epsilon1ft": 0.01488,    # [%]
+        "epsilon1fc": 0.01111,    # [%]
         "alpha1f": -0.5e-6,     # [1/°C]
         "alpha2f": 15e-6,       # [1/°C]
     },
@@ -56,8 +56,8 @@ fibers = {
         "ni21f": 0.2,           # [/]
         "F1ft": 2500,           # [MPa]
         "F1fc": 2000,           # [MPa]
-        "epsilon1ft": 1.086,    # [%]
-        "epsilon1fc": 0.869,    # [%]
+        "epsilon1ft": 0.01086,    # [%]
+        "epsilon1fc": 0.00869,    # [%]
         "alpha1f": -0.7e-6,     # [1/°C]
         "alpha2f": 12e-6,       # [1/°C]
     },
@@ -71,8 +71,8 @@ fibers = {
         "ni21f": 0.2,           # [/]
         "F1ft": 2150,           # [MPa]
         "F1fc": 1450,           # [MPa]
-        "epsilon1ft": 2.687,    # [%]
-        "epsilon1fc": 1.813,    # [%]
+        "epsilon1ft": 0.02687,    # [%]
+        "epsilon1fc": 0.01813,    # [%]
         "alpha1f": 4.9e-6,      # [1/°C]
         "alpha2f": 4.9e-6,      # [1/°C]
     },
@@ -86,8 +86,8 @@ fibers = {
         "ni21f": 0.2,           # [/]
         "F1ft": 2150,           # [MPa]
         "F1fc": 1450,           # [MPa]
-        "epsilon1ft": 2.905,    # [%]
-        "epsilon1fc": 1.959,    # [%]
+        "epsilon1ft": 0.02905,    # [%]
+        "epsilon1fc": 0.01959,    # [%]
         "alpha1f": 4.9e-6,      # [1/°C]
         "alpha2f": 4.9e-6,      # [1/°C]
     },
@@ -190,7 +190,7 @@ matrices = {
         "FmT": 69,              # [MPa]
         "FmC": 250,             # [MPa]
         "FmS": 50,              # [MPa]
-        "epsilon_mT": 1.7,      # [%]
+        "epsilon_mT": 0.017,      # [%]
         "alpha_m": 45e-6,       # [1/°C]
         "Tg": 200,              # [°C]
         "Tmax": 150,            # [°C]
@@ -204,10 +204,10 @@ matrices = {
         "FmT": 75,              # [MPa]
         "FmC": 150,             # [MPa]
         "FmS": 70,              # [MPa]
+        "epsilon_mT": 0.04,        # [%]
         "alpha_m": 55e-6,       # [1/°C]
         "Tg": None,             # [°C]
         "Tmax": None,           # [°C]
-        "epsilon_mT": 4,        # [%]
     },
     "LY556-HT907-DY063": {
         "type": "Epoxy",
@@ -218,10 +218,10 @@ matrices = {
         "FmT": 80,              # [MPa]
         "FmC": 120,             # [MPa]
         "FmS": 52,              # [MPa]
+        "epsilon_mT": 0.05,         # [%]
         "alpha_m": 58e-6,       # [1/°C]
         "Tg": 152,              # [°C]
         "Tmax": None,           # [°C]
-        "epsilon_mT": 5,        # [%]
     },
     "MY750-HY917-DY063": {
         "type": "Epoxy",
@@ -232,10 +232,10 @@ matrices = {
         "FmT": 77.5,            # [MPa]
         "FmC": 127,             # [MPa]
         "FmS": 53,              # [MPa]
+        "epsilon_mT": 0.05,        # [%]
         "alpha_m": 58e-6,       # [1/°C]
         "Tg": 100,              # [°C]
         "Tmax": None,           # [°C]
-        "epsilon_mT": 5,        # [%]
     },
     "977-3": {
         "type": "Epoxy",
@@ -246,10 +246,10 @@ matrices = {
         "FmT": 90,              # [MPa]
         "FmC": 175,             # [MPa]
         "FmS": 52,              # [MPa]
+        "epsilon_mT": None,     # [%]
         "alpha_m": None,        # [1/°C]
         "Tg": 200,              # [°C]
         "Tmax": 177,            # [°C]
-        "epsilon_mT": None,     # [%]
     },
     "HY6010-HT917-DY7070": {
         "type": "Epoxy",
@@ -260,10 +260,10 @@ matrices = {
         "FmT": 80,              # [MPa]
         "FmC": 104,             # [MPa]
         "FmS": 40,              # [MPa]
+        "epsilon_mT": None,     # [%]
         "alpha_m": 62e-6,       # [1/°C]
         "Tg": 152,              # [°C]
         "Tmax": None,           # [°C]
-        "epsilon_mT": None,     # [%]
     },
     "Polyester": {
         "type": "Polyester",
@@ -274,10 +274,10 @@ matrices = {
         "FmT": 70,              # [MPa]
         "FmC": 220,             # [MPa]
         "FmS": 45,              # [MPa]
+        "epsilon_mT": 0.035,      # [%]
         "alpha_m": 90e-6,       # [1/°C]
         "Tg": 131,              # [°C]
         "Tmax": None,           # [°C]
-        "epsilon_mT": 3.5,      # [%]
     },
     "Vinylester": {
         "type": "Vinylester",
@@ -302,10 +302,10 @@ matrices = {
         "FmT": 95,              # [MPa]
         "FmC": 135,             # [MPa]
         "FmS": 86.5,            # [MPa]
+        "epsilon_mT": 0.025,      # [%]
         "alpha_m": 45e-6,       # [1/°C]
         "Tg": 300,              # [°C]
         "Tmax": 325,            # [°C]
-        "epsilon_mT": 2.5,      # [%]
     },
     "PEEK": {
         "type": "PEEK",
@@ -316,9 +316,9 @@ matrices = {
         "FmT": 108,             # [MPa]
         "FmC": 143,             # [MPa]
         "FmS": 58,              # [MPa]
+        "epsilon_mT": 0.025,      # [%]
         "alpha_m": 90e-6,       # [1/°C]
         "Tg": 143,              # [°C]
         "Tmax": 250,            # [°C]
-        "epsilon_mT": 2.5,      # [%]
     }
 }
