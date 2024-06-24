@@ -199,48 +199,41 @@ micromech_properties = {
     }
 }
 
+        #"MROM": {
+        #     "formula": lambda f, m, Vf, Vm, eta_prime: 1 / ((Vf / f['G12f']) + (eta_prime * Vm / m['Gm'])),
+        #     "latex": r"\frac{1}{G_{12}} = \frac{V_f}{G_{12f}} + \frac{\eta' V_m}{G_m}",
+        #     "math": lambda f, m, Vf, Vm, eta_prime: f"\\frac{{1}}{{G_{{12}}}} = \\frac{{{Vf:.3f}}}{{{f['G12f']}}} + \\frac{{{eta_prime:.3f} \\cdot {Vm:.3f}}}{{{m['Gm']}}}",
+        #     "coefficients": {
+        #         "eta_prime": {
+        #             "formula": lambda f, m: 0.6, # TODO add formula
+        #             "latex": r"\eta' = 0.6"
+        #         }
+        #     }
+        # },
 
 strength_properties = {
     "F1T": {
         "name": "Tensile strength in the fiber direction",
         "help": "Maximum stress the composite can withstand while being stretched in the fiber direction",
         "unit": "MPa",
-        "Vf <= 0.2": {
-            "formula": lambda f, m, Vf, Vm: f['F1ft'] * (Vf + Vm * m['Em'] / f['E1f']),
+        "Standard": {
+            "formula": lambda f, m, Vf, Vm, eps_check: (
+                f['F1ft'] * (Vf + Vm * m['Em'] / f['E1f']) if eps_check else
+                m['FmT'] * (Vf * f['E1f'] / m['Em'] + Vm)
+            ),
             "latex": r"""
                 F_{1T} = 
-                F_{fT} \left( V_f + V_m \frac{E_m}{E_{f1}} \right)
+                \begin{cases} 
+                    F_{fT} \left( V_f + V_m \frac{E_m}{E_{f1}} \right) & \text{if } \epsilon_{1ft} \leq \epsilon_{mu} \\
+                    F_{mT} \left( V_f \frac{E_{f1}}{E_m} + V_m \right) & \text{if } \epsilon_{1ft} > \epsilon_{mu} 
+                \end{cases}
             """,
-            # "math": lambda f, m, Vf, Vm: f"F_{{1T}} = {f['F1ft']} \\left( {Vf:.3f} + {Vm:.3f} \\frac{{m['Em']}}{{f['E1f']}} \\right)"
-        },
-        "Vf > 0.2": {
-            "formula": lambda f, m, Vf, Vm: m['FmT'] * (Vf * f['E1f'] / m['Em'] + Vm),
-            "latex": r"""
-                F_{1T} = 
-                F_{mT} \left( V_f \frac{E_{f1}}{E_m} + V_m \right)
-            """,
-            # "math": lambda f, m, Vf, Vm: f"F_{{1T}} = {m['FmT']} \\left( {Vf:.3f} \\frac{{f['E1f']}}{{m['Em']}} + {Vm:.3f} \\right)"
-        }
-    },
-    "F1T": {
-        "name": "Tensile strength in the fiber direction",
-        "help": "Maximum stress the composite can withstand while being stretched in the fiber direction",
-        "unit": "MPa",
-        "ROM": {
-            # "formula": lambda f, m, Vf, Vm, Vvoid: f['F1ft'] * Vf + m['FmT'] * Vm * (1 - Vvoid),
-            "formula": lambda f, m, Vf, Vm, Vvoid: f['F1ft'] * Vf + m['FmT'] * Vm * (1 - Vvoid),
-            "latex": r"F_{1T} = F_{1ft}V_f + F_mTV_m(1 - V_{void})",
-            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1T}} = {f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f} \cdot (1 - {Vvoid:.3f})"
-        },
-        "Modified ROM": {
-            "formula": lambda f, m, Vf, Vm, Vvoid: f['F1ft'] * Vf * 0.9 + m['FmT'] * Vm * (1 - Vvoid),
-            "latex": r"F_{1T} = 0.9 (F_{1ft}V_f + F_mTV_m(1 - V_{void}))",
-            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1T}} = 0.9 \\cdot ({f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f} \cdot (1 - {Vvoid:.3f}))"
-        },
-        "Nielsen": {
-            "formula": lambda f, m, Vf, Vm, Vvoid: (1 - Vvoid**(1/3)) * f['F1ft'] * Vf + m['FmT'] * Vm,
-            "latex": r"F_{1T} = (1 - V_{void}^{1/3}) F_{1ft}V_f + F_mTV_m",
-            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{1T}} = (1 - {Vvoid:.3f}^{{1/3}}) \cdot {f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f}"
+            "coefficients": {
+                "eps_check": {
+                    "formula": lambda f, m: f['epsilon1ft'] <= m['epsilon_mT'],
+                    "latex": r"\epsilon_{1ft} \leq \epsilon_{mu}"
+                }
+            }
         }
     },
     "F1C": {
