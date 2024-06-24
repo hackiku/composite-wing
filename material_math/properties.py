@@ -189,6 +189,7 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         st.code(formula_code, language='python')
     else:
         st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
+        # st.write(f"aaaaa {latex} = {result:.3f} [{unit}]")
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)
@@ -235,7 +236,7 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
 
         # Add the dot and text box at the intersection
         ax.scatter(Vf, max_value_at_Vf, color=color_dict[max_theory], zorder=5)
-        ax.text(Vf, max_value_at_Vf, f'{max_value_at_Vf:.3f} [{unit}]\n{max_theory}', fontsize=14, color=color_dict[max_theory],
+        ax.text(Vf, max_value_at_Vf, f'{max_value_at_Vf:.3f} [{unit}]\n{max_theory}', fontsize=14 , color=color_dict[max_theory],
                 ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.8, edgecolor=color_dict[max_theory]))
 
         ax.axvline(Vf, color='red', linestyle='--', alpha=0.5, label=f'Current Vf = {Vf}')

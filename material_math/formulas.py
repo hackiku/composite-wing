@@ -10,6 +10,24 @@ def calculate_Mf(Vf, rhof, Vm, rhom):
     Mf = (Vf * rhof) / (Vf * rhof + Vm * rhom)
     return Mf
 
+# Define helper functions at the top of your script or module
+
+def compute_E1(f, m, Vf, Vm):
+    return f['E1f'] * Vf + m['Em'] * Vm
+
+def compute_E2(f, m, Vf, Vm):
+    return (f['E2f'] * m['Em']) / (f['E2f'] * Vm + m['Em'] * Vf)
+
+def compute_ni12(f, m, Vf, Vm):
+    return f['ni12f'] * Vf + m['nim'] * Vm
+
+def compute_ni21(f, m, Vf, Vm):
+    E1 = compute_E1(f, m, Vf, Vm)
+    E2 = compute_E2(f, m, Vf, Vm)
+    ni12 = compute_ni12(f, m, Vf, Vm)
+    return (ni12 * E2) / E1
+
+# Continue with your properties and other functions
 
 
 micromech_properties = {
@@ -147,7 +165,7 @@ micromech_properties = {
                     "default": 0.5
                 }
             }
-        }
+        },
     },
     "ni12": {
         "name": "Poisson's major ratio",
@@ -158,7 +176,7 @@ micromech_properties = {
             "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m",
             "math": lambda f, m, Vf, Vm: f"\\nu_{{12}} = {f['ni12f']} \\cdot {Vf:.3f} + {m['nim']} \\cdot {Vm:.3f}"
         },
-        "Chamis": { # TODO chamis
+        "Chamis": {
             "formula": lambda f, m, Vf, Vm: f['ni12f'] * Vf + m['nim'] * Vm,
             "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m",
             "math": lambda f, m, Vf, Vm: f"\\nu_{{12}} = {f['ni12f']} \\cdot {Vf:.3f} + {m['nim']} \\cdot {Vm:.3f}"
@@ -166,42 +184,45 @@ micromech_properties = {
         "Halpin-Tsai": {
             "formula": lambda f, m, Vf, Vm: (f['ni12f'] * m['nim']) / (Vf * m['nim'] + Vm * f['ni12f']),
             "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}",
-            "math": lambda f, m, Vf, Vm: f"\\nu_{{12}} = \\frac{{{f['ni12f']} \\cdot {m['nim']}}}{{{Vf:.3f} \\cdot {m['nim']} + {Vm:.3f} \\cdot {f['ni12f']}"
+            "math": lambda f, m, Vf, Vm: f"\\nu_{{12}} = \\frac{{{f['ni12f']} \\cdot {m['nim']}}}{{{Vf:.3f} \\cdot {m['nim']} + {Vm:.3f} \\cdot {f['ni12f']}}}"
         }
     },
-    # TODO WHOLE
     "ni21": {
-        "name": "Poisson's minor ratio",
+        "name": "⚠️ Poisson's minor ratio",
         "help": "Ratio of transverse strain to axial strain",
         "unit": "-",
-        "ROM": {
-            # E2*ni12 / E1
-            "formula": lambda f, m, Vf, Vm: f['ni12f'] * Vf + m['nim'] * Vm,
-            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
+        "Stiffness matrix symmetry": {
+            "formula": lambda f, m, Vf, Vm: compute_ni21(f, m, Vf, Vm),
+            "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
+            "math": lambda f, m, Vf, Vm: f"\\nu_{{21}} = {compute_ni12(f, m, Vf, Vm):.3f} \\cdot \\frac{{{compute_E2(f, m, Vf, Vm):.3f}}}{{{compute_E1(f, m, Vf, Vm):.3f}}}"
         },
-        "Chamis": {
-            "formula": lambda f, m, Vf, Vm: f['ni12f'] * Vf + m['nim'] * Vm,
-            "latex": r"\nu_{12} = \nu_{12f}V_f + \nu_mV_m"
-        },
-        "Halpin-Tsai": {
-            "formula": lambda f, m, Vf, Vm: (f['ni12f'] * m['nim']) / (Vf * m['nim'] + Vm * f['ni12f']),
-            "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}"
-        }
     }
 }
+
 
 strength_properties = {
     "F1T": {
         "name": "Tensile strength in the fiber direction",
         "help": "Maximum stress the composite can withstand while being stretched in the fiber direction",
         "unit": "MPa",
-        "Modified ROM": {
-            "formula": lambda f, m, Vf, Vm: 2134 / 0.75,
-            "latex": r"\sigma_x = \frac{1}{0.75} \cdot F_{1T}",
-            "math": lambda f, m, Vf, Vm: f"\sigma_x = \\frac{{1}}{{0.75}} \\cdot 2134 = 2845 \text{{ MPa}}"
+        "Vf <= 0.2": {
+            "formula": lambda f, m, Vf, Vm: f['F1ft'] * (Vf + Vm * m['Em'] / f['E1f']),
+            "latex": r"""
+                F_{1T} = 
+                F_{fT} \left( V_f + V_m \frac{E_m}{E_{f1}} \right)
+            """,
+            # "math": lambda f, m, Vf, Vm: f"F_{{1T}} = {f['F1ft']} \\left( {Vf:.3f} + {Vm:.3f} \\frac{{m['Em']}}{{f['E1f']}} \\right)"
+        },
+        "Vf > 0.2": {
+            "formula": lambda f, m, Vf, Vm: m['FmT'] * (Vf * f['E1f'] / m['Em'] + Vm),
+            "latex": r"""
+                F_{1T} = 
+                F_{mT} \left( V_f \frac{E_{f1}}{E_m} + V_m \right)
+            """,
+            # "math": lambda f, m, Vf, Vm: f"F_{{1T}} = {m['FmT']} \\left( {Vf:.3f} \\frac{{f['E1f']}}{{m['Em']}} + {Vm:.3f} \\right)"
         }
     },
-    "F1Taaaaaaa": {
+    "F1T": {
         "name": "Tensile strength in the fiber direction",
         "help": "Maximum stress the composite can withstand while being stretched in the fiber direction",
         "unit": "MPa",

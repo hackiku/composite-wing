@@ -1,50 +1,136 @@
 # material_math/math_ui.py
 
 import streamlit as st
-import pandas as pd
-from utils import materials_dataframe, set_mpl_style
-from materials import fibers, matrices
-from material_math.calculate_properties import calculate_properties, plot_properties, display_theories
-from material_math.formulas import micromech_properties
+from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 
-def materials_ui(fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math, theme_mode):
-    set_mpl_style(theme_mode)
+def compute_ni21(ni12, E2, E1):
+    return ni12 * E2 / E1
 
-    materials_dataframe(fiber_material_key, matrix_material_key, fibers, matrices)
+def display_micromechanical_properties(fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math, show_individual_graphs):
+    sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values
 
-    fiber_material = fibers[fiber_material_key]
-    matrix_material = matrices[matrix_material_key]
+    # Calculate micromechanical properties
+    micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
 
-    properties_to_calculate = ["E1_modulus", "E2_modulus", "shear_modulus", "poisson_ratio"]
+    st.header("Micromechanical properties")
+    st.write("The following properties are calculated using micromechanical models for the combination:")
+    col1, col2 = st.columns([6, 4])
+    with col1:
+        st.code(f"{fiber_material_key} / {matrix_material_key}")
+    with col2:
+        st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
+        
+    properties = ["E1", "E2", "G12", "ni12", "ni21"]
+    units = get_property_units(properties)
 
-    results_micromechanics, latex_micromechanics, math_micromechanics = calculate_properties(
-        micromech_properties, properties_to_calculate, fiber_material, matrix_material, Vf, Vm, Vvoid, show_math
-    )
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
+    st.write(micromechanics_df)
 
-    # Ensure all arrays in results_micromechanics have the same length
-    min_length = min(len(arr) for arr in results_micromechanics.values())
-    results_micromechanics = {key: value[:min_length] for key, value in results_micromechanics.items()}
+    if st.button("Compare all material combos", type="primary"): 
+        st.write("3D Graph")
 
-    st.header("👉 Micromechanics properties")
+    st.markdown("***")
 
-    # Ensure properties_to_calculate matches the length of results_micromechanics
-    properties_to_calculate = properties_to_calculate[:min_length]
+    for property_name in properties:
+        if property_name in micromech_properties:
+            display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
+            st.markdown("***")
     
-    results_df = pd.DataFrame(results_micromechanics)
-    
-    # Check lengths before inserting
-    st.write("Properties to calculate:", properties_to_calculate)
-    st.write("Results DataFrame shape:", results_df.shape)
-    
-    if len(properties_to_calculate) == results_df.shape[0]:
-        results_df.insert(0, 'Property', properties_to_calculate)
-    else:
-        st.error("Length mismatch between properties_to_calculate and results DataFrame")
+    # Allow users to select theories for ni12, E1, and E2
+    selected_ni12_theory = st.selectbox("Select theory for ni12", micromechanics_theories['ni12'])
+    selected_E1_theory = st.selectbox("Select theory for E1", micromechanics_theories['E1'])
+    selected_E2_theory = st.selectbox("Select theory for E2", micromechanics_theories['E2'])
 
-    st.dataframe(results_df)
-    plot_properties(results_df, theme_mode)
-    st.markdown('***')
+    # Get the index of the selected theories
+    ni12_index = micromechanics_theories['ni12'].index(selected_ni12_theory)
+    E1_index = micromechanics_theories['E1'].index(selected_E1_theory)
+    E2_index = micromechanics_theories['E2'].index(selected_E2_theory)
 
-    for property_name in properties_to_calculate:
-        display_theories(property_name, micromech_properties, results_micromechanics, latex_micromechanics, math_micromechanics, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid)
-        st.markdown('***')
+    # Compute ni21 using the selected theory values
+    ni12 = micromechanics_results['ni12'][ni12_index]
+    E2 = micromechanics_results['E2'][E2_index]
+    E1 = micromechanics_results['E1'][E1_index]
+    computed_ni21 = compute_ni21(ni12, E2, E1)
+
+    # Display the computed ni21
+    st.write("Computed ni21:", computed_ni21)
+
+    # Display LaTeX formatted results
+    latex_formula = r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}"
+    latex_result = f"\\nu_{{21}} = {ni12:.3f} \\cdot \\frac{{{E2:.3f}}}{{{E1:.3f}}} = {computed_ni21:.3f}"
+
+    st.latex(latex_formula)
+    st.latex(latex_result)
+    
+    st.write("Computed ni21:", computed_ni21)
+
+# material_math/math_ui.py
+
+import streamlit as st
+from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
+
+def compute_ni21(ni12, E2, E1):
+    return ni12 * E2 / E1
+
+def display_micromechanical_properties(fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math, show_individual_graphs):
+    sigma = {'sigma1': 100, 'sigma2': 50, 'tau12': 30}  # Example values
+
+    # Calculate micromechanical properties
+    micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
+
+    st.header("Micromechanical properties")
+    st.write("The following properties are calculated using micromechanical models for the combination:")
+    col1, col2 = st.columns([6, 4])
+    with col1:
+        st.code(f"{fiber_material_key} / {matrix_material_key}")
+    with col2:
+        st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
+        
+    properties = ["E1", "E2", "G12", "ni12", "ni21"]
+    units = get_property_units(properties)
+
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
+    st.write(micromechanics_df)
+
+    if st.button("Compare all material combos", type="primary"): 
+        st.write("3D Graph")
+
+    st.markdown("***")
+
+    for property_name in properties:
+        if property_name in micromech_properties:
+            display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
+            st.markdown("***")
+    
+    # Allow users to select theories for ni12, E1, and E2
+    selected_ni12_theory = st.selectbox("Select theory for ni12", micromechanics_theories['ni12'])
+    selected_E1_theory = st.selectbox("Select theory for E1", micromechanics_theories['E1'])
+    selected_E2_theory = st.selectbox("Select theory for E2", micromechanics_theories['E2'])
+
+    # Get the index of the selected theories
+    ni12_index = micromechanics_theories['ni12'].index(selected_ni12_theory)
+    E1_index = micromechanics_theories['E1'].index(selected_E1_theory)
+    E2_index = micromechanics_theories['E2'].index(selected_E2_theory)
+
+    # Compute ni21 using the selected theory values
+    ni12 = micromechanics_results['ni12'][ni12_index]
+    E2 = micromechanics_results['E2'][E2_index]
+    E1 = micromechanics_results['E1'][E1_index]
+    computed_ni21 = compute_ni21(ni12, E2, E1)
+
+    # Display the computed ni21
+    st.write("Computed ni21:", computed_ni21)
+
+    # Display LaTeX formatted results
+    latex_formula = r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}"
+    latex_result = f"\\nu_{{21}} = {ni12:.3f} \\cdot \\frac{{{E2:.3f}}}{{{E1:.3f}}} = {computed_ni21:.3f}"
+
+    st.latex(latex_formula)
+    st.latex(latex_result)
+    
+    st.write("Computed ni21:", computed_ni21)
+
