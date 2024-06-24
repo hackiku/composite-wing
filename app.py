@@ -178,7 +178,7 @@ def main():
     with col2:
         st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
         
-    properties = ["E1", "E2", "G12", "nu12"]
+    properties = ["E1", "E2", "G12", "ni12", "ni21"]
     units = get_property_units(properties)
 
     col1, col2 = st.columns([6, 1])
@@ -188,6 +188,10 @@ def main():
 
     # with col2:
     st.write(micromechanics_df)
+
+    if st.button("Compare all material combos", type="primary"): 
+        # fancy 3D Graph
+        st.write("3D Graph")
 
     st.markdown("***")
 
@@ -219,9 +223,13 @@ def main():
         if property_name in strength_properties:
             display_theories(property_name, strength_results, strength_latex, strength_math, strength_coefficients, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
 
-    st.header("Failure Criteria")
+
+    st.markdown('***')
     st.markdown('***')
 
+    st.header("Failure Criteria")
+
+    st.code(f"Failure Criteria for {fiber_material_key} / {matrix_material_key}")
 
 if __name__ == "__main__":
     main()

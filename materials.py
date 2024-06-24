@@ -212,9 +212,9 @@ matrices = {
     "LY556-HT907-DY063": {
         "type": "Epoxy",
         "rho": 1.17,            # [g/cm³]
-        "Em": 3.4,              # [GPa]
-        "Gm": 1.26,             # [GPa]
-        "nim": 0.36,            # [/]
+        "Em": 3.35,             # [GPa]
+        "Gm": 1.24,             # [GPa]
+        "nim": 0.35,            # [/]
         "FmT": 80,              # [MPa]
         "FmC": 120,             # [MPa]
         "FmS": 52,              # [MPa]

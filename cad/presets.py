@@ -106,6 +106,41 @@ aircraft_presets = {
             # "cutouts": "9z8y7x6w5v4u3t2s1r0p",
         }
     },
+    "Space elevator (wip)": {
+        "specs": {
+            "name": "Space elevator",
+            "manufacturer": "Jzro & Sons, Inc.",
+            "mass": 8.500e6,
+            "load_factor": 1,
+            "wingspan": 15.000e5,
+            # "wingspan": 15.000,
+            "3_view": "cad/imgs/space_elevator.png",
+            "crop_params": [0, 0, 600, 400],
+        },
+        "wing": {
+            "span_wet": 7.500, # 15.000 / 2 [m]
+            "fwd_spar": 0.25,
+            "aft_spar": 0.15,
+            "tip": 0.800,
+            "root": 1.800,
+            "sweep_angle": 5.0,
+            "dihedral_angle": 3,
+            "airfoil_root": "NACA-0012",
+            "airfoil_tip": "NACA-0010",
+        },
+        "materials": {
+            "fiber": 5,
+            "matrix": 2,
+            "Vf": 0.55,
+            "Vvoid": 0.25
+        },
+        "model": {
+            "project": "Parametric Wing",
+            "ribs full": "1c23a328748cc03fde2f37f5",
+            "wing": "1119299cf6041bec872e5894",
+            # "cutouts": "9z8y7x6w5v4u3t2s1r0p",
+        }
+    },
 }
 
 onshape_projects = {

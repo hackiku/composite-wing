@@ -1,12 +1,10 @@
 # material_math/properties.py
-
 import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 import inspect
-
 
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
@@ -166,8 +164,7 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
     with col1:
         st.subheader(f"`{property_name.title()}` {theory_dict[property_name]['name']}", help=theory_dict[property_name]['help'])
     with col2:
-        st.caption(f"""{fiber_material_key}
-                   \n {matrix_material_key}""")
+        st.caption(f"""{fiber_material_key}\n {matrix_material_key}""")
 
     unit = theory_dict[property_name].get('unit', '')
 
@@ -180,11 +177,11 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
     formula = theory_details["formula"]
     latex = latex_results[property_name][selected_theory]
     result = results[property_name][theory_names.index(selected_theory)]
-    
+
     if selected_theory in coefficients_latex[property_name]:
         for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():
             st.latex(coeff_latex)
-            
+
     if show_math and math_results[property_name][selected_theory]:
         st.latex(f"{latex}")
         st.latex(f"{math_results[property_name][selected_theory]} = {result:.3f} \\ [{unit}]")
@@ -192,7 +189,6 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         st.code(formula_code, language='python')
     else:
         st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
-
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)
@@ -219,13 +215,33 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
                 all_values[theory].append(value)
 
         fig, ax = plt.subplots(figsize=(12, 6))
+
+        color_map = plt.get_cmap('tab10')
+        color_dict = {theory: color_map(i) for i, theory in enumerate(theory_names)}
+
+        # Initialize max_value as -infinity to find the actual maximum value
+        # max_value = -np.inf
+        max_value = -400
+        max_theory = None
+        max_value_at_Vf = None
+
         for theory, values in all_values.items():
             ax.plot(vfs, values, label=theory)
+            current_value = values[np.abs(vfs - Vf).argmin()]
+            if current_value > max_value:  # Correct comparison to find the maximum value
+                max_value = current_value
+                max_theory = theory
+                max_value_at_Vf = current_value
+
+        # Add the dot and text box at the intersection
+        ax.scatter(Vf, max_value_at_Vf, color=color_dict[max_theory], zorder=5)
+        ax.text(Vf, max_value_at_Vf, f'{max_value_at_Vf:.3f} [{unit}]\n{max_theory}', fontsize=14, color=color_dict[max_theory],
+                ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.8, edgecolor=color_dict[max_theory]))
+
         ax.axvline(Vf, color='red', linestyle='--', alpha=0.5, label=f'Current Vf = {Vf}')
-        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction', color='white')
-        ax.set_xlabel('Fiber Volume Fraction (Vf)', color='white')
-        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})', color='white')
+        ax.set_title(f'{property_name.replace("_", " ").title()} vs. Fiber Volume Fraction')
+        ax.set_xlabel('Fiber Volume Fraction (Vf)')
+        ax.set_ylabel(f'{property_name.replace("_", " ").title()} ({unit})')
         ax.legend()
-        ax.grid(True, color='gray')
-        ax.tick_params(colors='white')
+        ax.grid(True)
         st.pyplot(fig)
