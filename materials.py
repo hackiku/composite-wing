@@ -1,98 +1,294 @@
-
 # materials.py
 
 fibers = {
-    "AS-4 Carbon": {
-        "E1f": 225, "E2f": 15, "G12f": 15, "G23f": 7, "ni12f": 0.2, "ni21f": 0.2, "F1ft": 3350,
-        "alpha1": -0.5, "alpha2": 15, "F1fc": 2500, "epsilon1ft": 1.4, "epsilon1fc": 1.1
+    "AS-4": {
+        "type": "Carbon",
+        "E1f": 225,             # [GPa]
+        "E2f": 15,              # [GPa]
+        "G12f": 15,             # [GPa]
+        "G23f": 7,              # [GPa]
+        "ni12f": 0.2,           # [/]
+        "ni21f": 0.2,           # [/]
+        "F1ft": 3350,           # [MPa]
+        "F1fc": 2500,           # [MPa]
+        "epsilon1ft": 1.488,    # [%]
+        "epsilon1fc": 1.111,    # [%]
+        "alpha1f": -0.5e-6,     # [1/°C]
+        "alpha2f": 15e-6,       # [1/°C]
     },
-    "T-300 Carbon": {
-        "E1f": 230, "E2f": 15, "G12f": 15, "G23f": 7, "ni12f": 0.2, "ni21f": 0.2, "F1ft": 2500,
-        "alpha1": -0.7, "alpha2": 12, "F1fc": 2000, "epsilon1ft": 1.086, "epsilon1fc": 0.869
+    "T-300": {
+        "type": "Carbon",
+        "E1f": 230,             # [GPa]
+        "E2f": 15,              # [GPa]
+        "G12f": 15,             # [GPa]
+        "G23f": 7,              # [GPa]
+        "ni12f": 0.2,           # [/]
+        "ni21f": 0.2,           # [/]
+        "F1ft": 2500,           # [MPa]
+        "F1fc": 2000,           # [MPa]
+        "epsilon1ft": 1.086,    # [%]
+        "epsilon1fc": 0.869,    # [%]
+        "alpha1f": -0.7e-6,     # [1/°C]
+        "alpha2f": 12e-6,       # [1/°C]
     },
-    "E-Glass 21xK43": {
-        "E1f": 80, "E2f": 80, "G12f": 33.3, "G23f": 33.3, "ni12f": 0.2, "ni21f": 0.2, "F1ft": 2150,
-        "alpha1": 4.9, "alpha2": 4.9, "F1fc": 1450, "epsilon1ft": 2.687, "epsilon1fc": 1.811
+    "21xK43 Gevetex": {
+        "type": "E-Glass",
+        "E1f": 80,              # [GPa]
+        "E2f": 80,              # [GPa]
+        "G12f": 33.33,          # [GPa]
+        "G23f": 33.33,           # [GPa]
+        "ni12f": 0.2,           # [/]
+        "ni21f": 0.2,           # [/]
+        "F1ft": 2150,           # [MPa]
+        "F1fc": 1450,           # [MPa]
+        "epsilon1ft": 2.687,    # [%]
+        "epsilon1fc": 1.813,    # [%]
+        "alpha1f": 4.9e-6,      # [1/°C]
+        "alpha2f": 4.9e-6,      # [1/°C]
     },
-    "Silenka E-Glass 1200tex": {
-        "E1f": 74, "E2f": 74, "G12f": 30.8, "G23f": 30.8, "ni12f": 0.2, "ni21f": 0.2, "F1ft": 2150,
-        "alpha1": 4.9, "alpha2": 4.9, "F1fc": 1450, "epsilon1ft": 2.905, "epsilon1fc": 1.959
+    "Silenka 1200tex": {
+        "type": "E-Glass",
+        "E1f": 74,              # [GPa]
+        "E2f": 74,              # [GPa]
+        "G12f": 30.8,           # [GPa]
+        "G23f": 30.8,           # [GPa]
+        "ni12f": 0.2,           # [/]
+        "ni21f": 0.2,           # [/]
+        "F1ft": 2150,           # [MPa]
+        "F1fc": 1450,           # [MPa]
+        "epsilon1ft": 2.905,    # [%]
+        "epsilon1fc": 1.959,    # [%]
+        "alpha1f": 4.9e-6,      # [1/°C]
+        "alpha2f": 4.9e-6,      # [1/°C]
     },
-    "E-Glass": {
-        "E1f": 73, "E2f": 73, "G12f": 30, "G23f": 30, "ni12f": 0.23, "ni21f": 0.23, "F1ft": 3450,
-        "alpha1": 5.0, "alpha2": 5.0
+    "E-Glass": {                # what the fuck
+        "type": "E-Glass",
+        "E1f": 73,              # [GPa]
+        "E2f": 73,              # [GPa]
+        "G12f": 30,             # [GPa]
+        "G23f": 30,             # [GPa]
+        "ni12f": 0.23,          # [/]
+        "ni21f": 0.23,          # [/]
+        "F1ft": 3450,           # [MPa]
+        "alpha1f": 5.0e-6,      # [1/°C]
+        "alpha2f": 5.0e-6,      # [1/°C]
     },
-    "S-Glass": {
-        "E1f": 86, "E2f": 86, "G12f": 35, "G23f": 35, "ni12f": 0.23, "ni21f": 0.23, "F1ft": 4500,
-        "alpha1": 5.6, "alpha2": 5.6
+    "S-Glass": {                # what the fuck
+        "type": "Glass",
+        "E1f": 86,              # [GPa]
+        "E2f": 86,              # [GPa]
+        "G12f": 35,             # [GPa]
+        "G23f": 35,             # [GPa]
+        "ni12f": 0.23,          # [/]
+        "ni21f": 0.23,          # [/]
+        "F1ft": 4500,           # [MPa]
+        "alpha1f": 5.6e-6,      # [1/°C]
+        "alpha2f": 5.6e-6,      # [1/°C]
     },
-    "IM7 Carbon": {
-        "E1f": 290, "E2f": 21, "G12f": 14, "G23f": None, "ni12f": 0.20, "ni21f": 0.20, "F1ft": 5170,
-        "alpha1": -0.2, "alpha2": 10
+    "IM7": {
+        "type": "Carbon",
+        "E1f": 290,             # [GPa]
+        "E2f": 21,              # [GPa]
+        "G12f": 14,             # [GPa]
+        "G23f": None,           # [GPa]
+        "ni12f": 0.20,          # [/]
+        "ni21f": 0.20,          # [/]
+        "F1ft": 5170,           # [MPa]
+        "F1fc": None,           # [MPa]
+        "epsilon1ft": None,     # [%]
+        "epsilon1fc": None,     # [%]
+        "alpha1f": -0.2e-6,     # [1/°C]
+        "alpha2f": 10e-6,       # [1/°C]
     },
     "Boron": {
-        "E1f": 395, "E2f": 395, "G12f": 165, "G23f": None, "ni12f": 0.13, "ni21f": 0.13, "F1ft": 3450,
-        "alpha1": 16, "alpha2": 16
+        "type": "Boron",
+        "E1f": 395,             # [GPa]
+        "E2f": 395,             # [GPa]
+        "G12f": 165,            # [GPa]
+        "G23f": None,           # [GPa]
+        "ni12f": 0.13,          # [/]
+        "ni21f": 0.13,          # [/]
+        "F1ft": 3450,           # [MPa]
+        "F1fc": None,           # [MPa]
+        "epsilon1ft": None,     # [%]
+        "epsilon1fc": None,     # [%]
+        "alpha1f": 16e-6,       # [1/°C]
+        "alpha2f": 16e-6,       # [1/°C]
     },
-    "Kevlar 49 Aramid": {
-        "E1f": 131, "E2f": 7, "G12f": 21, "G23f": None, "ni12f": 0.33, "ni21f": 0.33, "F1ft": 3800,
-        "alpha1": -2, "alpha2": 60
+    "Kevlar 49": {
+        "type": "Aramid",
+        "E1f": 131,             # [GPa]
+        "E2f": 7,               # [GPa]
+        "G12f": 21,             # [GPa]
+        "G23f": None,           # [GPa]
+        "ni12f": 0.33,          # [/]
+        "ni21f": 0.33,          # [/]
+        "F1ft": 3800,           # [MPa]
+        "F1fc": None,           # [MPa]
+        "epsilon1ft": None,     # [%]
+        "epsilon1fc": None,     # [%]
+        "alpha1f": -2e-6,       # [1/°C]
+        "alpha2f": 60e-6,       # [1/°C]
     },
-    "Silicon Carbide (Nicalon)": {
-        "E1f": 172, "E2f": 172, "G12f": 73, "G23f": None, "ni12f": 0.20, "ni21f": 0.20, "F1ft": 2070,
-        "alpha1": 3.2, "alpha2": 3.2
+    "Nicalon": {
+        "type": "Silicon Carbide",
+        "E1f": 172,             # [GPa]
+        "E2f": 172,             # [GPa]
+        "G12f": 73,             # [GPa]
+        "G23f": None,           # [GPa]
+        "ni12f": 0.20,          # [/]
+        "ni21f": 0.20,          # [/]
+        "F1ft": 2070,           # [MPa]
+        "F1fc": None,           # [MPa]
+        "epsilon1ft": None,     # [%]
+        "epsilon1fc": None,     # [%]
+        "alpha1f": 3.2e-6,      # [1/°C]
+        "alpha2f": 3.2e-6,      # [1/°C]
     }
 }
 
+
+# materials.py
+
 matrices = {
-    "Epoxy_3501_6": {
-        "density": 1.27, "Em": 4.2, "Gm": 1.57, "nim": 0.34,
-        "FmT": 69, "FmC": 250, "FmS": 50, "alpha_m": 45,
-        "Tg": 200, "Tmax": 150, "epsilon_mT": 1.7
+    "3501-6": {
+        "type": "Epoxy",
+        "rho": 1.27,            # [g/cm³]
+        "Em": 4.2,              # [GPa]
+        "Gm": 1.57,             # [GPa]
+        "nim": 0.34,            # [/]
+        "FmT": 69,              # [MPa]
+        "FmC": 250,             # [MPa]
+        "FmS": 50,              # [MPa]
+        "alpha_m": 45e-6,       # [1/°C]
+        "Tg": 200,              # [°C]
+        "Tmax": 150,            # [°C]
+        "epsilon_mT": 1.7,      # [%]
     },
-    "Epoxy_BSL914C": {
-        "density": 0.00, "Em": 4.0, "Gm": 1.481, "nim": 0.35,
-        "FmT": 75, "FmC": 150, "FmS": 70, "alpha_m": 55,
-        "Tg": None, "Tmax": None, "epsilon_mT": 4
+    "BSL914C": {
+        "type": "Epoxy",
+        "rho": 0.00,            # [g/cm³] - should be corrected
+        "Em": 4.0,              # [GPa]
+        "Gm": 1.481,            # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 75,              # [MPa]
+        "FmC": 150,             # [MPa]
+        "FmS": 70,              # [MPa]
+        "alpha_m": 55e-6,       # [1/°C]
+        "Tg": None,             # [°C]
+        "Tmax": None,           # [°C]
+        "epsilon_mT": 4,        # [%]
     },
-    "Epoxy_LY556_HT907_DY063": {
-        "density": 1.17, "Em": 3.4, "Gm": 1.26, "nim": 0.36,
-        "FmT": 80, "FmC": 120, "FmS": 52, "alpha_m": 58,
-        "Tg": 152, "Tmax": None, "epsilon_mT": 5
+    "LY556-HT907-DY063": {
+        "type": "Epoxy",
+        "rho": 1.17,            # [g/cm³]
+        "Em": 3.4,              # [GPa]
+        "Gm": 1.26,             # [GPa]
+        "nim": 0.36,            # [/]
+        "FmT": 80,              # [MPa]
+        "FmC": 120,             # [MPa]
+        "FmS": 52,              # [MPa]
+        "alpha_m": 58e-6,       # [1/°C]
+        "Tg": 152,              # [°C]
+        "Tmax": None,           # [°C]
+        "epsilon_mT": 5,        # [%]
     },
-    "Epoxy_MY750_HY917_DY063": {
-        "density": 1.15, "Em": 3.5, "Gm": 1.30, "nim": 0.35,
-        "FmT": 77.5, "FmC": 127, "FmS": 53, "alpha_m": 58,
-        "Tg": 100, "Tmax": None, "epsilon_mT": 5
+    "MY750-HY917-DY063": {
+        "type": "Epoxy",
+        "rho": 1.15,            # [g/cm³]
+        "Em": 3.5,              # [GPa]
+        "Gm": 1.30,             # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 77.5,            # [MPa]
+        "FmC": 127,             # [MPa]
+        "FmS": 53,              # [MPa]
+        "alpha_m": 58e-6,       # [1/°C]
+        "Tg": 100,              # [°C]
+        "Tmax": None,           # [°C]
+        "epsilon_mT": 5,        # [%]
     },
-    "Epoxy_977_3": {
-        "density": 1.28, "Em": 3.7, "Gm": 1.37, "nim": 0.35,
-        "FmT": 90, "FmC": 175, "FmS": 52, "alpha_m": None,
-        "Tg": 200, "Tmax": 177, "epsilon_mT": None
+    "977-3": {
+        "type": "Epoxy",
+        "rho": 1.28,            # [g/cm³]
+        "Em": 3.7,              # [GPa]
+        "Gm": 1.37,             # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 90,              # [MPa]
+        "FmC": 175,             # [MPa]
+        "FmS": 52,              # [MPa]
+        "alpha_m": None,        # [1/°C]
+        "Tg": 200,              # [°C]
+        "Tmax": 177,            # [°C]
+        "epsilon_mT": None,     # [%]
     },
-    "Epoxy_HY6010_HT917_DY7070": {
-        "density": 1.17, "Em": 3.4, "Gm": 1.26, "nim": 0.36,
-        "FmT": 80, "FmC": 104, "FmS": 40, "alpha_m": 62,
-        "Tg": 152, "Tmax": None, "epsilon_mT": None
+    "HY6010-HT917-DY7070": {
+        "type": "Epoxy",
+        "rho": 1.17,            # [g/cm³]
+        "Em": 3.4,              # [GPa]
+        "Gm": 1.26,             # [GPa]
+        "nim": 0.36,            # [/]
+        "FmT": 80,              # [MPa]
+        "FmC": 104,             # [MPa]
+        "FmS": 40,              # [MPa]
+        "alpha_m": 62e-6,       # [1/°C]
+        "Tg": 152,              # [°C]
+        "Tmax": None,           # [°C]
+        "epsilon_mT": None,     # [%]
     },
     "Polyester": {
-        "density": 1.2, "Em": 3.35, "Gm": 1.35, "nim": 0.35,
-        "FmT": 70, "FmC": 220, "FmS": 45, "alpha_m": 90,
-        "Tg": 131, "Tmax": None, "epsilon_mT": 3.5
+        "type": "Polyester",
+        "rho": 1.2,             # [g/cm³]
+        "Em": 3.35,             # [GPa]
+        "Gm": 1.35,             # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 70,              # [MPa]
+        "FmC": 220,             # [MPa]
+        "FmS": 45,              # [MPa]
+        "alpha_m": 90e-6,       # [1/°C]
+        "Tg": 131,              # [°C]
+        "Tmax": None,           # [°C]
+        "epsilon_mT": 3.5,      # [%]
     },
     "Vinylester": {
-        "density": 1.15, "Em": 3.5, "Gm": 1.30, "nim": 0.35,
-        "FmT": 77.5, "FmC": 127, "FmS": 53, "alpha_m": 156,
-        "Tg": 100, "Tmax": None, "epsilon_mT": 3.0
+        "type": "Vinylester",
+        "rho": 1.15,            # [g/cm³]
+        "Em": 3.5,              # [GPa]
+        "Gm": 1.30,             # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 77.5,            # [MPa]
+        "FmC": 127,             # [MPa]
+        "FmS": 53,              # [MPa]
+        "alpha_m": 156e-6,      # [1/°C]
+        "Tg": 100,              # [°C]
+        "Tmax": None,           # [°C]
+        "epsilon_mT": 3.0,      # [%]
     },
     "Polyimide": {
-        "density": 1.65, "Em": 4.5, "Gm": 4.20, "nim": 0.35,
-        "FmT": 95, "FmC": 135, "FmS": 86.5, "alpha_m": 45,
-        "Tg": 300, "Tmax": 325, "epsilon_mT": 2.5
+        "type": "Polyimide",
+        "rho": 1.65,            # [g/cm³]
+        "Em": 4.5,              # [GPa]
+        "Gm": 4.20,             # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 95,              # [MPa]
+        "FmC": 135,             # [MPa]
+        "FmS": 86.5,            # [MPa]
+        "alpha_m": 45e-6,       # [1/°C]
+        "Tg": 300,              # [°C]
+        "Tmax": 325,            # [°C]
+        "epsilon_mT": 2.5,      # [%]
     },
     "PEEK": {
-        "density": 1.32, "Em": 3.7, "Gm": 4.65, "nim": 0.35,
-        "FmT": 108, "FmC": 143, "FmS": 58, "alpha_m": 90,
-        "Tg": 143, "Tmax": 250, "epsilon_mT": 2.5
+        "type": "PEEK",
+        "rho": 1.32,            # [g/cm³]
+        "Em": 3.7,              # [GPa]
+        "Gm": 4.65,             # [GPa]
+        "nim": 0.35,            # [/]
+        "FmT": 108,             # [MPa]
+        "FmC": 143,             # [MPa]
+        "FmS": 58,              # [MPa]
+        "alpha_m": 90e-6,       # [1/°C]
+        "Tg": 143,              # [°C]
+        "Tmax": 250,            # [°C]
+        "epsilon_mT": 2.5,      # [%]
     }
 }

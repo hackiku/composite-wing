@@ -12,6 +12,9 @@ from cad.presets import aircraft_presets, onshape_projects
 from cad.cad_ui import cad_ui
 # from cad.step_dl import export_step
 # from cad.assembly_step import export_step_from_assembly
+# FEMAP
+from femap.wing_load import calc_wing_load
+
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -93,7 +96,8 @@ def main():
             """)
     with col2:
         # st.image("data/logoUniMas.png", use_column_width=True)    
-        st.image("data/masinac.png", use_column_width=True)    
+        st.image("data/vaz100.png", use_column_width=False, clamp=False, width=120)
+        # st.image("data/mas30.png", use_column_width=True)    
     st.markdown("***")
     # ========== AIRCRAFT ==========
     st.header('1️⃣ Aircraft & Wing')
@@ -139,7 +143,9 @@ def main():
         wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'].get('span_wet', 1) * 1000, on_change=on_change_custom)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
 
-    calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
+
+    calc_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
+    # calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
     st.markdown("***")
     st.header('2️⃣ Bake composite materials')
@@ -162,9 +168,16 @@ def main():
 
     st.markdown("***")
 
-    # ------ MICROMECH ------
+    # ------------------ MICROMECH ------------------
     
     st.header("Micromechanical properties")
+    st.write("The following properties are calculated using micromechanical models for the combination:")
+    col1, col2 = st.columns([6, 4])
+    with col1:
+        st.code(f"{fiber_material_key} / {matrix_material_key}")
+    with col2:
+        st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
+        
     properties = ["E1", "E2", "G12", "nu12"]
     units = get_property_units(properties)
 
@@ -185,6 +198,13 @@ def main():
 
     # ------ STRENGTH ------
     st.header("Strength Properties")
+    st.write("The following properties are calculated using micromechanical models for the combination:")
+    col1, col2 = st.columns([6, 4])
+    with col1:
+        st.code(f"{fiber_material_key} / {matrix_material_key}")
+    with col2:
+        st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
+
     properties = ["F1T", "F1C", "F2T", "F2C", "F6"]
     units = get_property_units(properties)
 
