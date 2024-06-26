@@ -248,7 +248,7 @@ strength_properties = {
         "name": "Compressive strength in the fiber direction",
         "help": "Maximum stress the composite can withstand while being compressed in the fiber direction",
         "unit": "MPa",
-        "Timoshenko-Gere ($V_f < 0.2$)": {
+        "⚠️ Timoshenko-Gere ($V_f < 0.2$)": {
             "formula": lambda f, m, Vf, Vm: (
                 2 * Vf * np.sqrt((Vf * f['E1f'] * m['Em']) / (3 * (1 - Vf)))
             ),
@@ -295,9 +295,10 @@ strength_properties = {
             ),
         },
 
-
-    
     },
+    
+    
+    
     "F2T": {
         "name": "Transverse tensile strength",
         "help": "Maximum stress the composite can withstand while being stretched perpendicular to the fiber direction",
@@ -307,16 +308,13 @@ strength_properties = {
             "latex": r"F_{2T} = \left( 1 - V_{void}^{1/3} \right) \frac{E_{2f} F_{mT}}{E_m}",
             "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2T}} = \\left( 1 - {Vvoid:.3f}^{{1/3}} \\right) \\frac{{{f['E2f']} \cdot {m['FmT']}}}{{{m['Em']}}}"
         },
-        "Barbero": {
-            "formula": lambda f, m, Vf, Vm, Vvoid: m['FmT'] * (1 - np.sqrt((4 * Vvoid) / (np.pi * Vm))) * (1 + (Vf - np.sqrt(Vf)) * (1 - m['Em'] / f['E2f'])),
-            "latex": r"F_{2T} = F_{mT} \left( 1 - \sqrt{\frac{4 V_{void}}{\pi V_m}} \right) \left( 1 + \left( V_f - \sqrt{V_f} \right) \left( 1 - \frac{E_m}{E_{2f}} \right) \right)",
-            "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2T}} = {m['FmT']} \\left( 1 - \\sqrt{{\\frac{{4 \cdot {Vvoid:.3f}}}{{\\pi \cdot {Vm:.3f}}}}} \\right) \\left( 1 + \\left( {Vf:.3f} - \\sqrt{{{Vf:.3f}}} \\right) \\left( 1 - \\frac{{{m['Em']}}}{{{f['E2f']}}} \\right) \\right)"
-        },
+
+
         "Modified ROM": {
             "formula": lambda f, m, Vf, Vm, Vvoid: (f['F1ft'] * Vf + m['FmT'] * Vm) * (1 - Vvoid),
             "latex": r"F_{2T} = (F_{1ft}V_f + F_mTV_m)(1 - V_{void})",
             "math": lambda f, m, Vf, Vm, Vvoid: f"F_{{2T}} = ({f['F1ft']} \cdot {Vf:.3f} + {m['FmT']} \cdot {Vm:.3f}) \cdot (1 - {Vvoid:.3f})"
-        }
+        },
     },
     "F2C": {
         "name": "Transverse compressive strength",
