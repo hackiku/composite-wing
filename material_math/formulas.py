@@ -17,6 +17,15 @@ def calculate_Mf(Vf, rhof, Vm, rhom):
 
 # Define helper functions at the top of your script or module
 
+def fetch_composite_properties(fiber_material_key, matrix_material_key, Vf, Vm):
+    # Dummy implementation for now, replace with actual property fetching logic
+    properties = {
+        'nu12': 0.3,
+        'E2': 50.0,
+        'E1': 100.0,
+    }
+    return properties
+
 
 
 micromech_properties = {
@@ -181,16 +190,31 @@ micromech_properties = {
         "help": "Ratio of transverse strain to axial strain",
         "unit": "-",
         "Stiffness matrix symmetry": {
-            "formula": lambda f, m, Vf, Vm, c: (
-                c['nu12'] * c['E2'] / c['E1']
-                if c['E1'] != 0 else 0
-            ),
+            "formula": lambda f, m, Vf, Vm: (
+                lambda c: c['nu12'] * c['E2'] / c['E1'] if c['E1'] != 0 else 0
+            )(fetch_composite_properties(f, m, Vf, Vm)),
             "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
-            # "math": lambda f, m, Vf, Vm, c: (
-            #     f"\\nu_{{21}} = {c['nu12']:.3f} \\cdot \\frac{{{c['E2']:.3f}}}{{{c['E1']:.3f}}}"
-            # )
+            "math": lambda f, m, Vf, Vm: (
+                lambda c: f"\\nu_{{21}} = {c['nu12']:.3f} \\cdot \\frac{{{c['E2']:.3f}}}{{{c['E1']:.3f}}}"
+            )(fetch_composite_properties(f, m, Vf, Vm))
         },
     },
+
+    # "nu21": {
+    #     "name": "⚠️ Poisson's minor ratio",
+    #     "help": "Ratio of transverse strain to axial strain",
+    #     "unit": "-",
+    #     "Stiffness matrix symmetry": {
+    #         "formula": lambda f, m, Vf, Vm, c: (
+    #             c['nu12'] * c['E2'] / c['E1']
+    #             if c['E1'] != 0 else 0
+    #         ),
+    #         "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
+    #         "math": lambda f, m, Vf, Vm, c: (
+    #             f"\\nu_{{21}} = {c['nu12']:.3f} \\cdot \\frac{{{c['E2']:.3f}}}{{{c['E1']:.3f}}}"
+    #         )
+    #     },
+    # },
 }
 
         #"MROM": {
@@ -351,12 +375,13 @@ failure_criteria = {
     }
 }
 
-def fetch_composite_properties():
-    composite_props = get_composite_properties('Default Fiber')
-    if not composite_props:
-        composite_props = {
-            'nu12': 0.3,
-            'E2': 50.0,
-            'E1': 100.0,
-        }
-    return composite_props
+
+# def fetch_composite_properties():
+#     composite_props = get_composite_properties('Default Fiber')
+#     if not composite_props:
+#         composite_props = {
+#             'nu12': 0.3,
+#             'E2': 50.0,
+#             'E1': 100.0,
+#         }
+#     return composite_props

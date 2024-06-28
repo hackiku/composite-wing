@@ -4,6 +4,8 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
+from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
+
 import inspect
 
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
