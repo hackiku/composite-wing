@@ -197,14 +197,14 @@ micromech_properties = {
         "Stiffness matrix symmetry": {
             "formula": lambda f, m, Vf, Vm: (
                 get_composite_properties(f)['nu12'] * get_composite_properties(f)['E2'] / get_composite_properties(f)['E1']
-                if get_composite_properties(f)['E1'] != 0 else 0
+                if get_composite_properties(f) and get_composite_properties(f)['E1'] != 0 else 0
             ),
             "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
             "math": lambda f, m, Vf, Vm: (
                 f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
                 f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
                 f"{{{get_composite_properties(f)['E1']:.3f}}}"
-            )
+            ) if get_composite_properties(f) else ""
         },
     },
     # OLD "ni"
@@ -228,11 +228,11 @@ micromech_properties = {
                 if get_composite_properties(f)['E1'] != 0 else 0
             ),
             "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
-            "math": lambda f, m, Vf, Vm: (
-                f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
-                f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
-                f"{{{get_composite_properties(f)['E1']:.3f}}}"
-            )
+            # "math": lambda f, m, Vf, Vm: (
+            #     f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
+            #     f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
+            #     f"{{{get_composite_properties(f)['E1']:.3f}}}"
+            # )
         },
     },
 

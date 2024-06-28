@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 from materials import fibers, matrices
@@ -16,7 +17,7 @@ from cad.cad_ui import cad_ui
 
 from femap.wing_load import calc_wing_load
 
-initialize_composite_materials()
+# initialize_composite_materials()
 
 
 st.set_page_config(
@@ -39,6 +40,7 @@ def initialize_session_state():
         st.session_state.custom_preset = False
     if "selected_wing_model" not in st.session_state:
         st.session_state.selected_wing_model = [key for key in aircraft_presets["P-51"]['model'].keys() if key != "project"][0]
+    initialize_composite_materials()
 
 initialize_session_state()
 
@@ -76,8 +78,11 @@ Vm = 1 - Vf
 Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, aircraft_presets[st.session_state.current_preset]["materials"]["Vvoid"], 0.01, help="Adjust void ratio in the composite (between 0 and 1)", on_change=on_change_custom)
 
 if st.sidebar.button("💾 Save material", type="primary"):
-    properties = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)[0]
+    properties = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=False)[0]
     add_composite_material(fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, properties)
+    st.sidebar.success(f"Material {fiber_material_key}/{matrix_material_key} added.")
+
+display_composite_materials()
 
 # composite_material dataframe logic. NOTE: we can put st.sidebar bits anywhere in the script, not only beginning.
 
@@ -281,7 +286,6 @@ def main():
     # SEE HERE CHATGPT
     # list materials created by user
     st.sidebar.write("AS-4/3501-6 Vf=0.63") 
-    display_composite_materials()
 
 if __name__ == "__main__":
     main()
