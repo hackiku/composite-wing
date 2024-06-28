@@ -1,6 +1,8 @@
 # material_math/formulas.py
 
 import numpy as np
+# from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
+# from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials
 from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
 
 initialize_composite_materials()
@@ -15,22 +17,6 @@ def calculate_Mf(Vf, rhof, Vm, rhom):
 
 # Define helper functions at the top of your script or module
 
-def compute_E1(f, m, Vf, Vm):
-    return f['E1f'] * Vf + m['Em'] * Vm
-
-def compute_E2(f, m, Vf, Vm):
-    return (f['E2f'] * m['Em']) / (f['E2f'] * Vm + m['Em'] * Vf)
-
-def compute_ni12(f, m, Vf, Vm):
-    return f['ni12f'] * Vf + m['nim'] * Vm
-
-def compute_ni21(f, m, Vf, Vm):
-    E1 = compute_E1(f, m, Vf, Vm)
-    E2 = compute_E2(f, m, Vf, Vm)
-    ni12 = compute_ni12(f, m, Vf, Vm)
-    return (ni12 * E2) / E1
-
-# Continue with your properties and other functions
 
 
 micromech_properties = {
@@ -189,34 +175,6 @@ micromech_properties = {
             "latex": r"\nu_{12} = \frac{\nu_{12f} \cdot \nu_m}{V_f \cdot \nu_m + V_m \cdot \nu_{12f}}",
             "math": lambda f, m, Vf, Vm: f"\\nu_{{12}} = \\frac{{{f['ni12f']} \\cdot {m['nim']}}}{{{Vf:.3f} \\cdot {m['nim']} + {Vm:.3f} \\cdot {f['ni12f']}}}"
         }
-    },
-    "nu21": {
-        "name": "⚠️ Poisson's minor ratio",
-        "help": "Ratio of transverse strain to axial strain",
-        "unit": "-",
-        "Stiffness matrix symmetry": {
-            "formula": lambda f, m, Vf, Vm: (
-                get_composite_properties(f)['nu12'] * get_composite_properties(f)['E2'] / get_composite_properties(f)['E1']
-                if get_composite_properties(f) and get_composite_properties(f)['E1'] != 0 else 0
-            ),
-            "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
-            "math": lambda f, m, Vf, Vm: (
-                f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
-                f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
-                f"{{{get_composite_properties(f)['E1']:.3f}}}"
-            ) if get_composite_properties(f) else ""
-        },
-    },
-    # OLD "ni"
-    "ni21": {
-        "name": "⚠️ Poisson's minor ratio",
-        "help": "Ratio of transverse strain to axial strain",
-        "unit": "-",
-        "Stiffness matrix symmetry": {
-            "formula": lambda f, m, Vf, Vm: compute_ni21(f, m, Vf, Vm),
-            "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
-            "math": lambda f, m, Vf, Vm: f"\\nu_{{21}} = {compute_ni12(f, m, Vf, Vm):.3f} \\cdot \\frac{{{compute_E2(f, m, Vf, Vm):.3f}}}{{{compute_E1(f, m, Vf, Vm):.3f}}}"
-        },
     },
     "nu21": {
         "name": "⚠️ Poisson's minor ratio",

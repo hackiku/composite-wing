@@ -4,8 +4,11 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
+from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials
+
 import inspect
 
+# material_math/properties.py
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
     latex_results = {}
@@ -17,7 +20,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
     matrix_material = matrices[matrix_material_key]
 
     for property_name, theories in category.items():
-        results[property_name] = []
+        results[property_name] = {}
         latex_results[property_name] = {}
         coefficients_latex[property_name] = {}
         theories_map[property_name] = [theory_name for theory_name in theories if theory_name not in ["unit", "name", "help"]]
@@ -64,7 +67,7 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                 result = None
                 interpolated_math = None
 
-            results[property_name].append(result)
+            results[property_name][theory_name] = result
             latex_results[property_name][theory_name] = latex_formula
 
             if show_math:
@@ -72,31 +75,20 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                     math_results[property_name] = {}
                 math_results[property_name][theory_name] = interpolated_math
 
-    # Ensure all lists are the same length
-    max_length = max(len(results[prop]) for prop in results)
-    for prop in results:
-        while len(results[prop]) < max_length:
-            results[prop].append(None)
-
     return results, latex_results, math_results, coefficients_latex, theories_map
 
 
-
 def plot_properties(results, properties, units, theories):
-    # Initialize a dictionary to hold the structured data
     structured_data = {property_name: {} for property_name in properties}
     
     for property_name in properties:
-        for idx, theory_name in enumerate(theories[property_name]):
+        for theory_name in theories[property_name]:
             key = f"{property_name} [{units[properties.index(property_name)]}]"
             if theory_name not in structured_data[property_name]:
-                structured_data[property_name][theory_name] = results[property_name][idx]
+                structured_data[property_name][theory_name] = results[property_name][theory_name]
 
-    # Create DataFrame from the structured data
     results_df = pd.DataFrame(structured_data).transpose()
-    # results_df = pd.DataFrame(structured_data)
 
-    # Formatting the DataFrame and adding the average column
     def format_values(x):
         return f"{x:.3f}" if pd.notnull(x) else ""
 
@@ -108,12 +100,10 @@ def plot_properties(results, properties, units, theories):
     results_df['Average'] = results_df.apply(lambda row: calculate_average(row), axis=1)
     results_df = results_df.applymap(format_values)
 
-    # Move Average column to the first position
     cols = results_df.columns.tolist()
     cols.insert(0, cols.pop(cols.index('Average')))
     results_df = results_df[cols]
 
-    # Plotting horizontal bars
     fig, ax = plt.subplots(figsize=(14, 10))
 
     color_map = plt.get_cmap('tab10')
@@ -123,7 +113,7 @@ def plot_properties(results, properties, units, theories):
     y_labels = []
 
     y_pos = 0
-    bar_height = 0.4  # Reduced bar height for narrower columns
+    bar_height = 0.4
 
     for property_name in properties:
         unit = units[properties.index(property_name)]
@@ -131,13 +121,13 @@ def plot_properties(results, properties, units, theories):
         y_tick_positions.append(y_pos + len(theories[property_name]) / 2.0)
         
         for idx, theory_name in enumerate(theories[property_name]):
-            value = results[property_name][theories[property_name].index(theory_name)]
+            value = results[property_name][theory_name]
             if pd.notnull(value):
                 bar_position = y_pos + idx
                 ax.barh(bar_position, float(value), color=color_dict[theory_name], edgecolor='black', height=bar_height)
-                ax.text(float(value), bar_position, f" {theory_name}", va='center', ha='left', color='white', fontsize=12)  # Increased fontsize
-                ax.text(float(value), bar_position, f" {float(value):.2f}", va='center', ha='right', color='white', fontsize=14, fontweight='bold')  # Larger font for values
-        y_pos += len(theories[property_name]) + 1  # Add space between properties
+                ax.text(float(value), bar_position, f" {theory_name}", va='center', ha='left', color='white', fontsize=12)
+                ax.text(float(value), bar_position, f" {float(value):.2f}", va='center', ha='right', color='white', fontsize=14, fontweight='bold')
+        y_pos += len(theories[property_name]) + 1
 
     ax.set_yticks(y_tick_positions)
     ax.set_yticklabels(y_labels)
@@ -146,14 +136,12 @@ def plot_properties(results, properties, units, theories):
     ax.grid(True)
     st.pyplot(fig)
 
-    # styled_df = results_df.style.applymap(lambda x: 'background-color: lightgray' if x == results_df['Average'].name else '', subset=['Average'])
-
     return results_df
+
 
 def get_property_units(properties):
     unit_map = {**micromech_properties, **strength_properties, **failure_criteria}
     return [unit_map[prop].get("unit", '') for prop in properties]
-
 
 
 def display_theories(property_name, results, latex_results, math_results, coefficients_latex, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma=None, show_individual_graphs=False, show_math=False):

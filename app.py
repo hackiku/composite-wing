@@ -200,7 +200,7 @@ def main():
     with col2:
         st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
         
-    properties = ["E1", "E2", "G12", "ni12", "ni21", "nu21"]
+    properties = ["E1", "E2", "G12", "ni12", "nu21"]
     units = get_property_units(properties)
 
     col1, col2 = st.columns([6, 1])
