@@ -1,10 +1,10 @@
+# material_math/properties.py
 import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 import inspect
-from material_math.composite_materials import get_composite_properties
 
 def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid=0, show_math=True):
     results = {}
@@ -15,9 +15,6 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
 
     fiber_material = fibers[fiber_material_key]
     matrix_material = matrices[matrix_material_key]
-
-    # Get composite properties for lambda functions that require them
-    composite_properties = get_composite_properties(fiber_material_key)
 
     for property_name, theories in category.items():
         results[property_name] = []
@@ -49,18 +46,13 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
                             coefficients[coeff_name] = coeff_details['default']
                             coefficients_latex[property_name][theory_name][coeff_name] = f"{coeff_details['latex']} = {coefficients[coeff_name]:.3f}"
 
-                # Pass composite properties to the formula if required
-                if "c" in formula.__code__.co_varnames:
-                    result = formula(fiber_material, matrix_material, Vf, Vm, composite_properties)
-                elif "Vvoid" in formula.__code__.co_varnames:
+                if "Vvoid" in formula.__code__.co_varnames:
                     result = formula(fiber_material, matrix_material, Vf, Vm, Vvoid, **coefficients)
                 else:
                     result = formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
                 
                 if math_formula:
-                    if 'c' in math_formula.__code__.co_varnames:
-                        interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, composite_properties)
-                    elif 'Vvoid' in math_formula.__code__.co_varnames:
+                    if 'Vvoid' in math_formula.__code__.co_varnames:
                         interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, Vvoid, **coefficients)
                     else:
                         interpolated_math = math_formula(fiber_material, matrix_material, Vf, Vm, **coefficients)
@@ -88,6 +80,8 @@ def calculate_properties(category, fibers, matrices, fiber_material_key, matrix_
 
     return results, latex_results, math_results, coefficients_latex, theories_map
 
+
+
 def plot_properties(results, properties, units, theories):
     # Initialize a dictionary to hold the structured data
     structured_data = {property_name: {} for property_name in properties}
@@ -96,7 +90,7 @@ def plot_properties(results, properties, units, theories):
         for idx, theory_name in enumerate(theories[property_name]):
             key = f"{property_name} [{units[properties.index(property_name)]}]"
             if theory_name not in structured_data[property_name]:
-                structured_data[property_name][theory_name] = results[property_name][idx]  # Index using integer
+                structured_data[property_name][theory_name] = results[property_name][idx]
 
     # Create DataFrame from the structured data
     results_df = pd.DataFrame(structured_data).transpose()
@@ -156,10 +150,11 @@ def plot_properties(results, properties, units, theories):
 
     return results_df
 
-
 def get_property_units(properties):
     unit_map = {**micromech_properties, **strength_properties, **failure_criteria}
     return [unit_map[prop].get("unit", '') for prop in properties]
+
+
 
 def display_theories(property_name, results, latex_results, math_results, coefficients_latex, fiber_material_key, fiber_material, matrix_material_key, matrix_material, Vf, Vm, Vvoid, sigma=None, show_individual_graphs=False, show_math=False):
     theory_dict = micromech_properties if property_name in micromech_properties else strength_properties if property_name in strength_properties else failure_criteria
@@ -181,19 +176,20 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
     theory_details = theory_dict[property_name][selected_theory]
     formula = theory_details["formula"]
     latex = latex_results[property_name][selected_theory]
-    result = results[property_name][theory_names.index(selected_theory)]  # Use index here
+    result = results[property_name][theory_names.index(selected_theory)]
 
     if selected_theory in coefficients_latex[property_name]:
         for coeff, coeff_latex in coefficients_latex[property_name][selected_theory].items():
             st.latex(coeff_latex)
 
-    if show_math and math_results[property_name][theory_names.index(selected_theory)]:  # Use index here
+    if show_math and math_results[property_name][selected_theory]:
         st.latex(f"{latex}")
-        st.latex(f"{math_results[property_name][theory_names.index(selected_theory)]} = {result:.3f} \\ [{unit}]")
+        st.latex(f"{math_results[property_name][selected_theory]} = {result:.3f} \\ [{unit}]")
         formula_code = inspect.getsource(theory_details["formula"])
         st.code(formula_code, language='python')
     else:
         st.latex(f"{latex} = {result:.3f} \\ [{unit}]")
+        # st.write(f"aaaaa {latex} = {result:.3f} [{unit}]")
 
     if show_individual_graphs:
         vfs = np.linspace(0, 1, 100)
@@ -224,6 +220,8 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         color_map = plt.get_cmap('tab10')
         color_dict = {theory: color_map(i) for i, theory in enumerate(theory_names)}
 
+        # Initialize max_value as -infinity to find the actual maximum value
+        # max_value = -np.inf
         max_value = -400
         max_theory = None
         max_value_at_Vf = None
@@ -231,11 +229,12 @@ def display_theories(property_name, results, latex_results, math_results, coeffi
         for theory, values in all_values.items():
             ax.plot(vfs, values, label=theory)
             current_value = values[np.abs(vfs - Vf).argmin()]
-            if current_value > max_value:
+            if current_value > max_value:  # Correct comparison to find the maximum value
                 max_value = current_value
                 max_theory = theory
                 max_value_at_Vf = current_value
 
+        # Add the dot and text box at the intersection
         ax.scatter(Vf, max_value_at_Vf, color=color_dict[max_theory], zorder=5)
         ax.text(Vf, max_value_at_Vf, f'{max_value_at_Vf:.3f} [{unit}]\n{max_theory}', fontsize=14 , color=color_dict[max_theory],
                 ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.8, edgecolor=color_dict[max_theory]))

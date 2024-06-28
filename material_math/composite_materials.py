@@ -14,7 +14,7 @@ def initialize_composite_materials():
             'E1': 100.0,
             'E2': 50.0,
             'nu12': 0.3,
-            'nu21': 0.15,
+            # 'nu21': 0.15,
             'G12': 25.0
         }
         st.session_state['composite_materials'] = pd.DataFrame([default_material])

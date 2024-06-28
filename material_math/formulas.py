@@ -156,7 +156,7 @@ micromech_properties = {
             }
         },
     },
-    "ni12": {
+    "nu12": {
         "name": "Poisson's major ratio",
         "help": "Ratio of transverse strain to axial strain",
         "unit": "-",
