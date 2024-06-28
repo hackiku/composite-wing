@@ -1,6 +1,9 @@
 # material_math/formulas.py
 
 import numpy as np
+from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
+
+initialize_composite_materials()
 
 def calculate_rho(rhof, rhom, Vf, Vm): # changed to _rho from _density
     rho = rhof * Vf + rhom * Vm
@@ -187,6 +190,24 @@ micromech_properties = {
             "math": lambda f, m, Vf, Vm: f"\\nu_{{12}} = \\frac{{{f['ni12f']} \\cdot {m['nim']}}}{{{Vf:.3f} \\cdot {m['nim']} + {Vm:.3f} \\cdot {f['ni12f']}}}"
         }
     },
+    "nu21": {
+        "name": "⚠️ Poisson's minor ratio",
+        "help": "Ratio of transverse strain to axial strain",
+        "unit": "-",
+        "Stiffness matrix symmetry": {
+            "formula": lambda f, m, Vf, Vm: (
+                get_composite_properties(f)['nu12'] * get_composite_properties(f)['E2'] / get_composite_properties(f)['E1']
+                if get_composite_properties(f)['E1'] != 0 else 0
+            ),
+            "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
+            "math": lambda f, m, Vf, Vm: (
+                f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
+                f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
+                f"{{{get_composite_properties(f)['E1']:.3f}}}"
+            )
+        },
+    },
+    # OLD "ni"
     "ni21": {
         "name": "⚠️ Poisson's minor ratio",
         "help": "Ratio of transverse strain to axial strain",
@@ -196,7 +217,25 @@ micromech_properties = {
             "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
             "math": lambda f, m, Vf, Vm: f"\\nu_{{21}} = {compute_ni12(f, m, Vf, Vm):.3f} \\cdot \\frac{{{compute_E2(f, m, Vf, Vm):.3f}}}{{{compute_E1(f, m, Vf, Vm):.3f}}}"
         },
-    }
+    },
+    "nu21": {
+        "name": "⚠️ Poisson's minor ratio",
+        "help": "Ratio of transverse strain to axial strain",
+        "unit": "-",
+        "Stiffness matrix symmetry": {
+            "formula": lambda f, m, Vf, Vm: (
+                get_composite_properties(f)['nu12'] * get_composite_properties(f)['E2'] / get_composite_properties(f)['E1']
+                if get_composite_properties(f)['E1'] != 0 else 0
+            ),
+            "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
+            "math": lambda f, m, Vf, Vm: (
+                f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
+                f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
+                f"{{{get_composite_properties(f)['E1']:.3f}}}"
+            )
+        },
+    },
+
 }
 
         #"MROM": {

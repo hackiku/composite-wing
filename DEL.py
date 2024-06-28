@@ -3,21 +3,13 @@ import pandas as pd
 from materials import fibers, matrices
 from utils import spacer, set_mpl_style, crop_image, invert_colors
 from wing_load_calculator import calculate_wing_load
-
 from material_math.properties import calculate_properties, plot_properties, display_theories, get_property_units
 from material_math.formulas import micromech_properties, strength_properties, failure_criteria
 from material_math.hooke_law import display_hooke_law_matrices
 from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
-
 from cad.presets import aircraft_presets, onshape_projects
 from cad.cad_ui import cad_ui
-# from cad.step_dl import export_step
-# from cad.assembly_step import export_step_from_assembly
-
 from femap.wing_load import calc_wing_load
-
-initialize_composite_materials()
-
 
 st.set_page_config(
     page_title="Composite Wing",
@@ -39,6 +31,7 @@ def initialize_session_state():
         st.session_state.custom_preset = False
     if "selected_wing_model" not in st.session_state:
         st.session_state.selected_wing_model = [key for key in aircraft_presets["P-51"]['model'].keys() if key != "project"][0]
+    initialize_composite_materials()
 
 initialize_session_state()
 
@@ -79,8 +72,6 @@ if st.sidebar.button("💾 Save material", type="primary"):
     properties = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)[0]
     add_composite_material(fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, properties)
 
-# composite_material dataframe logic. NOTE: we can put st.sidebar bits anywhere in the script, not only beginning.
-
 st.sidebar.button("⤵️ Download Femap Script", type="secondary")
 
 dark_graphs = st.sidebar.checkbox(f"Dark mode", value=True, key='dark_graphs')
@@ -94,8 +85,6 @@ show_math = st.sidebar.checkbox("Full math", value=False)
 
 # Main function
 def main():
-    # st.write("Prototype an aircraft wing in composite materials. Live CAD model, juicy materials math, export to Femap.")
-    
     col1, col2 = st.columns([3, 1])
     with col1:
         st.title("Composite Wingy 🪃")
@@ -106,11 +95,8 @@ def main():
             - Export STEP to Simcenter Femap and parse results
             """)
     with col2:
-        # st.image("data/logoUniMas.png", use_column_width=True)    
         st.image("data/vaz100.png", use_column_width=False, clamp=False, width=120)
-        # st.image("data/mas30.png", use_column_width=True)    
     st.markdown("***")
-    # ========== AIRCRAFT ==========
     st.header('1️⃣ Aircraft & Wing')
 
     aircraft_df = st.session_state.aircraft_df
@@ -133,12 +119,10 @@ def main():
             three_view = invert_colors(three_view)
         st.image(three_view, caption=f"{aircraft_df['specs'][0]['name']} 3-view", use_column_width=True)
 
-    # CAD Model UI
     cad_ui()
 
     spacer()
 
-    # =============== WING LOAD ===============
     st.markdown("***")
     st.header("Wing Load Calculation")
     st.write("")
@@ -154,9 +138,7 @@ def main():
         wing_length = st.number_input('Wing Length (mm)', value=aircraft_df['wing'].get('span_wet', 1) * 1000, on_change=on_change_custom)
         num_nodes = st.number_input('Number of Nodes for Force Calculation', value=20, on_change=on_change_custom)
 
-
     calc_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
-    # calculate_wing_load(selected_mass, load_factor, nodes_between_ribs, num_ribs, wing_length, num_nodes)
 
     st.markdown("***")
     st.header('2️⃣ Bake composite materials')
@@ -170,11 +152,8 @@ def main():
 
     spacer()
     
-    # HOOKE LAW
-    
     with st.expander("Hooke's Law"):
         display_hooke_law_matrices()
-    
     
     materials_dataframe(fiber_material_key, matrix_material_key, fibers, matrices)
 
@@ -185,8 +164,6 @@ def main():
 
     st.markdown("***")
 
-    # ------------------ MICROMECH ------------------
-    
     st.header("Micromechanical properties")
     st.write("The following properties are calculated using micromechanical models for the combination:")
     col1, col2 = st.columns([6, 4])
@@ -195,7 +172,7 @@ def main():
     with col2:
         st.code(f"Vf: {Vf} / Vm: {Vm} / Vvoid: {Vvoid}")
         
-    properties = ["E1", "E2", "G12", "ni12", "ni21", "nu21"]
+    properties = ["E1", "E2", "G12", "nu12", "nu21"]
     units = get_property_units(properties)
 
     col1, col2 = st.columns([6, 1])
@@ -203,11 +180,9 @@ def main():
         micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, micromechanics_theories = calculate_properties(micromech_properties, fibers, matrices, fiber_material_key, matrix_material_key, Vf, Vm, Vvoid, show_math=show_math)
         micromechanics_df = plot_properties(micromechanics_results, properties, units, micromechanics_theories)
 
-    # with col2:
     st.write(micromechanics_df)
 
     if st.button("Compare all material combos", type="primary"): 
-        # fancy 3D Graph
         st.write("3D Graph")
 
     st.markdown("***")
@@ -217,37 +192,30 @@ def main():
             display_theories(property_name, micromechanics_results, micromechanics_latex, micromechanics_math, micromechanics_coefficients, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
             st.markdown("***")
     
-    def compute_ni21(ni12, E2, E1):
-        return ni12 * E2 / E1
+    def compute_ni21(nu12, E2, E1):
+        return nu12 * E2 / E1
 
-    # Allow users to select theories for ni12, E1, and E2
-    selected_ni12_theory = st.selectbox("Select theory for ni12", micromechanics_theories['ni12'])
+    selected_ni12_theory = st.selectbox("Select theory for nu12", micromechanics_theories['nu12'])
     selected_E1_theory = st.selectbox("Select theory for E1", micromechanics_theories['E1'])
     selected_E2_theory = st.selectbox("Select theory for E2", micromechanics_theories['E2'])
 
-    # Get the index of the selected theories
-    ni12_index = micromechanics_theories['ni12'].index(selected_ni12_theory)
+    ni12_index = micromechanics_theories['nu12'].index(selected_ni12_theory)
     E1_index = micromechanics_theories['E1'].index(selected_E1_theory)
     E2_index = micromechanics_theories['E2'].index(selected_E2_theory)
 
-    # Compute ni21 using the selected theory values
-    ni12 = micromechanics_results['ni12'][ni12_index]
+    nu12 = micromechanics_results['nu12'][ni12_index]
     E2 = micromechanics_results['E2'][E2_index]
     E1 = micromechanics_results['E1'][E1_index]
-    computed_ni21 = compute_ni21(ni12, E2, E1)
+    computed_ni21 = compute_ni21(nu12, E2, E1)
 
-    # Display the computed ni21
     st.write("Computed ni21:", computed_ni21)
 
-    # Display LaTeX formatted results
     latex_formula = r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}"
-    latex_result = f"\\nu_{{21}} = {ni12:.3f} \\cdot \\frac{{{E2:.3f}}}{{{E1:.3f}}} = {computed_ni21:.3f}"
+    latex_result = f"\\nu_{{21}} = {nu12:.3f} \\cdot \\frac{{{E2:.3f}}}{{{E1:.3f}}} = {computed_ni21:.3f}"
 
     st.latex(latex_formula)
     st.latex(latex_result)
-        
-    # st.write(f"{micromechanics_results['E1']} {micromechanics_results['E2']} {micromechanics_results['G12']} {micromechanics_results['ni12']} {micromechanics_results['ni21']}")
-    # ------ STRENGTH ------
+
     st.header("Strength Properties")
     st.write("The following properties are calculated using micromechanical models for the combination:")
     col1, col2 = st.columns([6, 4])
@@ -270,7 +238,6 @@ def main():
         if property_name in strength_properties:
             display_theories(property_name, strength_results, strength_latex, strength_math, strength_coefficients, fiber_material_key, fibers[fiber_material_key], matrix_material_key, matrices[matrix_material_key], Vf, Vm, Vvoid, sigma, show_individual_graphs, show_math)
 
-
     st.markdown('***')
     st.markdown('***')
 
@@ -278,9 +245,6 @@ def main():
 
     st.code(f"Failure Criteria for {fiber_material_key} / {matrix_material_key}")
 
-    # SEE HERE CHATGPT
-    # list materials created by user
-    st.sidebar.write("AS-4/3501-6 Vf=0.63") 
     display_composite_materials()
 
 if __name__ == "__main__":
