@@ -2,8 +2,8 @@
 
 import numpy as np
 # from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
-# from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials
-from material_math.composite_materials import initialize_composite_materials, add_composite_material, display_composite_materials, get_composite_properties
+from material_math.composite_materials import initialize_composite_materials, get_composite_properties
+# from material_math.composite_materials import get_composite_properties
 
 initialize_composite_materials()
 
@@ -181,19 +181,16 @@ micromech_properties = {
         "help": "Ratio of transverse strain to axial strain",
         "unit": "-",
         "Stiffness matrix symmetry": {
-            "formula": lambda f, m, Vf, Vm: (
-                get_composite_properties(f)['nu12'] * get_composite_properties(f)['E2'] / get_composite_properties(f)['E1']
-                if get_composite_properties(f)['E1'] != 0 else 0
+            "formula": lambda f, m, Vf, Vm, c: (
+                c['nu12'] * c['E2'] / c['E1']
+                if c['E1'] != 0 else 0
             ),
             "latex": r"\nu_{21} = \nu_{12} \cdot \frac{E_{2}}{E_{1}}",
-            # "math": lambda f, m, Vf, Vm: (
-            #     f"\\nu_{{21}} = {get_composite_properties(f)['nu12']:.3f} "
-            #     f"\\cdot \\frac{{{get_composite_properties(f)['E2']:.3f}}}"
-            #     f"{{{get_composite_properties(f)['E1']:.3f}}}"
+            # "math": lambda f, m, Vf, Vm, c: (
+            #     f"\\nu_{{21}} = {c['nu12']:.3f} \\cdot \\frac{{{c['E2']:.3f}}}{{{c['E1']:.3f}}}"
             # )
         },
     },
-
 }
 
         #"MROM": {
@@ -353,3 +350,13 @@ failure_criteria = {
         "latex": r"\left( \frac{\sigma_1}{F_{1t}} \right)^2 - \frac{\sigma_1 \sigma_2}{F_{1t}^2} + \left( \frac{\sigma_2}{F_{2t}} \right)^2 + \left( \frac{\tau_{12}}{F_6} \right)^2 = 1"
     }
 }
+
+def fetch_composite_properties():
+    composite_props = get_composite_properties('Default Fiber')
+    if not composite_props:
+        composite_props = {
+            'nu12': 0.3,
+            'E2': 50.0,
+            'E1': 100.0,
+        }
+    return composite_props

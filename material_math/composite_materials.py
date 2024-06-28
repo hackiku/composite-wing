@@ -5,17 +5,19 @@ import streamlit as st
 
 def initialize_composite_materials():
     if 'composite_materials' not in st.session_state:
-        st.session_state.composite_materials = pd.DataFrame(columns=[
-            'Fiber', 'Matrix', 'Vf', 'Vvoid', 'E1', 'E2', 'G12', 'nu12', 'nu21', 
-            # add other necessary properties
-        ])
-        st.session_state.composite_materials = st.session_state.composite_materials.append(
-            {'Fiber': None, 'Matrix': None, 'Vf': 0, 'Vvoid': 0}, ignore_index=True)
-        st.session_state.current_composite_index = 0
-
-def initialize_composite_materials():
-    if 'composite_materials' not in st.session_state:
-        st.session_state['composite_materials'] = pd.DataFrame(columns=['Fiber', 'Matrix', 'Vf', 'Vm', 'Vvoid', 'E1', 'E2', 'nu12', 'nu21'])
+        default_material = {
+            'Fiber': 'Default Fiber',
+            'Matrix': 'Default Matrix',
+            'Vf': 0.5,
+            'Vm': 0.5,
+            'Vvoid': 0.0,
+            'E1': 100.0,
+            'E2': 50.0,
+            'nu12': 0.3,
+            'nu21': 0.15,
+            'G12': 25.0
+        }
+        st.session_state['composite_materials'] = pd.DataFrame([default_material])
 
 def add_composite_material(fiber, matrix, Vf, Vm, Vvoid, properties):
     new_material = {
@@ -26,14 +28,16 @@ def add_composite_material(fiber, matrix, Vf, Vm, Vvoid, properties):
         'Vvoid': Vvoid,
         'E1': properties['E1'][0],
         'E2': properties['E2'][0],
-        'nu21': properties['nu21'][0]
+        'nu12': properties['nu12'][0],
+        'nu21': properties['nu21'][0],
+        'G12': properties['G12'][0]
     }
-    st.session_state['composite_materials'] = st.session_state['composite_materials'].append(new_material, ignore_index=True)
+    new_material_df = pd.DataFrame([new_material])
+    st.session_state['composite_materials'] = pd.concat([st.session_state['composite_materials'], new_material_df], ignore_index=True)
 
 def display_composite_materials():
     st.sidebar.write("### Composite Materials")
     st.sidebar.dataframe(st.session_state['composite_materials'])
-
 
 def get_composite_properties(material_name):
     df = st.session_state['composite_materials']
