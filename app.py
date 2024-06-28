@@ -71,6 +71,8 @@ Vf = st.sidebar.slider('Fiber volume fraction $$(V_{{f}})$$ `Vf`', 0.0, 1.0, air
 Vm = 1 - Vf
 Vvoid = st.sidebar.slider('Void space $$(V_{{void}})$$ `Vvoid`', 0.0, 1.0, aircraft_presets[st.session_state.current_preset]["materials"]["Vvoid"], 0.01, help="Adjust void ratio in the composite (between 0 and 1)", on_change=on_change_custom)
 
+st.sidebar.button("⤵️  Femap Script", type="secondary")
+
 dark_graphs = st.sidebar.checkbox(f"Dark mode", value=True, key='dark_graphs')
 graph_style = "dark" if dark_graphs else "light"
 
